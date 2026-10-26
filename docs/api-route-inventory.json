@@ -1,0 +1,1529 @@
+[
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/academic-filter-options",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CatalogController@filterOptions",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/academic-settings",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AcademicSettingsController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PUT",
+    "uri": "api/v1/academic-settings",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AcademicSettingsController@save",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/announcements",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AnnouncementController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/announcements",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AnnouncementController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/announcements/{announcement}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AnnouncementController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PUT",
+    "uri": "api/v1/announcements/{announcement}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AnnouncementController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/assessments",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AssessmentController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/assessments",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AssessmentController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/assessments/{assessment}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AssessmentController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PUT",
+    "uri": "api/v1/assessments/{assessment}/marks",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AssessmentController@marks",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/assessments/{assessment}/review",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AssessmentController@review",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/attendance/register",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AttendanceController@register",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/attendance/register",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AttendanceController@save",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/attendance/{register}/revisions",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AttendanceController@revisions",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/auth/history",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StaffDirectoryController@history",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/auth/login",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AuthController@login",
+    "middleware": [
+      "api",
+      "throttle:login"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/auth/logout",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AuthController@logout",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/auth/me",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AuthController@me",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/behavior/{observation}/publish",
+    "name": null,
+    "action": "App\\Http\\Controllers\\BehaviorController@publish",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/biometric/mappings",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@mappings",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/biometric/mappings",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@mapping",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "DELETE",
+    "uri": "api/v1/biometric/mappings/{mapping}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@revokeMapping",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/biometric/summary",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@biometric",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/catalog/{catalog}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CatalogController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/catalog/{catalog}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CatalogController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PATCH",
+    "uri": "api/v1/catalog/{catalog}/{id}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CatalogController@update",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/catalog/{catalog}/{id}/deactivate",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CatalogController@deactivate",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/communication/parents",
+    "name": null,
+    "action": "App\\Http\\Controllers\\TicketController@parents",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/communication/staff",
+    "name": null,
+    "action": "App\\Http\\Controllers\\TicketController@staff",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/coordinator",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CoordinatorController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/coordinator",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CoordinatorController@save",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PATCH",
+    "uri": "api/v1/coordinator/{record}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CoordinatorController@save",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/dashboard-summary",
+    "name": null,
+    "action": "App\\Http\\Controllers\\DashboardController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/diary",
+    "name": null,
+    "action": "App\\Http\\Controllers\\DiaryController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/diary",
+    "name": null,
+    "action": "App\\Http\\Controllers\\DiaryController@save",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/diary/{diary}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\DiaryController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PATCH",
+    "uri": "api/v1/diary/{diary}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\DiaryController@save",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/diary/{diary}/review",
+    "name": null,
+    "action": "App\\Http\\Controllers\\DiaryController@review",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/diary/{diary}/revisions",
+    "name": null,
+    "action": "App\\Http\\Controllers\\DiaryController@revisions",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/exam-schedules",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ExamScheduleController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/exam-schedules",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ExamScheduleController@save",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PUT",
+    "uri": "api/v1/exam-schedules/{exam}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ExamScheduleController@save",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/files",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PrivateFileController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/files/{file}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PrivateFileController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/compensation",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PayrollController@compensation",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/configuration",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/discount-policies",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@policy",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/discounts",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@discounts",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/discounts",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@requestDiscount",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/discounts/{discount}/approve",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@approveDiscount",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/discounts/{discount}/revoke",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@revokeDiscount",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/expenses",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ExpenseController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/expenses",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ExpenseController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/expenses/{expense}/approve",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ExpenseController@approve",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/expenses/{expense}/deny",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ExpenseController@deny",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/expenses/{expense}/pay",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ExpenseController@pay",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/fee-assignments",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@assignment",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/fee-schedules",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@schedule",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/invoices",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/invoices",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/invoices/{invoice}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/invoices/{invoice}/adjust",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeController@adjust",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/journals",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AccountingController@journals",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payment-methods",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeConfigurationController@method",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/payments",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PaymentController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payments",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PaymentController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/payments/{payment}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PaymentController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payments/{payment}/cancel",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PaymentController@cancel",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payments/{payment}/refund",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PaymentController@refund",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payments/{payment}/verify",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PaymentController@verify",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/payroll",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PayrollController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payroll",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PayrollController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payroll-adjustments",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PayrollController@adjustment",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/payroll/{payroll}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PayrollController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payroll/{payroll}/approve",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PayrollController@approve",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/finance/payroll/{payroll}/pay",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PayrollController@pay",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/finance/trial-balance",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AccountingController@trialBalance",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PUT",
+    "uri": "api/v1/grading-rules",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AssessmentController@grading",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/guardians",
+    "name": null,
+    "action": "App\\Http\\Controllers\\GuardianController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/guardians",
+    "name": null,
+    "action": "App\\Http\\Controllers\\GuardianController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/guardians/{guardian}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\GuardianController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PATCH",
+    "uri": "api/v1/guardians/{guardian}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\GuardianController@update",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PUT",
+    "uri": "api/v1/guardians/{guardian}/links",
+    "name": null,
+    "action": "App\\Http\\Controllers\\GuardianController@link",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "DELETE",
+    "uri": "api/v1/guardians/{guardian}/links/{student}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\GuardianController@unlink",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "DELETE",
+    "uri": "api/v1/guardians/{guardian}/photo",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PrivateFileController@removeGuardianPhoto",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/imports",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/imports",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@upload",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/imports/{batch}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "DELETE",
+    "uri": "api/v1/imports/{batch}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@destroy",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/imports/{batch}/confirm",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@confirm",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/imports/{batch}/preview",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ImportController@preview",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/my-staff-profile",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PayrollController@mine",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/notifications",
+    "name": null,
+    "action": "App\\Http\\Controllers\\NotificationController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/notifications/{notification}/read",
+    "name": null,
+    "action": "App\\Http\\Controllers\\NotificationController@read",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/parent-auth/request",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ParentAuthController@requestOtp",
+    "middleware": [
+      "api",
+      "throttle:parent-request"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/parent-auth/verify",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ParentAuthController@verify",
+    "middleware": [
+      "api",
+      "throttle:parent-verify"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/parent/home",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ParentHomeController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/push-devices",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PushDeviceController@register",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:10,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "DELETE",
+    "uri": "api/v1/push-devices/{device}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PushDeviceController@revoke",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/rbac",
+    "name": null,
+    "action": "App\\Http\\Controllers\\RbacController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PUT",
+    "uri": "api/v1/rbac/{role}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\RbacController@update",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/reports/{type}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\ReportController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:10,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/school-days",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AttendanceController@calendar",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/school-settings",
+    "name": null,
+    "action": "Closure",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "App\\Http\\Middleware\\RequirePermission:settings.read"
+    ],
+    "path": "routes/api.php:15"
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/staff-accounts",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StaffDirectoryController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/staff-accounts",
+    "name": null,
+    "action": "App\\Http\\Controllers\\CatalogController@createStaff",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/staff-accounts/{user}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StaffDirectoryController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PATCH",
+    "uri": "api/v1/staff-accounts/{user}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StaffDirectoryController@update",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PATCH",
+    "uri": "api/v1/staff-accounts/{user}/status",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StaffDirectoryController@status",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/students",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StudentController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/students",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StudentController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/students/{student}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StudentController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "PATCH",
+    "uri": "api/v1/students/{student}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StudentController@update",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/students/{student}/assessments",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AssessmentController@student",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/students/{student}/attendance",
+    "name": null,
+    "action": "App\\Http\\Controllers\\AttendanceController@history",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/students/{student}/behavior",
+    "name": null,
+    "action": "App\\Http\\Controllers\\BehaviorController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/students/{student}/behavior",
+    "name": null,
+    "action": "App\\Http\\Controllers\\BehaviorController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/students/{student}/finance",
+    "name": null,
+    "action": "App\\Http\\Controllers\\FeeController@student",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "DELETE",
+    "uri": "api/v1/students/{student}/photo",
+    "name": null,
+    "action": "App\\Http\\Controllers\\PrivateFileController@removeStudentPhoto",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/students/{student}/transitions",
+    "name": null,
+    "action": "App\\Http\\Controllers\\StudentController@transition",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/tickets",
+    "name": null,
+    "action": "App\\Http\\Controllers\\TicketController@index",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/tickets",
+    "name": null,
+    "action": "App\\Http\\Controllers\\TicketController@store",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:20,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "GET|HEAD",
+    "uri": "api/v1/tickets/{ticket}",
+    "name": null,
+    "action": "App\\Http\\Controllers\\TicketController@show",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/tickets/{ticket}/messages",
+    "name": null,
+    "action": "App\\Http\\Controllers\\TicketController@reply",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession",
+      "throttle:30,1"
+    ],
+    "path": null
+  },
+  {
+    "domain": null,
+    "method": "POST",
+    "uri": "api/v1/tickets/{ticket}/workflow",
+    "name": null,
+    "action": "App\\Http\\Controllers\\TicketController@workflow",
+    "middleware": [
+      "api",
+      "App\\Http\\Middleware\\AuthenticateSession"
+    ],
+    "path": null
+  }
+]

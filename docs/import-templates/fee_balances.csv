@@ -1,0 +1,2 @@
+﻿student_id,academic_session_id,period,issued_on,due_on,amount_minor,description
+00000000-0000-4000-8000-000000000002,00000000-0000-4000-8000-000000000004,2026-10,2026-10-01,2026-10-10,100000,Fictional opening balance

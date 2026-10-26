@@ -1,0 +1,27 @@
+**/.env
+**/.env.*
+!**/.env.example
+**/vendor/
+**/node_modules/
+**/.dart_tool/
+**/build/
+**/local.properties
+**/key.properties
+**/*.keystore
+**/*.jks
+**/*.sqlite
+**/*.sqlite-*
+
+/database/.pg-test-data/
+/database/.pg-test-password
+/database/.pg-test.log
+
+/database/.validation-data/
+/database/.validation.log
+
+# Local validation/build logs (may contain device paths).
+/mobile/*-validation.log
+
+# IDE files
+.idea/
+.vscode/

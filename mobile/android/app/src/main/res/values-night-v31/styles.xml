@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources><style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+ <item name="android:windowSplashScreenBackground">#FFFFFF</item>
+ <item name="android:windowSplashScreenAnimatedIcon">@drawable/school_splash</item>
+ <item name="android:windowSplashScreenIconBackgroundColor">#FFFFFF</item>
+ <item name="android:windowLightStatusBar">false</item>
+ <item name="android:statusBarColor">#142B49</item>
+</style></resources>

@@ -1,0 +1,6 @@
+# Copy to key.properties locally. Never commit keys or passwords.
+# Absolute path, using forward slashes on Windows.
+storeFile=E:/private-signing/infotech-upload.jks
+storePassword=REPLACE_LOCALLY
+keyAlias=infotech-upload
+keyPassword=REPLACE_LOCALLY

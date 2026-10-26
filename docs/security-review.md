@@ -1,0 +1,14 @@
+# Security review and practical limits
+
+Implemented checks: authoritative middleware/permissions; per-child/class/file/document/ticket/notification scopes; active-user/expiry/revocation checks; masked/encrypted identity; keyed CNIC lookup; hashed/expiring/limited OTPs; staff role escalation restrictions; immediate suspension/session/device revocation; whitelisted validation/mass assignment; ORM-bound queries; login/OTP/write/report throttles; private MIME/size/dimension-limited uploads; encoded report text; CSV formula protection/XLSX string typing; encrypted staging/drafts; optimistic concurrency/idempotency; balanced immutable journal/financial transition constraints; append-only communication history; safe JSON errors and redacted exception reporting.
+
+Explicit regression coverage includes cross-parent student/result/fee/document/notification access, unrelated teacher classes, private messages/notes, invalid uploads, financial approval/refund/duplicate rules, import preview rollback/ownership/formulas and disabled/generic push delivery. PHPUnit runs against an isolated PostgreSQL cluster; SQLite is not used to pretend PostgreSQL triggers work.
+
+Security review corrections include dated teacher enrollment scope, hiding diary request fingerprints from parent lists, denying teacher admission-document/financial-file access, closing detail routes on expiry, protecting catalog identity changes, locking payroll adjustments against period generation, content-sensitive ticket retries, revocable ticket forwards, expired import re-upload and locked preview/confirmation/removal.
+
+Limits requiring deployment decisions: TLS/proxy/network policy, production secret/key ownership and rotation, real SMS gateway and FCM credentials, external storage/virus scanning, backup retention and recovery drills, school-approved privacy/terms/contact/retention rules, biometric-device format verification, and Android signing/Play distribution. No penetration-test or legal-certification claim is made. External PDF viewers can retain explicitly shared copies; that is disclosed in the app. Rooted/unlocked devices and compromised administrator accounts remain outside application-level isolation guarantees. Secure local drafts require an authenticated online session before use; parental financial writes are not supported offline.
+
+
+## OTP/private-photo/visual follow-up — 2026-10-23
+
+Current pass: PostgreSQL 129 tests/960 assertions PASS; Flutter 76 PASS; analyze/Pint/format clean; four functional native cases passed across runs; physical-phone debug APK built. See [final-media-report.md](final-media-report.md), [local OTP commands](local-parent-otp.md) and [file inventory](final-media-files.md). Current key/decrypt/lookup integrity checks pass; earlier APP_KEY-invalid notes describe the earlier session only.
