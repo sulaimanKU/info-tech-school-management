@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StaffAccountController;
 use App\Http\Middleware\AuthenticateSession;
 use App\Http\Middleware\RequirePermission;
 use Illuminate\Http\Request;
@@ -10,6 +11,12 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
     Route::middleware(AuthenticateSession::class)->group(function () {
+        Route::get('account/profile', [StaffAccountController::class, 'show']);
+        Route::patch('account/profile', [StaffAccountController::class, 'update']);
+        Route::post('account/password', [StaffAccountController::class, 'password'])->middleware('throttle:6,1');
+        Route::post('account/photo', [StaffAccountController::class, 'photo']);
+        Route::delete('account/photo', [StaffAccountController::class, 'removePhoto']);
+        Route::get('account/salary-slips/{item}/document', [StaffAccountController::class, 'salaryDocument'])->whereUuid('item');
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('school-settings', function (Request $r) {

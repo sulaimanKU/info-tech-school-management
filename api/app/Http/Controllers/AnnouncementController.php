@@ -30,7 +30,7 @@ class AnnouncementController extends Controller
         if (isset($v['status'])) {
             $q->where('a.status', $v['status']);
         }if (isset($v['search'])) {
-            $q->where('a.title', 'ilike', '%'.$v['search'].'%');
+            $q->where('a.title', 'like', '%'.$v['search'].'%');
         }
         if (isset($v['read'])) {
             $q->whereExists(function ($q) use ($r) {

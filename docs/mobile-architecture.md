@@ -14,7 +14,7 @@ Flutter features are split across auth, students, administration, academics, fin
 
 Staff use email/password with hash verification, throttling and a dummy hash for unknown accounts. Parents use a separate CNIC request/OTP verification flow. Both issue existing 12-hour opaque bearer sessions; only token hashes are stored server-side. Remember Me stores the token in Android secure storage; unchecked sessions remain in memory and are cleared from persistent session storage. Passwords are never retained. Session restoration calls `/auth/me`; network failure shows retry instead of granting offline authentication. Logout revokes the server session and associated push devices. Suspension revokes every session/device; reactivation requires fresh sign-in.
 
-CNIC normalization accepts 13 digits with optional spaces/hyphens. Recoverable identity/mobile values use Laravel authenticated encryption. CNIC lookup uses a keyed HMAC derived separately from the application key (or CNIC_LOOKUP_KEY); API representations are masked. Losing these keys makes protected records unreadable/unsearchable, so back them up privately. Rotating them requires a controlled re-encryption/reindex operation, not changing environment variables blindly.
+CNIC normalization accepts 13 digits with optional spaces/hyphens. Guardian identity/mobile values use readable cnic/mobile columns with unique normalized CNIC lookup; API representations remain masked. OTP challenge correlation retains a keyed HMAC. Keep APP_KEY unchanged for legacy conversion and actual secrets. Follow readable-data-storage.md before upgrading existing records.
 
 ## Role and permission matrix
 

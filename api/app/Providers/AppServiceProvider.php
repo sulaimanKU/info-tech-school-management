@@ -10,6 +10,7 @@ use App\Services\Push\DisabledWhatsAppProvider;
 use App\Services\Push\FcmPushProvider;
 use App\Services\Sms\DisabledSmsProvider;
 use App\Services\Sms\LocalSmsProvider;
+use App\Services\Sms\SpextSmsProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -23,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PushProvider::class, fn () => config('school.push_driver') === 'fcm' ? new FcmPushProvider : new DisabledPushProvider);
         $this->app->bind(WhatsAppProvider::class, DisabledWhatsAppProvider::class);
         $this->app->bind(SmsProvider::class, function () {
+            if (config('school.sms_driver') === 'spext') {
+                return new SpextSmsProvider;
+            }
             if (config('school.sms_driver') === 'local' && app()->environment(['local', 'testing'])) {
                 return new LocalSmsProvider;
             }

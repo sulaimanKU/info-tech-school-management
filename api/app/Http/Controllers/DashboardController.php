@@ -26,7 +26,7 @@ final class DashboardController extends Controller
         $sections = $this->access->sections($u);
         $data = ['as_of' => now()->toIso8601String(), 'scope' => $u->hasPermission('students.read.all') ? 'school' : 'assigned', 'unread_notifications' => DB::table('school_notifications')->where('user_id', $u->id)->whereNull('read_at')->where(fn ($q) => $q->whereNull('student_id')->orWhereIn('student_id', (clone $students)->select('students.id')))->count()];
         if ($canStudents) {
-            $counts = (clone $students)->selectRaw("count(*) as total, count(*) filter (where status='active') as active")->first();
+            $counts = (clone $students)->selectRaw("count(*) as total, coalesce(sum(case when status='active' then 1 else 0 end),0) as active")->first();
             $data['students'] = ['total' => (int) $counts->total, 'active' => (int) $counts->active];
         }
         if ($u->hasPermission('staff.manage')) {

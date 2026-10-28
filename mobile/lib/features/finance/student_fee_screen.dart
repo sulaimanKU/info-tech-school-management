@@ -67,6 +67,12 @@ class _StudentFeeScreenState extends State<StudentFeeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (data!['student'] != null) ...[
+                          Text(data!['student']['full_name'] as String, style: Theme.of(context).textTheme.titleLarge),
+                          Text('${data!['student']['registration_number']} ? ${data!['student']['class_name'] ?? ''}'),
+                          Text('Total: ${Money.format(data!['total_minor'])} ? Paid: ${Money.format(data!['paid_minor'])}'),
+                          const SizedBox(height: AppSpace.sm),
+                        ],
                         Text(
                           s.text('currentBalance'),
                           style: Theme.of(context).textTheme.titleMedium,

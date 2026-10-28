@@ -1,3 +1,4 @@
+import '../account/staff_account_screen.dart';
 import '../reports/report_screen.dart';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import '../../shared/widgets/records_screen.dart';
 import '../../shared/widgets/surface_card.dart';
 import '../auth/auth_controller.dart';
 import 'financial_forms.dart';
+import 'finance_configuration_screen.dart';
 
 class PayrollScreen extends StatelessWidget {
   const PayrollScreen({super.key, required this.auth});
@@ -46,6 +48,12 @@ class PayrollScreen extends StatelessWidget {
     auth: auth,
     path: 'finance/payroll',
     title: 'payroll',
+    summary: (response) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (auth.can('finance.approve'))
+        OutlinedButton.icon(onPressed: () => Navigator.push<void>(context, MaterialPageRoute(builder: (_) => FinanceConfigurationScreen(auth: auth))), icon: const Icon(Icons.settings), label: const Text('Configure salary / adjustments')),
+      for (final salary in response['compensation'] as List? ?? [])
+        ListTile(title: Text('${salary['name']} ? ${salary['employee_number']}'), subtitle: Text('Effective: ${salary['effective_on']}'), trailing: Text(Money.format(salary['base_salary_minor']))),
+    ]),
     recordTitle: (r) => r['period'] as String,
     recordSubtitle: (r) => Money.format(r['total_minor']),
     onCreate: auth.can('finance.write') ? create : null,
@@ -133,6 +141,9 @@ class _PayrollDetailScreenState extends State<PayrollDetailScreen> {
                       ),
                       if (data!['paid_on'] != null)
                         Text('${s.text('paymentDate')}: ${data!['paid_on']}'),
+                      if (data!['method'] != null) Text(data!['method'] as String),
+                      if (data!['paid_minor'] != null) Text('Paid: ${Money.format(data!['paid_minor'])}'),
+                      if (data!['reference'] != null) Text(data!['reference'] as String),
                     ],
                   ),
                 ),
@@ -181,39 +192,10 @@ class _PayrollDetailScreenState extends State<PayrollDetailScreen> {
   }
 }
 
+// Compatibility entry point for existing navigation callers.
 class MyStaffProfileScreen extends StatelessWidget {
   const MyStaffProfileScreen({super.key, required this.auth});
   final AuthController auth;
   @override
-  Widget build(BuildContext context) => RecordsScreen(
-    auth: auth,
-    path: 'my-staff-profile',
-    onOpen: (c, r) => openSchoolReport(c, auth, 'salary_slip', {
-      'payroll_item_id': r['id'] as String,
-    }),
-    title: 'myStaffProfile',
-    recordTitle: (r) => r['period'] as String,
-    recordSubtitle: (r) =>
-        '${r['paid_on']} · ${Money.format(r['net_salary_minor'])}',
-    summary: (data) => Padding(
-      padding: const EdgeInsets.only(bottom: AppSpace.xl),
-      child: SurfaceCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              auth.user!['name'] as String,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            Text(
-              '${data['profile']['employee_number']} · ${data['profile']['designation']}',
-            ),
-            Text(
-              '${Strings.of(context).text('joiningDate')}: ${data['profile']['joined_on']}',
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
+  Widget build(BuildContext context) => StaffAccountScreen(auth: auth);
 }

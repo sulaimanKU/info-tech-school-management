@@ -25,3 +25,18 @@
 # IDE files
 .idea/
 .vscode/
+
+# Isolated database compatibility test runtime and logs.
+/.local-db-audit/
+
+# Deployment archives / backups
+*.zip
+*.sql
+*.bak
+
+# Accidental/local files
+bject LastWriteTime*
+mobile/assets/*.pdf
+
+# Local validation and generated reports/logs
+*.log

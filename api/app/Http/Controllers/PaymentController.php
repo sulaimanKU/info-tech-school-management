@@ -51,7 +51,9 @@ class PaymentController extends Controller
         $this->access->require($r->user(), 'finance.read');
         $p = DB::table('payments')->where('id', $payment)->firstOrFail();
         abort_if(DB::table('payment_allocations as scope_a')->join('fee_invoices as scope_i', 'scope_i.id', '=', 'scope_a.fee_invoice_id')->where('scope_a.payment_id', $payment)->whereNotIn('scope_i.student_id', $this->access->students($r->user())->select('students.id'))->exists(), 404);
-        $data = array_intersect_key((array) $p, array_flip(['id', 'receipt_number', 'paid_on', 'amount_minor', 'reference', 'proof_file_id', 'status', 'payment_method_id']));
+        $data = array_intersect_key((array) $p, array_flip(['id', 'receipt_number', 'paid_on', 'amount_minor', 'reference', 'proof_file_id', 'status', 'payment_method_id', 'notes', 'created_at']));
+        $data['recorded_by_name'] = DB::table('users')->where('id', $p->recorded_by)->value('name');
+        $data['method'] = DB::table('payment_methods')->where('id', $p->payment_method_id)->value('name');
         $data['proof_file'] = $p->proof_file_id ? DB::table('private_files')->where('id', $p->proof_file_id)->first(['id', 'mime', 'size']) : null;
         $data['allocations'] = DB::table('payment_allocations as a')->join('fee_invoices as i', 'i.id', '=', 'a.fee_invoice_id')->where('a.payment_id', $payment)->get(['a.id', 'a.fee_invoice_id', 'a.amount_minor', 'i.student_id', 'i.voucher_number'])->map(fn ($a) => [...(array) $a, 'refunded_minor' => (int) DB::table('refund_allocations')->where('payment_allocation_id', $a->id)->sum('amount_minor')]);
         $data['refunds'] = DB::table('payment_refunds')->where('payment_id', $payment)->get(['id', 'number', 'refunded_on', 'amount_minor', 'reason']);
@@ -62,7 +64,7 @@ class PaymentController extends Controller
     public function store(Request $r)
     {
         $this->access->require($r->user(), 'finance.write');
-        $v = $r->validate(['payment_method_id' => 'required|uuid|exists:payment_methods,id', 'paid_on' => 'required|date|before_or_equal:today', 'amount_minor' => 'required|integer|min:1|max:1000000000', 'reference' => 'nullable|string|max:200', 'proof_file_id' => 'nullable|uuid|exists:private_files,id', 'request_id' => 'required|uuid', 'allocations' => 'required|array|min:1|max:50', 'allocations.*.fee_invoice_id' => 'required|uuid|distinct|exists:fee_invoices,id', 'allocations.*.amount_minor' => 'required|integer|min:1|max:1000000000']);
+        $v = $r->validate(['payment_method_id' => 'required|uuid|exists:payment_methods,id', 'paid_on' => 'required|date|before_or_equal:today', 'amount_minor' => 'required|integer|min:1|max:1000000000', 'reference' => 'nullable|string|max:200', 'notes' => 'nullable|string|max:500', 'proof_file_id' => 'nullable|uuid|exists:private_files,id', 'request_id' => 'required|uuid', 'allocations' => 'required|array|min:1|max:50', 'allocations.*.fee_invoice_id' => 'required|uuid|distinct|exists:fee_invoices,id', 'allocations.*.amount_minor' => 'required|integer|min:1|max:1000000000']);
 
         foreach ($v['allocations'] as $allocation) {
             $invoice = DB::table('fee_invoices')->where('id', $allocation['fee_invoice_id'])->firstOrFail();

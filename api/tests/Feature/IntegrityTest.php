@@ -25,10 +25,10 @@ class IntegrityTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
-    public function test_postgres_rejects_reversed_academic_dates(): void
+    public function test_database_rejects_reversed_academic_dates(): void
     {
-        if (DB::getDriverName() !== 'pgsql') {
-            $this->markTestSkipped('PostgreSQL CHECK constraint test.');
+        if (! in_array(DB::getDriverName(), ['pgsql', 'mysql', 'mariadb'], true)) {
+            $this->markTestSkipped('Database CHECK constraint test.');
         }
         $this->expectException(QueryException::class);
         DB::table('academic_sessions')->insert(['id' => (string) Str::uuid(), 'name' => 'Invalid test dates', 'starts_on' => '2026-10-21', 'ends_on' => '2026-01-01']);

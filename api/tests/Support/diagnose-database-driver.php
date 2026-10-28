@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\DB;
 require __DIR__.'/../../vendor/autoload.php';
 $app = require __DIR__.'/../../bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
-echo 'PostgreSQL PDO driver loaded: '.(in_array('pgsql', PDO::getAvailableDrivers(), true) ? 'yes' : 'no').PHP_EOL;
+$driver = DB::connection()->getDriverName();
+echo 'Configured PDO driver loaded: '.(in_array($driver === 'mariadb' ? 'mysql' : $driver, PDO::getAvailableDrivers(), true) ? 'yes' : 'no').PHP_EOL;
 try {
     DB::select('select 1');
     echo 'Database query succeeded.'.PHP_EOL;

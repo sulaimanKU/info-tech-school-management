@@ -68,7 +68,7 @@ Artisan::command('school:dispatch-notifications', function () {
     $this->line(json_encode($counts));
 });
 Artisan::command('school:purge-expired-imports', function () {
-    $count = DB::table('import_batches')->where('status', '!=', 'confirmed')->where('expires_at', '<', now())->whereNotNull('encrypted_rows')->update(['encrypted_rows' => null, 'status' => 'expired', 'updated_at' => now()]);
+    $count = DB::table('import_batches')->where('status', '!=', 'confirmed')->where('expires_at', '<', now())->whereNotNull('source_rows')->update(['source_rows' => null, 'status' => 'expired', 'updated_at' => now()]);
     $this->info('Expired staging batches cleared: '.$count);
 });
 Schedule::command('school:dispatch-notifications')->everyMinute()->withoutOverlapping();

@@ -76,6 +76,112 @@ class FinanceWorkflowTest extends MobileTestCase
         $this->getJson('/api/v1/finance/invoices/'.$invoice)->assertJsonPath('data.status', 'paid');
     }
 
+    public function test_cash_needs_no_bank_fields_and_records_notes_receiver_and_receipt(): void
+    {
+        $student = $this->student();
+        $invoice = $this->invoice($student);
+        $this->asUser($this->user('accountant_clerk'));
+        $v = $this->payment($invoice);
+        unset($v['reference']);
+        $id = $this->postJson('/api/v1/finance/payments', [...$v, 'notes' => 'Received at school office'])->assertCreated()->json('data.id');
+        $this->getJson('/api/v1/finance/payments/'.$id)->assertOk()->assertJsonPath('data.method', 'Cash')->assertJsonPath('data.notes', 'Received at school office')->assertJsonPath('data.status', 'verified');
+        $this->getJson('/api/v1/students/'.$student.'/finance')->assertOk()->assertJsonPath('data.paid_minor', 40000)->assertJsonPath('data.balance_minor', 100000)->assertJsonPath('data.student.full_name', 'Fictional Test Student');
+        $this->getJson('/api/v1/reports/receipt?payment_id='.$id.'&format=csv')->assertOk()->assertSee('Received by')->assertSee('Received at school office')->assertSee('Fictional Test Student')->assertSee('Balance');
+    }
+
+    public function test_invalid_amounts_overpayment_and_duplicate_allocations_are_rejected(): void
+    {
+        $invoice = $this->invoice($this->student());
+        $this->asUser($this->admin);
+        foreach ([0, -1, 140001] as $amount) {
+            $this->postJson('/api/v1/finance/payments', $this->payment($invoice, $amount))->assertUnprocessable();
+        }
+        $v = $this->payment($invoice);
+        $v['allocations'][] = $v['allocations'][0];
+        $v['amount_minor'] = 80000;
+        $this->postJson('/api/v1/finance/payments', $v)->assertUnprocessable();
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_payment_denies_teacher_parent_inactive_student_and_inactive_method(): void
+    {
+        $student = $this->student();
+        $invoice = $this->invoice($student);
+        $v = $this->payment($invoice);
+        $this->asUser($this->teacher())->postJson('/api/v1/finance/payments', $v)->assertForbidden();
+        [, $parent] = $this->guardian($student);
+        $this->asUser($parent)->postJson('/api/v1/finance/payments', $v)->assertForbidden();
+        $this->asUser($this->admin);
+        DB::table('students')->where('id', $student)->update(['status' => 'withdrawn']);
+        $this->postJson('/api/v1/finance/payments', $v)->assertUnprocessable();
+        DB::table('students')->where('id', $student)->update(['status' => 'active']);
+        DB::table('payment_methods')->where('id', $v['payment_method_id'])->update(['is_active' => false]);
+        $this->postJson('/api/v1/finance/payments', $v)->assertNotFound();
+    }
+
+    public function test_manual_methods_allow_missing_reference_and_pending_verification_cannot_overpay(): void
+    {
+        $invoice = $this->invoice($this->student());
+        $this->asUser($this->admin);
+        foreach (['bank_transfer', 'cheque', 'easypaisa', 'jazzcash', 'other'] as $method) {
+            $v = $this->payment($invoice, 10000, $method);
+            unset($v['reference']);
+            $id = $this->postJson('/api/v1/finance/payments', $v)->assertCreated()->json('data.id');
+            if (in_array($method, ['bank_transfer', 'cheque'])) {
+                $this->postJson('/api/v1/finance/payments/'.$id.'/verify')->assertOk();
+            }
+        }
+        $pending = $this->postJson('/api/v1/finance/payments', $this->payment($invoice, 90000, 'bank_transfer'))->assertCreated()->json('data.id');
+        $this->postJson('/api/v1/finance/payments', $this->payment($invoice, 90000))->assertCreated();
+        $this->postJson('/api/v1/finance/payments/'.$pending.'/verify')->assertConflict();
+        $this->getJson('/api/v1/finance/invoices/'.$invoice)->assertJsonPath('data.balance_minor', 0);
+    }
+
+    public function test_effective_date_configuration_upserts_preserve_ids_and_unique_keys(): void
+    {
+        $this->asUser($this->user('school_administrator'));
+        $class = DB::table('sections')->where('id', $this->section)->value('class_id');
+        $schedule = ['academic_session_id' => $this->session, 'class_id' => $class, 'kind' => 'tuition', 'effective_on' => '2026-01-01', 'amount_minor' => 150000];
+        $id = $this->postJson('/api/v1/finance/fee-schedules', $schedule)->assertCreated()->json('data.id');
+        $this->postJson('/api/v1/finance/fee-schedules', [...$schedule, 'amount_minor' => 160000])->assertCreated()->assertJsonPath('data.id', $id);
+        $this->assertSame(1, DB::table('fee_schedules')->where('academic_session_id', $this->session)->count());
+        $student = $this->student();
+        $assignment = ['student_id' => $student, 'academic_session_id' => $this->session, 'effective_on' => '2026-10-01', 'tuition_override_minor' => 120000];
+        $id = $this->postJson('/api/v1/finance/fee-assignments', $assignment)->assertCreated()->json('data.id');
+        $this->postJson('/api/v1/finance/fee-assignments', [...$assignment, 'tuition_override_minor' => 110000])->assertCreated()->assertJsonPath('data.id', $id);
+        $this->assertDatabaseCount('student_fee_assignments', 1);
+        $invoice = $this->invoice($student);
+        $this->assertDatabaseHas('fee_invoices', ['id' => $invoice, 'total_minor' => 110000]);
+        $this->asUser($this->user('accountant_clerk'))->postJson('/api/v1/finance/fee-schedules', $schedule)->assertForbidden();
+    }
+
+    public function test_payroll_cash_retries_authorization_and_compensation_upsert(): void
+    {
+        $teacher = $this->teacher();
+        $staff = DB::table('staff_profiles')->where('user_id', $teacher->id)->value('id');
+        $this->asUser($this->admin);
+        $v = ['staff_profile_id' => $staff, 'base_salary_minor' => 3000000, 'effective_on' => '2026-01-01'];
+        $id = $this->postJson('/api/v1/finance/compensation', $v)->assertCreated()->json('data.id');
+        $this->postJson('/api/v1/finance/compensation', $v)->assertCreated()->assertJsonPath('data.id', $id);
+        $this->postJson('/api/v1/finance/compensation', [...$v, 'base_salary_minor' => 3100000])->assertUnprocessable();
+        $this->assertDatabaseCount('staff_compensation', 1);
+        $payroll = $this->postJson('/api/v1/finance/payroll', ['period' => '2026-09'])->assertCreated()->json('data.id');
+        $this->postJson('/api/v1/finance/payroll', ['period' => '2026-09'])->assertConflict();
+        $pay = ['payment_method_id' => DB::table('payment_methods')->where('code', 'cash')->value('id'), 'paid_on' => now()->toDateString()];
+        $this->asUser($teacher)->postJson('/api/v1/finance/payroll', ['period' => '2026-08'])->assertForbidden();
+        $this->postJson('/api/v1/finance/payroll/'.$payroll.'/pay', $pay)->assertForbidden();
+        $this->postJson('/api/v1/finance/compensation', $v)->assertForbidden();
+        $this->asUser($this->user('accountant_clerk'))->postJson('/api/v1/finance/payroll/'.$payroll.'/approve')->assertForbidden();
+        $this->asUser($this->admin)->postJson('/api/v1/finance/payroll/'.$payroll.'/approve')->assertOk();
+        $this->asUser($this->user('accountant_clerk'));
+        $this->postJson('/api/v1/finance/payroll/'.$payroll.'/pay', $pay)->assertOk();
+        $this->postJson('/api/v1/finance/payroll/'.$payroll.'/pay', $pay)->assertOk();
+        $this->getJson('/api/v1/finance/payroll/'.$payroll)->assertOk()->assertJsonPath('data.paid_minor', 3000000)->assertJsonPath('data.method', 'Cash');
+        $this->getJson('/api/v1/finance/payroll?period=2026-08')->assertOk()->assertJsonCount(0, 'data.items');
+        $this->assertSame(1, DB::table('journal_entries')->where('posting_key', 'payroll-disbursement:'.$payroll)->count());
+        $this->getJson('/api/v1/finance/trial-balance')->assertOk()->assertJsonPath('data.balanced', true);
+    }
+
     public function test_merit_discount_limit_approval_and_non_stacking(): void
     {
         $student = $this->student();

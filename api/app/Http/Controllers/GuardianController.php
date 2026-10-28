@@ -10,7 +10,6 @@ use App\Services\SchoolAccess;
 use App\Support\Audit;
 use App\Support\Domain;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -31,9 +30,9 @@ class GuardianController extends Controller
         if (! empty($v['search'])) {
             $search = preg_replace('/[\s-]/', '', $v['search']);
             $q->where(function ($q) use ($v, $search) {
-                $q->where('g.full_name', 'ilike', '%'.$v['search'].'%');
+                $q->where('g.full_name', 'like', '%'.$v['search'].'%');
                 if (preg_match('/^\d{13}$/', $search)) {
-                    $q->orWhere('g.cnic_lookup', $this->identity->lookup($search));
+                    $q->orWhere('g.cnic', $this->identity->normalize($search));
                 }
             });
         }
@@ -57,7 +56,7 @@ class GuardianController extends Controller
 
     private function safe(object $g, User $actor): array
     {
-        return ['photo_file_id' => $g->photo_file_id, 'id' => $g->id, 'full_name' => $g->full_name, 'cnic_masked' => $this->identity->mask($g->cnic_last4), 'mobile_masked' => '********'.substr(Crypt::decryptString($g->mobile_ciphertext), -4), 'mobile_verified' => $g->mobile_verified_at !== null, 'is_active' => (bool) $g->is_active,
+        return ['photo_file_id' => $g->photo_file_id, 'id' => $g->id, 'full_name' => $g->full_name, 'cnic_masked' => $this->identity->mask($g->cnic), 'mobile_masked' => '********'.substr($g->mobile, -4), 'mobile_verified' => $g->mobile_verified_at !== null, 'is_active' => (bool) $g->is_active,
             'children' => DB::table('parent_student_links as l')->join('students as s', 's.id', '=', 'l.student_id')->where('l.parent_guardian_id', $g->id)->whereIn('l.student_id', $this->access->students($actor)->select('students.id'))->get(['l.id', 'l.student_id', 'l.relationship', 'l.is_active', 'l.is_primary', 'l.verified_at', 's.full_name', 's.registration_number'])];
     }
 
@@ -89,7 +88,7 @@ class GuardianController extends Controller
                 User::whereKey($g->user_id)->update(['name' => $v['full_name']]);
             }
             if (isset($v['mobile'])) {
-                $data += ['mobile_ciphertext' => Crypt::encryptString($v['mobile']), 'mobile_verified_at' => now(), 'verified_by' => $r->user()->id];
+                $data += ['mobile' => $v['mobile'], 'mobile_verified_at' => now(), 'verified_by' => $r->user()->id];
                 DB::table('authentication_sessions')->where('user_id', $g->user_id)->update(['revoked_at' => now(), 'updated_at' => now()]);
                 DB::table('otp_challenges')->where('parent_guardian_id', $guardian)->whereNull('consumed_at')->update(['consumed_at' => now()]);
                 DB::table('push_devices')->where('user_id', $g->user_id)->update(['revoked_at' => now(), 'updated_at' => now()]);
@@ -119,18 +118,17 @@ class GuardianController extends Controller
         $this->access->require($r->user(), 'guardians.manage');
         $v = $r->validate(['full_name' => 'required|string|max:200', 'cnic' => 'required|string|max:20', 'mobile' => 'required|regex:/^\+923[0-9]{9}$/', 'mobile_verified' => 'required|accepted']);
         $cnic = $this->identity->normalize($v['cnic']);
-        $lookup = $this->identity->lookup($cnic);
         $photo = $r->file('photo');
         if ($photo) {
             app(ProfilePhotoService::class)->validate($photo);
         }
-        $id = DB::transaction(function () use ($r, $v, $cnic, $lookup, $photo) {
-            if (DB::table('parent_guardians')->where('cnic_lookup', $lookup)->exists()) {
+        $id = DB::transaction(function () use ($r, $v, $cnic, $photo) {
+            if (DB::table('parent_guardians')->where('cnic', $cnic)->exists()) {
                 Domain::fail('cnic', 'A guardian with this identity is already registered.');
             }
             $user = User::create(['name' => $v['full_name'], 'email' => 'guardian-'.Str::uuid().'@internal.invalid', 'password' => bin2hex(random_bytes(32))]);
             $user->roles()->attach(Role::where('code', 'parent_guardian')->firstOrFail());
-            $id = Domain::insert('parent_guardians', ['user_id' => $user->id, 'full_name' => $v['full_name'], 'cnic_ciphertext' => Crypt::encryptString($cnic), 'cnic_lookup' => $lookup, 'cnic_last4' => substr($cnic, -4), 'mobile_ciphertext' => Crypt::encryptString($v['mobile']), 'mobile_verified_at' => now(), 'verified_by' => $r->user()->id]);
+            $id = Domain::insert('parent_guardians', ['user_id' => $user->id, 'full_name' => $v['full_name'], 'cnic' => $cnic, 'mobile' => $v['mobile'], 'mobile_verified_at' => now(), 'verified_by' => $r->user()->id]);
             if ($photo) {
                 app(ProfilePhotoService::class)->save($r->user(), $photo, $id, true);
             }

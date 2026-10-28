@@ -57,6 +57,11 @@ final class MobileValidationSeeder extends Seeder
                 Domain::insert('grading_rules', ['academic_session_id' => $session, 'minimum_percent' => $minimum, 'grade' => $grade]);
             }
         });
+        foreach (['md', 'administrator', 'accountant'] as $label) {
+            $u = User::where('email', $label.'@fictional.example.test')->firstOrFail();
+            Domain::insert('staff_profiles', ['user_id' => $u->id, 'employee_number' => 'FICTIONAL-'.strtoupper($label), 'joined_on' => '2026-04-01', 'designation' => 'Fictional '.ucfirst($label)]);
+        }
         $this->call(ParentValidationSeeder::class);
+        $this->call(StaffAccountValidationSeeder::class);
     }
 }

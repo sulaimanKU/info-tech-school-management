@@ -25,7 +25,7 @@ class ImportPipelineTest extends MobileTestCase
         $this->postJson('/api/v1/imports/'.$id.'/confirm', ['confirm' => true])->assertOk();
         $this->postJson('/api/v1/imports/'.$id.'/confirm', ['confirm' => true])->assertOk();
         $this->assertSame(1, DB::table('classes')->where('name', 'Fictional imported class')->count());
-        $this->assertNull(DB::table('import_batches')->find($id)->encrypted_rows);
+        $this->assertNull(DB::table('import_batches')->find($id)->source_rows);
         $this->postJson('/api/v1/imports/'.$id.'/preview', ['mapping' => ['name' => 'label']])->assertConflict();
         $this->asUser($this->user('school_administrator'))->getJson('/api/v1/imports/'.$id)->assertNotFound();
     }
@@ -81,4 +81,21 @@ class ImportPipelineTest extends MobileTestCase
         $this->getJson('/api/v1/biometric/summary?month=2026-10')->assertOk()->assertJsonCount(2, 'data.items')->assertJsonPath('data.items.0.needs_review', true)->assertJsonPath('data.items.1.needs_review', true);
         $this->assertDatabaseCount('attendance_records', 0);
     }
+    public function test_biometric_month_boundaries_use_karachi_days_and_duplicates_use_utc(): void
+    {
+        $student = $this->student();
+        $this->asUser($this->admin)->postJson('/api/v1/biometric/mappings', ['device_code' => 'fictional', 'external_id' => '001', 'student_id' => $student])->assertCreated();
+        $mapping = ['device_code' => 'device', 'external_id' => 'id', 'punched_at' => 'time', 'direction' => 'direction'];
+        $id = $this->upload('biometric', "device,id,time,direction\nfictional,001,2026-09-30 23:59:59,out\nfictional,001,2026-10-01 00:00:00,in\nfictional,001,2026-10-01 01:00:00,out\n");
+        $this->postJson('/api/v1/imports/'.$id.'/preview', ['mapping' => $mapping])->assertOk()->assertJsonPath('data.valid', true);
+        $this->postJson('/api/v1/imports/'.$id.'/confirm', ['confirm' => true])->assertOk();
+        $this->getJson('/api/v1/biometric/summary?month=2026-10')->assertOk()->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.date', '2026-10-01')->assertJsonPath('data.items.0.punch_count', 2)
+            ->assertJsonPath('data.items.0.first_in', '2026-09-30 19:00:00')->assertJsonPath('data.items.0.needs_review', false);
+        $duplicate = $this->upload('biometric', "device,id,time,direction\nfictional,001,2026-10-01 00:00:00,in\n");
+        $this->postJson('/api/v1/imports/'.$duplicate.'/preview', ['mapping' => $mapping])->assertOk()->assertJsonPath('data.valid', false);
+        $this->assertDatabaseCount('biometric_punches', 3);
+        $this->assertDatabaseCount('attendance_records', 0);
+    }
+
 }

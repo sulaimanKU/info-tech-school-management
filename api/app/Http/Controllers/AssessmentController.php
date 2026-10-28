@@ -41,7 +41,7 @@ class AssessmentController extends Controller
             $q->where('assessments.status', $v['status']);
         }
         if (! empty($v['search'])) {
-            $q->where('assessments.title', 'ilike', '%'.$v['search'].'%');
+            $q->where('assessments.title', 'like', '%'.$v['search'].'%');
         }
 
         return Domain::response($q->orderByDesc('date')->paginate(30));

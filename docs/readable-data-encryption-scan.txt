@@ -1,0 +1,66 @@
+﻿api/config\session.php:41:    | Session Encryption
+api/config\session.php:45:    | should be encrypted before it's stored. All encryption is performed
+api/config\session.php:50:    'encrypt' => env('SESSION_ENCRYPT', false),
+api/config\school.php:4:    'cnic_lookup_key' => env('CNIC_LOOKUP_KEY'),
+api/config\database.php:119:            // 'encrypt' => env('DB_ENCRYPT', 'yes'),
+api/config\app.php:89:    | Encryption Key
+api/config\app.php:92:    | This key is utilized by Laravel's encryption services and should be set
+api/config\app.php:93:    | to a random, 32 character string to ensure that all encrypted values
+api/config\app.php:98:    'cipher' => 'AES-256-CBC',
+api/tests\Support\validate-readable-data-finalization.php:20:$id = Domain::insert('parent_guardians', ['user_id' => $user->id, 'full_name' => $user->name, 'cnic_ciphertext' => Crypt::encryptString($cnic), 'mobile_ciphertext' => Crypt::encryptString('+923000000001'), 'cnic_lookup' => app(GuardianIdentity::class)->lookup($cnic), 'cnic_last4' => substr($cnic, -4)]);
+api/tests\Support\validate-readable-data-finalization.php:30:foreach (['cnic_ciphertext', 'mobile_ciphertext', 'cnic_lookup', 'cnic_last4'] as $column) {
+api/tests\Support\validate-readable-data-finalization.php:35:if (Schema::hasColumn('import_batches', 'encrypted_rows')) {
+api/app\Services\GuardianIdentity.php:26:        $key = config('school.cnic_lookup_key') ?: hash_hkdf('sha256', (string) config('app.key'), 32, 'infotech-cnic-lookup-v1');
+api/tests\Feature\StudentManagementTest.php:66:        $this->getJson('/api/v1/guardians')->assertOk()->assertDontSee('0000000000001')->assertDontSee('+923000000001')->assertDontSee('cnic_lookup');
+api/app\Console\Commands\ConvertReadableData.php:34:                $legacy = Schema::hasColumn('parent_guardians', 'cnic_ciphertext');
+api/app\Console\Commands\ConvertReadableData.php:36:                    $cnic = $identity->normalize($legacy && $g->cnic_ciphertext !== null ? Crypt::decryptString($g->cnic_ciphertext) : ($g->cnic ?? ''));
+api/app\Console\Commands\ConvertReadableData.php:37:                    $mobile = Schema::hasColumn('parent_guardians', 'mobile_ciphertext') && $g->mobile_ciphertext !== null ? Crypt::decryptString($g->mobile_ciphertext) : ($g->mobile ?? '');
+api/app\Console\Commands\ConvertReadableData.php:45:                    if (Schema::hasColumn('parent_guardians', 'cnic_lookup') && $g->cnic_lookup !== null && ! hash_equals($identity->lookup($cnic), $g->cnic_lookup)) {
+api/app\Console\Commands\ConvertReadableData.php:48:                    if (Schema::hasColumn('parent_guardians', 'cnic_last4') && $g->cnic_last4 !== null && $g->cnic_last4 !== substr($cnic, -4)) {
+api/app\Console\Commands\ConvertReadableData.php:59:                $legacyImports = Schema::hasColumn('import_batches', 'encrypted_rows');
+api/app\Console\Commands\ConvertReadableData.php:61:                    $rows = $legacyImports && $b->encrypted_rows !== null ? Crypt::decryptString($b->encrypted_rows) : $b->source_rows;
+api/app\Console\Commands\ConvertReadableData.php:86:                foreach (['cnic_ciphertext', 'mobile_ciphertext', 'cnic_lookup', 'cnic_last4'] as $column) {
+api/app\Console\Commands\ConvertReadableData.php:89:                            if ($column === 'cnic_lookup' && Schema::hasIndex('parent_guardians', 'parent_guardians_cnic_lookup_unique')) {
+api/app\Console\Commands\ConvertReadableData.php:90:                                $t->dropUnique('parent_guardians_cnic_lookup_unique');
+api/app\Console\Commands\ConvertReadableData.php:96:                if (Schema::hasColumn('import_batches', 'encrypted_rows')) {
+api/app\Console\Commands\ConvertReadableData.php:97:                    Schema::table('import_batches', fn (Blueprint $t) => $t->dropColumn('encrypted_rows'));
+api/app\Console\Commands\ConvertReadableData.php:101:            // Never print decrypted identities, payloads, keys or SQL bindings.
+api/tests\Feature\ReadableDataTest.php:20:            'cnic_ciphertext' => Crypt::encryptString($g->cnic),
+api/tests\Feature\ReadableDataTest.php:21:            'mobile_ciphertext' => Crypt::encryptString($g->mobile),
+api/tests\Feature\ReadableDataTest.php:22:            'cnic_lookup' => app(GuardianIdentity::class)->lookup($g->cnic),
+api/tests\Feature\ReadableDataTest.php:23:            'cnic_last4' => substr($g->cnic, -4), 'cnic' => null, 'mobile' => null,
+api/tests\Feature\ReadableDataTest.php:34:        $batch = Domain::insert('import_batches', ['created_by' => $this->admin->id, 'kind' => 'parents', 'fingerprint' => str_repeat('a', 64), 'encrypted_rows' => Crypt::encryptString($rows), 'expires_at' => now()->addDay()]);
+api/tests\Feature\ReadableDataTest.php:62:    public function test_corrupt_ciphertext_rolls_back_and_never_drops_legacy_columns(): void
+api/tests\Feature\ReadableDataTest.php:66:        DB::table('parent_guardians')->where('id', $id)->update(['mobile_ciphertext' => 'corrupt']);
+api/tests\Feature\ReadableDataTest.php:69:        $this->assertTrue(Schema::hasColumn('parent_guardians', 'cnic_ciphertext'));
+api/tests\Feature\ReadableDataTest.php:70:        $this->assertSame('corrupt', DB::table('parent_guardians')->find($id)->mobile_ciphertext);
+api/tests\Feature\ReadableDataTest.php:86:        Domain::insert('import_batches', ['created_by' => $this->admin->id, 'kind' => 'parents', 'fingerprint' => str_repeat('b', 64), 'encrypted_rows' => Crypt::encryptString('invalid-json'), 'expires_at' => now()->addDay()]);
+api/tests\Feature\ReadableDataTest.php:91:    public function test_duplicate_decrypted_identities_abort_without_data_loss(): void
+api/tests\Feature\ReadableDataTest.php:98:            'cnic_ciphertext' => Crypt::encryptString('0000000000001'),
+api/tests\Feature\ReadableDataTest.php:99:            'cnic_lookup' => null, 'cnic_last4' => '0001',
+api/tests\Feature\ReadableDataTest.php:103:        $this->assertTrue(Schema::hasColumn('parent_guardians', 'cnic_ciphertext'));
+api/app\Services\Push\PushDispatcher.php:51:                $status = $this->provider->send(Crypt::decryptString($device->token_ciphertext), $note->id);
+api/tests\Feature\RbacScopeTest.php:209:        $this->asUser($this->admin)->getJson('/api/v1/guardians/'.$g)->assertOk()->assertJsonCount(1, 'data.children')->assertJsonMissingPath('data.cnic_ciphertext')->assertDontSee('+923000000001');
+api/app\Services\Push\FcmPushProvider.php:30:            $access = $cached ? Crypt::decryptString($cached) : null;
+api/app\Services\Push\FcmPushProvider.php:43:                }Cache::put($key, Crypt::encryptString($access), max(1, min(3300, (int) $response->json('expires_in', 3600) - 60)));
+api/app\Services\Sms\LocalSmsProvider.php:14:        // Private local-only encrypted simulator, no logs/API response/real outbound SMS.
+api/app\Services\Sms\LocalSmsProvider.php:15:        abort_unless(Cache::put('local-otp:'.$challengeId, Crypt::encryptString($otp), now()->addSeconds(config('school.otp_lifetime_seconds'))), 503);
+api/app\Services\Sms\LocalSmsProvider.php:23:        return $value ? Crypt::decryptString($value) : null;
+api/database\migrations\2026_10_21_000002_create_student_management.php:114:            $t->text('cnic_ciphertext');
+api/database\migrations\2026_10_21_000002_create_student_management.php:115:            $t->char('cnic_lookup', 64)->unique();
+api/database\migrations\2026_10_21_000002_create_student_management.php:116:            $t->char('cnic_last4', 4);
+api/database\migrations\2026_10_21_000002_create_student_management.php:117:            $t->text('mobile_ciphertext');
+api/tests\Feature\PushNotificationTest.php:14:    public function test_device_token_is_encrypted_owned_and_revoked_on_logout(): void
+api/tests\Feature\PushNotificationTest.php:19:        $this->assertStringNotContainsString('fictional-test-device', $row->token_ciphertext);
+api/database\migrations\2026_10_21_000010_create_push_delivery.php:16:            $t->text('token_ciphertext');
+api/database\migrations\2026_10_21_000008_create_import_pipeline.php:16:            $t->text('encrypted_rows')->nullable();
+api/database\migrations\2026_10_28_000016_add_readable_profile_storage.php:14:            $t->text('cnic_ciphertext')->nullable()->change();
+api/database\migrations\2026_10_28_000016_add_readable_profile_storage.php:15:            $t->char('cnic_lookup', 64)->nullable()->change();
+api/database\migrations\2026_10_28_000016_add_readable_profile_storage.php:16:            $t->char('cnic_last4', 4)->nullable()->change();
+api/database\migrations\2026_10_28_000016_add_readable_profile_storage.php:17:            $t->text('mobile_ciphertext')->nullable()->change();
+mobile/lib\l10n\strings.dart:476:    "draftSafety": "Drafts are encrypted on this device. Server storage is confirmed only after synchronization.",
+mobile/lib\core\local_store.dart:1:import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+mobile/lib\core\local_store.dart:11:  static const _storage = FlutterSecureStorage();
+mobile/lib\features\auth\session_store.dart:1:import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+mobile/lib\features\auth\session_store.dart:10:  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+api/app\Http\Controllers\PushDeviceController.php:20:            $values = ['user_id' => $r->user()->id, 'authentication_session_id' => $r->attributes->get('session_id'), 'token_ciphertext' => Crypt::encryptString($v['token']), 'platform' => 'android', 'revoked_at' => null];

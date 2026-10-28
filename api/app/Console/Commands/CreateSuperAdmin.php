@@ -75,7 +75,7 @@ class CreateSuperAdmin extends Command
             return self::FAILURE;
         } catch (QueryException $e) {
             // In particular, handle concurrent duplicate creation without printing SQL/bindings.
-            $this->error(($e->errorInfo[0] ?? null) === '23505'
+            $this->error((($e->errorInfo[0] ?? null) === '23505' || (($e->errorInfo[0] ?? null) === '23000' && (int) ($e->errorInfo[1] ?? 0) === 1062))
                 ? 'The email has already been taken. No account was created.'
                 : 'The database operation failed. No account was created.');
 

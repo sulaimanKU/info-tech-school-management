@@ -6,7 +6,7 @@ import '../../core/operation_id.dart';
 import '../../l10n/strings.dart';
 import '../../shared/forms/domain_form.dart';
 import '../auth/auth_controller.dart';
-import '../files/private_file_service.dart';
+import 'payment_screen.dart';
 import '../students/student_list_screen.dart';
 
 Future<Map<String, dynamic>?> chooseStudent(
@@ -107,6 +107,16 @@ Future<bool?> generateVoucher(BuildContext context, AuthController auth) async {
   );
 }
 
+String? defaultCashMethod(Map<String, dynamic> config) =>
+    (config['payment_methods'] as List)
+        .where((m) => m['code'] == 'cash')
+        .map((m) => m['id'] as String)
+        .firstOrNull;
+
+bool nonCashMethod(Map<String, dynamic> config, Map<String, dynamic> values) =>
+    (config['payment_methods'] as List).any((m) =>
+        m['id'] == values['payment_method_id'] && m['code'] != 'cash');
+
 Future<bool?> recordPayment(
   BuildContext context,
   AuthController auth,
@@ -116,32 +126,18 @@ Future<bool?> recordPayment(
   if (!context.mounted) return false;
   final requestId = operationId();
   final due = invoices.where((i) => (i['balance_minor'] as num) > 0).toList();
-  return Navigator.push<bool>(
+  String? paymentId;
+  final saved = await Navigator.push<bool>(
     context,
     MaterialPageRoute(
       builder: (_) => DomainForm(
         title: 'recordPayment',
         fields: [
-          if (due.isNotEmpty)
-            FormFieldSpec(
-              'proof_file_id',
-              'supportingDocument',
-              kind: FieldKind.attachment,
-              required: false,
-              picker: () async {
-                final files = await const PrivateFileService().pickAndUpload(
-                  auth,
-                  purpose: 'payment_proof',
-                  studentId: due.first['student_id'] as String,
-                  multiple: false,
-                );
-                return files.firstOrNull?['id'] as String?;
-              },
-            ),
           FormFieldSpec(
             'payment_method_id',
             'paymentMethod',
             kind: FieldKind.choice,
+            initial: defaultCashMethod(config),
             options: {
               for (final v in config['payment_methods'] as List)
                 (v['id'] as String): v['name'] as String,
@@ -153,11 +149,13 @@ Future<bool?> recordPayment(
             kind: FieldKind.date,
             initial: DateTime.now().toIso8601String().substring(0, 10),
           ),
-          const FormFieldSpec(
+          FormFieldSpec(
             'reference',
             'transactionReference',
             required: false,
+            visibleWhen: (values) => nonCashMethod(config, values),
           ),
+          const FormFieldSpec('notes', 'Notes', required: false, kind: FieldKind.multiline, maxLength: 500),
           for (final i in due)
             FormFieldSpec(
               'amount_${i['id']}',
@@ -181,7 +179,7 @@ Future<bool?> recordPayment(
           if (allocations.isEmpty) {
             throw const ApiFailure('validation');
           }
-          await auth.call(
+          final result = await auth.call(
             'finance/payments',
             body: {
               ...v,
@@ -193,10 +191,16 @@ Future<bool?> recordPayment(
               'allocations': allocations,
             },
           );
+          paymentId = result['id'] as String;
         },
       ),
     ),
   );
+  if (saved == true && context.mounted && paymentId != null) {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment recorded successfully')));
+    await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => PaymentDetailScreen(auth: auth, id: paymentId!)));
+  }
+  return saved;
 }
 
 Future<bool?> disbursementForm(
@@ -216,6 +220,7 @@ Future<bool?> disbursementForm(
             'payment_method_id',
             'paymentMethod',
             kind: FieldKind.choice,
+            initial: defaultCashMethod(config),
             options: {
               for (final v in config['payment_methods'] as List)
                 (v['id'] as String): v['name'] as String,
@@ -227,10 +232,11 @@ Future<bool?> disbursementForm(
             kind: FieldKind.date,
             initial: DateTime.now().toIso8601String().substring(0, 10),
           ),
-          const FormFieldSpec(
+          FormFieldSpec(
             'reference',
             'transactionReference',
             required: false,
+            visibleWhen: (values) => nonCashMethod(config, values),
           ),
         ],
         onSubmit: (v) async {

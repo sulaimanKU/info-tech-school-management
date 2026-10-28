@@ -23,7 +23,7 @@ final class ParentChildren
         $invoices = DB::table('fee_invoices')->whereIn('student_id', $ids)->get();
         $balances = app(InvoiceBalance::class)->many($invoices);
         $invoices = $invoices->groupBy('student_id');
-        $latest = DB::table('assessment_results as r')->join('assessments as a', 'a.id', '=', 'r.assessment_id')->join('subjects as s', 's.id', '=', 'a.subject_id')->whereIn('r.student_id', $ids)->where('a.status', 'published')->selectRaw('DISTINCT ON(r.student_id) r.student_id,a.title,a.date,s.name as subject_name,r.percentage,r.grade')->orderBy('r.student_id')->orderByDesc('a.date')->orderByDesc('a.published_at')->get()->keyBy('student_id');
+        $latest = DB::table('assessment_results as r')->join('assessments as a', 'a.id', '=', 'r.assessment_id')->join('subjects as s', 's.id', '=', 'a.subject_id')->whereIn('r.student_id', $ids)->where('a.status', 'published')->selectRaw('r.student_id,a.title,a.date,s.name as subject_name,r.percentage,r.grade')->orderBy('r.student_id')->orderByDesc('a.date')->orderByDesc('a.published_at')->orderByDesc('a.id')->get()->unique('student_id')->keyBy('student_id');
 
         return $children->map(function ($child) use ($enrollments, $attendance, $invoices, $balances, $latest) {
             $a = $attendance[$child->id];

@@ -51,6 +51,9 @@ class SecurityReviewTest extends MobileTestCase
 
     public function test_postgresql_deferred_balance_trigger_rejects_direct_unbalanced_insert(): void
     {
+        if (DB::getDriverName() !== 'pgsql') {
+            $this->markTestSkipped('PostgreSQL deferred constraint trigger; MariaDB validates journals in JournalService.');
+        }
         $this->seed(FinanceConfigurationSeeder::class);
         $entry = Domain::insert('journal_entries', ['number' => 'FICTIONAL-BAD-JOURNAL', 'posting_key' => 'fictional-direct-insert', 'payload_hash' => str_repeat('0', 64), 'date' => now()->toDateString(), 'description' => 'Fictional constraint test', 'reference_type' => 'test', 'reference_id' => (string) Str::uuid(), 'posted_by' => $this->admin->id]);
         Domain::insert('journal_lines', ['journal_entry_id' => $entry, 'account_id' => DB::table('accounts')->where('code', 'cash')->value('id'), 'debit_minor' => 100, 'credit_minor' => 0]);

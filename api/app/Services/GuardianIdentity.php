@@ -21,13 +21,15 @@ final class GuardianIdentity
 
     public function lookup(string $cnic): string
     {
+        // Only OTP challenge correlation/rate limiting and legacy conversion use this
+        // keyed digest. Guardian records and login queries use normalized cnic directly.
         $key = config('school.cnic_lookup_key') ?: hash_hkdf('sha256', (string) config('app.key'), 32, 'infotech-cnic-lookup-v1');
 
         return hash_hmac('sha256', $this->normalize($cnic), $key);
     }
 
-    public function mask(string $last4): string
+    public function mask(string $cnic): string
     {
-        return '*****-*******-'.substr($last4, -1);
+        return '*****-*******-'.substr($cnic, -1);
     }
 }

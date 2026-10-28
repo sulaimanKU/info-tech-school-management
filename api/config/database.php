@@ -56,7 +56,11 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
-            'engine' => null,
+            'engine' => 'InnoDB',
+            // Match PostgreSQL statement visibility after waiting on row locks.
+            'isolation_level' => 'READ COMMITTED',
+            // General timestamps retain Karachi wall time; biometric punches are explicitly UTC.
+            'timezone' => '+05:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
@@ -76,7 +80,11 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
-            'engine' => null,
+            'engine' => 'InnoDB',
+            // Match PostgreSQL statement visibility after waiting on row locks.
+            'isolation_level' => 'READ COMMITTED',
+            // General timestamps retain Karachi wall time; biometric punches are explicitly UTC.
+            'timezone' => '+05:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],

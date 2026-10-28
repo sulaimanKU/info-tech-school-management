@@ -90,7 +90,10 @@ class PrivateFileController extends Controller
     {
         $f = DB::table('private_files')->where('id', $file)->firstOrFail();
         if ($f->purpose === 'photo') {
-            if ($f->parent_guardian_id) {
+            if ($f->owner_user_id) {
+                abort_unless($f->owner_user_id === $r->user()->id, 404);
+                $owner = DB::table('users')->where('id', $r->user()->id)->firstOrFail();
+            } elseif ($f->parent_guardian_id) {
                 $owner = app(ProfilePhotoService::class)->guardian($r->user(), $f->parent_guardian_id);
             } else {
                 $owner = $this->access->student($r->user(), $f->student_id);
@@ -112,7 +115,7 @@ class PrivateFileController extends Controller
             } else {
                 $this->access->section($r->user(), $f->section_id);
             }
-        } elseif (! $f->parent_guardian_id) {
+        } elseif (! $f->parent_guardian_id && ! $f->owner_user_id) {
             abort_unless(in_array($f->purpose, ['expense_proof', 'payroll_document']), 404);
             $this->access->require($r->user(), 'finance.read');
         }

@@ -37,10 +37,13 @@ final class ProfilePhotoService
         }
     }
 
-    public function save(User $user, UploadedFile $file, string $id, bool $guardian = false): array
+    public function save(User $user, UploadedFile $file, string $id, bool $guardian = false, bool $staff = false): array
     {
         $access = app(SchoolAccess::class);
-        if ($guardian) {
+        if ($staff) {
+            abort_unless($user->isStaff(), 403);
+            abort_unless($id === $user->id, 403);
+        } elseif ($guardian) {
             $this->guardian($user, $id, true);
         } else {
             $access->require($user, 'students.manage');
@@ -65,10 +68,10 @@ final class ProfilePhotoService
         $path = 'school/photos/'.Str::uuid().'.jpg';
         abort_unless(Storage::disk('local')->put($path, $bytes), 503);
         try {
-            $fileId = DB::transaction(function () use ($user, $id, $guardian, $path, $bytes) {
-                $table = $guardian ? 'parent_guardians' : 'students';
+            $fileId = DB::transaction(function () use ($user, $id, $guardian, $staff, $path, $bytes) {
+                $table = $staff ? 'users' : ($guardian ? 'parent_guardians' : 'students');
                 DB::table($table)->where('id', $id)->lockForUpdate()->firstOrFail();
-                $fileId = Domain::insert('private_files', ['uploaded_by' => $user->id, 'student_id' => $guardian ? null : $id, 'parent_guardian_id' => $guardian ? $id : null, 'path' => $path, 'mime' => 'image/jpeg', 'purpose' => 'photo', 'size' => strlen($bytes), 'sha256' => hash('sha256', $bytes)]);
+                $fileId = Domain::insert('private_files', ['uploaded_by' => $user->id, 'student_id' => ($guardian || $staff) ? null : $id, 'parent_guardian_id' => $guardian ? $id : null, 'owner_user_id' => $staff ? $id : null, 'path' => $path, 'mime' => 'image/jpeg', 'purpose' => 'photo', 'size' => strlen($bytes), 'sha256' => hash('sha256', $bytes)]);
                 DB::table($table)->where('id', $id)->update(['photo_file_id' => $fileId, 'updated_at' => now()]);
                 Audit::record('profile_photo_saved', $user->id, $table, $id);
 
@@ -93,8 +96,8 @@ final class ProfilePhotoService
         DB::transaction(function () use ($user, $id, $guardian) {
             $table = $guardian ? 'parent_guardians' : 'students';
             DB::table($table)->where('id', $id)->lockForUpdate()->firstOrFail();
-            DB::table($table)->where('id',$id)->update(['photo_file_id' => null, 'updated_at' => now()]);
-            Audit::record('profile_photo_removed',$user->id,$table,$id);
+            DB::table($table)->where('id', $id)->update(['photo_file_id' => null, 'updated_at' => now()]);
+            Audit::record('profile_photo_removed', $user->id, $table, $id);
         });
     }
 }

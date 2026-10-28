@@ -101,10 +101,11 @@ final class ImportDispatcher
             Domain::fail('external_id', 'Unmatched biometric ID; configure a mapping first.');
         }
         app(SchoolAccess::class)->student($u, $m->student_id);
-        if (DB::table('biometric_punches')->where('student_id', $m->student_id)->where('device_code', $v['device_code'])->where('punched_at', $v['punched_at'])->where('direction', $v['direction'])->exists()) {
+        $punchedAt = Carbon::createFromFormat('Y-m-d H:i:s', $v['punched_at'], 'Asia/Karachi')->utc();
+        if (DB::table('biometric_punches')->where('student_id', $m->student_id)->where('device_code', $v['device_code'])->where('punched_at', $punchedAt)->where('direction', $v['direction'])->exists()) {
             Domain::fail('punched_at', 'Duplicate punch.');
         }
 
-        return Domain::response(['id' => Domain::insert('biometric_punches', ['student_id' => $m->student_id, 'import_batch_id' => $batch, 'device_code' => $v['device_code'], 'punched_at' => Carbon::createFromFormat('Y-m-d H:i:s', $v['punched_at'], 'Asia/Karachi')->utc(), 'direction' => $v['direction']])]);
+        return Domain::response(['id' => Domain::insert('biometric_punches', ['student_id' => $m->student_id, 'import_batch_id' => $batch, 'device_code' => $v['device_code'], 'punched_at' => $punchedAt, 'direction' => $v['direction']])]);
     }
 }

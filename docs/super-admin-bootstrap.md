@@ -4,7 +4,7 @@ Use the existing configured API installation in an interactive terminal:
 
 ```powershell
 cd E:\info-tech-school-management\api
-php -d extension=pdo_pgsql -d extension=gd artisan school:create-super-admin
+php -d extension=gd artisan school:create-super-admin
 ```
 
 If the required PHP extensions are already enabled globally, `php artisan school:create-super-admin` is sufficient.

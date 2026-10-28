@@ -32,6 +32,7 @@ final class JournalService
                 Domain::fail('journal', 'Journal must balance.');
             }
             $hash = hash('sha256', json_encode([$date, $type, $reference, $lines, $reversal]));
+            app(FinancialLock::class)->request('journal', $key);
             $old = DB::table('journal_entries')->where('posting_key', $key)->first();
             if ($old) {
                 abort_unless(hash_equals($old->payload_hash, $hash), 409);

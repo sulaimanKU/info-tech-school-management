@@ -76,8 +76,17 @@ final class ReportData
                     $this->access->require($r->user(), 'finance.read');
                     abort_if((clone $q)->whereNotIn('i.student_id', $this->access->students($r->user())->select('students.id'))->exists(), 404);
                 }
-                $meta += ['Receipt' => $p->receipt_number, 'Paid' => $p->paid_on];
-                $rows = $q->get(['a.id', 's.registration_number', 'i.voucher_number', 'a.amount_minor'])->map(fn ($a) => ['registration_number' => $a->registration_number, 'voucher_number' => $a->voucher_number, 'amount_minor' => $a->amount_minor, 'refunded_minor' => (int) DB::table('refund_allocations')->where('payment_allocation_id', $a->id)->sum('amount_minor')])->all();
+                $meta += ['Receipt' => $p->receipt_number, 'Paid' => $p->paid_on, 'Method' => DB::table('payment_methods')->where('id', $p->payment_method_id)->value('name'), 'Received by' => DB::table('users')->where('id', $p->recorded_by)->value('name')];
+                if (! $this->access->isParent($r->user())) {
+                    $meta['Reference'] = $p->reference ?? '';
+                    $meta['Notes'] = $p->notes ?? '';
+                }
+                $rows = $q->get(['a.id', 's.id as student_id', 's.full_name', 's.registration_number', 'i.id as invoice_id', 'i.voucher_number', 'a.amount_minor'])->map(function ($a) {
+                    $class = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->join('classes as c', 'c.id', '=', 's.class_id')->where('e.student_id', $a->student_id)->orderByDesc('e.starts_on')->value('c.name');
+                    $invoice = DB::table('fee_invoices')->find($a->invoice_id);
+
+                    return ['student' => $a->full_name, 'registration_number' => $a->registration_number, 'class' => $class, 'voucher_number' => $a->voucher_number, 'amount_minor' => $a->amount_minor, 'balance_minor' => app(InvoiceBalance::class)->calculate($invoice)['balance_minor'], 'refunded_minor' => (int) DB::table('refund_allocations')->where('payment_allocation_id', $a->id)->sum('amount_minor')];
+                })->all();
                 break;
             case 'annual_fee':
                 if (! $this->access->isParent($r->user())) {

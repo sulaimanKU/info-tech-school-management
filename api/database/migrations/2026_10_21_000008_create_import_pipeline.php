@@ -19,8 +19,13 @@ return new class extends Migration
             $t->json('report')->nullable();
             $t->timestampTz('expires_at');
             $t->timestampsTz();
-            $t->unique(['created_by', 'kind', 'fingerprint']);
+
+            $t->unique(
+                ['created_by', 'kind', 'fingerprint'],
+                'import_batch_creator_kind_fingerprint_uq'
+            );
         });
+
         Schema::create('biometric_mappings', function (Blueprint $t) {
             $t->uuid('id')->primary();
             $t->string('device_code', 80);
@@ -28,8 +33,13 @@ return new class extends Migration
             $t->foreignUuid('student_id')->constrained();
             $t->foreignUuid('created_by')->constrained('users');
             $t->timestampsTz();
-            $t->unique(['device_code', 'external_id']);
+
+            $t->unique(
+                ['device_code', 'external_id'],
+                'biometric_mapping_device_external_uq'
+            );
         });
+
         Schema::create('biometric_punches', function (Blueprint $t) {
             $t->uuid('id')->primary();
             $t->foreignUuid('import_batch_id')->constrained();
@@ -38,7 +48,11 @@ return new class extends Migration
             $t->timestampTz('punched_at');
             $t->string('direction', 8);
             $t->timestampsTz();
-            $t->unique(['student_id', 'device_code', 'punched_at', 'direction']);
+
+            $t->unique(
+                ['student_id', 'device_code', 'punched_at', 'direction'],
+                'biometric_punch_student_device_time_direction_uq'
+            );
         });
     }
 

@@ -23,7 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(fn (Request $r) => true);
         $exceptions->render(function (Throwable $e, Request $r) {
             $databaseState = $e instanceof QueryException ? ($e->errorInfo[0] ?? null) : null;
-            $status = $databaseState === '23505' ? 409 : ($databaseState === '23514' || $databaseState === '23503' ? 422 : ($e instanceof ValidationException ? 422 : ($e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500)));
+            $databaseCode = $e instanceof QueryException ? (int) ($e->errorInfo[1] ?? 0) : 0;
+            $duplicate = $databaseState === '23505' || ($databaseState === '23000' && $databaseCode === 1062);
+            $integrity = in_array($databaseState, ['23514', '23503'], true)
+                || ($e instanceof QueryException && in_array($databaseCode, [1451, 1452, 3819, 4025, 1644], true));
+            $status = $duplicate ? 409 : ($integrity || $e instanceof ValidationException ? 422 : ($e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500));
             $messages = [401 => 'Authentication failed.', 403 => 'Permission denied.', 404 => 'Resource not found.', 409 => 'Record conflict. Refresh and retry.', 503 => 'Service unavailable.', 405 => 'Method not allowed.', 422 => 'Validation failed.', 429 => 'Too many requests.'];
             $headers = $e instanceof HttpExceptionInterface ? $e->getHeaders() : [];
 

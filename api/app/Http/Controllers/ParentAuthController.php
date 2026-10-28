@@ -11,7 +11,6 @@ use App\Support\Audit;
 use App\Support\Domain;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,23 +20,21 @@ class ParentAuthController extends Controller
     {
         abort_if($sms instanceof DisabledSmsProvider, 503);
         $v = $r->validate(['cnic' => 'required|string|max:20']);
-        $lookup = $identity->lookup($v['cnic']);
+        $cnic = $identity->normalize($v['cnic']);
+        $lookup = $identity->lookup($cnic);
 
-        return DB::transaction(function () use ($lookup, $sms) {
-            // Serialize by identity with an advisory transaction lock on PostgreSQL, including unknown identities.
-            if (DB::getDriverName() === 'pgsql') {
-                DB::select('SELECT pg_advisory_xact_lock(?)', [hexdec(substr($lookup, 0, 14))]);
-            }
+        return DB::transaction(function () use ($lookup, $cnic, $sms) {
+            app(\App\Services\Finance\FinancialLock::class)->request('parent-otp', $lookup);
             $last = DB::table('otp_challenges')->where('lookup_hash', $lookup)->orderByDesc('created_at')->first();
             if ($last && now()->diffInSeconds(Carbon::parse($last->created_at), true) < config('school.otp_cooldown_seconds')) {
                 abort(429);
             }
             DB::table('otp_challenges')->where('lookup_hash', $lookup)->whereNull('consumed_at')->update(['consumed_at' => now()]);
-            $guardian = DB::table('parent_guardians as g')->join('users as u', 'u.id', '=', 'g.user_id')->where('g.cnic_lookup', $lookup)->whereNotNull('g.mobile_verified_at')->where('u.is_active', true)->first(['g.*']);
+            $guardian = DB::table('parent_guardians as g')->join('users as u', 'u.id', '=', 'g.user_id')->where('g.cnic', $cnic)->whereNotNull('g.mobile_verified_at')->where('u.is_active', true)->first(['g.*']);
             $otp = (string) random_int(100000, 999999);
             $id = Domain::insert('otp_challenges', ['parent_guardian_id' => $guardian?->id, 'lookup_hash' => $lookup, 'otp_hash' => Hash::make($otp), 'expires_at' => now()->addSeconds(config('school.otp_lifetime_seconds'))]);
             if ($guardian) {
-                $sms->sendOtp($id, Crypt::decryptString($guardian->mobile_ciphertext), $otp);
+                $sms->sendOtp($id, $guardian->mobile, $otp);
             }
             Audit::record('parent_otp_requested');
 

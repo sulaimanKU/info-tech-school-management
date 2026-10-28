@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Finance\FinancialLock;
+use App\Services\Finance\EffectiveConfiguration;
 use App\Services\Finance\PayrollService;
 use App\Services\SchoolAccess;
 use App\Support\Audit;
@@ -19,7 +20,9 @@ class PayrollController extends Controller
     {
         $this->access->require($r->user(), 'finance.read');
 
-        return Domain::response(['items' => DB::table('payroll_periods')->orderByDesc('period')->get(), 'compensation' => DB::table('staff_compensation')->orderByDesc('effective_on')->get()]);
+        $v = $r->validate(['period' => 'nullable|date_format:Y-m']);
+
+        return Domain::response(['items' => DB::table('payroll_periods')->when($v['period'] ?? null, fn ($q, $period) => $q->where('period', $period))->orderByDesc('period')->get(), 'compensation' => DB::table('staff_compensation as c')->join('staff_profiles as s', 's.id', '=', 'c.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->orderByDesc('c.effective_on')->get(['c.*', 'u.name', 's.employee_number']), 'staff' => DB::table('staff_profiles as s')->join('users as u', 'u.id', '=', 's.user_id')->where('s.is_active', true)->where('u.is_active', true)->orderBy('u.name')->get(['s.id', 's.employee_number', 'u.name'])]);
     }
 
     public function show(Request $r, string $payroll)
@@ -27,7 +30,7 @@ class PayrollController extends Controller
         $this->access->require($r->user(), 'finance.read');
         $p = DB::table('payroll_periods')->where('id', $payroll)->firstOrFail();
 
-        return Domain::response([...(array) $p, 'items' => DB::table('payroll_items as i')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->where('i.payroll_period_id', $payroll)->get(['i.*', 'u.name', 's.employee_number'])]);
+        return Domain::response([...(array) $p, 'method' => DB::table('payment_methods')->where('id', $p->payment_method_id)->value('name'), 'paid_minor' => $p->status === 'paid' ? (int) $p->total_minor : 0, 'items' => DB::table('payroll_items as i')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->where('i.payroll_period_id', $payroll)->get(['i.*', 'u.name', 's.employee_number'])]);
     }
 
     public function compensation(Request $r)
@@ -35,7 +38,8 @@ class PayrollController extends Controller
         $this->access->require($r->user(), 'finance.approve');
         $v = $r->validate(['staff_profile_id' => 'required|uuid|exists:staff_profiles,id', 'base_salary_minor' => 'required|integer|min:0|max:1000000000', 'effective_on' => 'required|date']);
         $id = DB::transaction(function () use ($r, $v) {
-            $id = Domain::insert('staff_compensation', [...$v, 'approved_by' => $r->user()->id]);
+            DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->where('is_active', true)->lockForUpdate()->firstOrFail();
+            $id = app(EffectiveConfiguration::class)->save($r->user(), 'staff_compensation', array_intersect_key($v, array_flip(['staff_profile_id', 'effective_on'])), [...$v, 'approved_by' => $r->user()->id]);
             Audit::record('compensation_approved', $r->user()->id, 'staff_compensation', $id);
 
             return $id;
@@ -92,8 +96,6 @@ class PayrollController extends Controller
 
     public function mine(Request $r)
     {
-        $profile = DB::table('staff_profiles')->where('user_id', $r->user()->id)->firstOrFail();
-
-        return Domain::response(['profile' => $profile, 'items' => DB::table('payroll_items as i')->join('payroll_periods as p', 'p.id', '=', 'i.payroll_period_id')->where('i.staff_profile_id', $profile->id)->where('p.status', 'paid')->orderByDesc('p.period')->get(['i.id', 'i.base_salary_minor', 'i.adjustment_minor', 'i.net_salary_minor', 'p.period', 'p.paid_on', 'p.status'])]);
+        return app(StaffAccountController::class)->salary($r);
     }
 }

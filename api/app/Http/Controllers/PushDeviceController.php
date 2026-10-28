@@ -15,7 +15,7 @@ class PushDeviceController extends Controller
         $v = $r->validate(['token' => 'required|string|min:20|max:4096|regex:/^[A-Za-z0-9_:\-]+$/', 'platform' => 'required|in:android']);
         $hash = hash('sha256', $v['token']);
         $id = DB::transaction(function () use ($r, $v, $hash) {
-            DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?,0))', ['push:'.$hash]);
+            app(\App\Services\Finance\FinancialLock::class)->request('push', $hash);
             $old = DB::table('push_devices')->where('token_hash', $hash)->lockForUpdate()->first();
             $values = ['user_id' => $r->user()->id, 'authentication_session_id' => $r->attributes->get('session_id'), 'token_ciphertext' => Crypt::encryptString($v['token']), 'platform' => 'android', 'revoked_at' => null];
             if ($old) {

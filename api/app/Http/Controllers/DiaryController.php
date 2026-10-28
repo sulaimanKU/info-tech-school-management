@@ -60,7 +60,7 @@ class DiaryController extends Controller
             $q->where('d.status', $v['status']);
         }
         if (! empty($v['search'])) {
-            $q->where(fn ($q) => $q->where('d.topic', 'ilike', '%'.$v['search'].'%')->orWhere('d.homework', 'ilike', '%'.$v['search'].'%'));
+            $q->where(fn ($q) => $q->where('d.topic', 'like', '%'.$v['search'].'%')->orWhere('d.homework', 'like', '%'.$v['search'].'%'));
         }
         foreach (['section_id', 'subject_id', 'date'] as $key) {
             if (isset($v[$key])) {

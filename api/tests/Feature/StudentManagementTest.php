@@ -56,13 +56,13 @@ class StudentManagementTest extends MobileTestCase
         $this->getJson('/api/v1/guardians')->assertForbidden();
     }
 
-    public function test_guardian_values_encrypted_and_role_escalation_forbidden(): void
+    public function test_guardian_values_readable_and_role_escalation_forbidden(): void
     {
         $id = $this->student();
         [$g] = $this->guardian($id);
         $row = DB::table('parent_guardians')->find($g);
-        $this->assertStringNotContainsString('0000000000001', $row->cnic_ciphertext);
-        $this->assertStringNotContainsString('+923000000001', $row->mobile_ciphertext);
+        $this->assertSame('0000000000001', $row->cnic);
+        $this->assertSame('+923000000001', $row->mobile);
         $this->getJson('/api/v1/guardians')->assertOk()->assertDontSee('0000000000001')->assertDontSee('+923000000001')->assertDontSee('cnic_lookup');
         $this->asUser($this->user('school_administrator'))->postJson('/api/v1/staff-accounts', ['name' => 'Fictional', 'email' => 'role@example.test', 'password' => 'fictional-password-only', 'role' => 'super_admin'])->assertForbidden();
     }

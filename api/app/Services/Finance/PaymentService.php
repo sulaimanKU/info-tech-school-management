@@ -31,8 +31,12 @@ final class PaymentService
                 return $old->id;
             }
             $method = DB::table('payment_methods')->where('id', $v['payment_method_id'])->where('is_active', true)->firstOrFail();
-            if ($method->requires_verification && empty($v['reference'])) {
-                Domain::fail('reference', 'A bank transaction reference is required.');
+            if ($method->code === 'cash') {
+                $v['reference'] = null;
+                $v['proof_file_id'] = null;
+            }
+            if (! empty($v['reference']) && DB::table('payments')->where('payment_method_id', $method->id)->where('reference', $v['reference'])->exists()) {
+                Domain::fail('reference', 'This reference has already been recorded for this payment method.');
             }
             if (array_sum(array_column($v['allocations'], 'amount_minor')) !== $v['amount_minor']) {
                 Domain::fail('allocations', 'Allocate the exact payment amount.');
@@ -40,6 +44,10 @@ final class PaymentService
             $students = [];
             foreach ($v['allocations'] as $a) {
                 $invoice = DB::table('fee_invoices')->find($a['fee_invoice_id']);
+                $student = DB::table('students')->where('id', $invoice->student_id)->lockForUpdate()->firstOrFail();
+                if ($student->status !== 'active') {
+                    Domain::fail('allocations', 'Payments require an active student.');
+                }
                 $students[] = $invoice->student_id;
                 if ($a['amount_minor'] > $this->balance->calculate($invoice)['balance_minor']) {
                     Domain::fail('allocations', 'Allocation exceeds the current invoice balance.');
@@ -49,11 +57,11 @@ final class PaymentService
                 $file = DB::table('private_files')->where('id', $v['proof_file_id'])->firstOrFail();
                 abort_unless($file->purpose === 'payment_proof' && in_array($file->student_id, $students, true), 403);
             }
-            $id = Domain::insert('payments', ['payment_method_id' => $method->id, 'paid_on' => $v['paid_on'], 'amount_minor' => $v['amount_minor'], 'reference' => $v['reference'] ?? null, 'proof_file_id' => $v['proof_file_id'] ?? null, 'status' => 'pending', 'request_id' => $v['request_id'], 'payload_hash' => $hash, 'recorded_by' => $user->id]);
+            $id = Domain::insert('payments', ['payment_method_id' => $method->id, 'paid_on' => $v['paid_on'], 'amount_minor' => $v['amount_minor'], 'reference' => $v['reference'] ?? null, 'notes' => $v['notes'] ?? null, 'proof_file_id' => $v['proof_file_id'] ?? null, 'status' => 'pending', 'request_id' => $v['request_id'], 'payload_hash' => $hash, 'recorded_by' => $user->id]);
             foreach ($v['allocations'] as $a) {
                 Domain::insert('payment_allocations', ['payment_id' => $id, ...$a]);
             }
-            if (! $method->requires_verification) {
+            if ($method->code === 'cash' || ! $method->requires_verification) {
                 $this->verify($user, $id);
             }
             Audit::record('payment_recorded', $user->id, 'payments', $id);

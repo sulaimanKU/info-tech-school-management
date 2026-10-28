@@ -19,7 +19,7 @@ final class PayrollService
             }$end = Carbon::parse($period.'-01')->endOfMonth()->toDateString();
             $items = [];
             $total = 0;
-            foreach (DB::table('staff_profiles')->where('is_active', true)->where('joined_on', '<=', $end)->get() as $staff) {
+            foreach (DB::table('staff_profiles')->where('is_active', true)->whereIn('user_id', DB::table('users')->where('is_active', true)->select('id'))->where('joined_on', '<=', $end)->orderBy('id')->lockForUpdate()->get() as $staff) {
                 $salary = DB::table('staff_compensation')->where('staff_profile_id', $staff->id)->where('effective_on', '<=', $end)->orderByDesc('effective_on')->first();
                 if (! $salary) {
                     Domain::fail('compensation', 'Configure approved compensation for every eligible active staff member.');
@@ -68,9 +68,7 @@ final class PayrollService
             if ($v['paid_on'] < substr($p->approved_at, 0, 10)) {
                 Domain::fail('paid_on', 'Disbursement precedes approval.');
             }$method = DB::table('payment_methods')->where('id', $v['payment_method_id'])->where('is_active', true)->firstOrFail();
-            if ($method->requires_verification && empty($v['reference'])) {
-                Domain::fail('reference', 'Enter a bank reference.');
-            }DB::table('payroll_periods')->where('id', $id)->update(['status' => 'paid', 'payment_method_id' => $method->id, 'paid_on' => $v['paid_on'], 'reference' => $v['reference'] ?? null, 'updated_at' => now()]);
+            DB::table('payroll_periods')->where('id', $id)->update(['status' => 'paid', 'payment_method_id' => $method->id, 'paid_on' => $v['paid_on'], 'reference' => $v['reference'] ?? null, 'updated_at' => now()]);
             $journal = app(JournalService::class);
             $journal->post($user, 'payroll-disbursement:'.$id, $v['paid_on'], 'Payroll disbursement', 'payroll', $id, [['account_id' => $journal->account('payroll_payable'), 'debit_minor' => (int) $p->total_minor], ['account_id' => $method->account_id, 'credit_minor' => (int) $p->total_minor]]);
             Audit::record('payroll_paid', $user->id, 'payroll_periods', $id);

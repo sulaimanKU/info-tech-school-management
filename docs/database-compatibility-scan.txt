@@ -1,0 +1,269 @@
+Database compatibility static scan - 2026-10-27
+First-party Laravel source; excludes vendor/node_modules/generated storage/cache/environment secrets.
+Public entry point and Laravel source folders included. Standalone SQL files: none.
+Top-level composer/package configuration, artisan entry point, XML test configurations and PowerShell scripts also inspected; legacy PostgreSQL tooling is documented in the report.
+
+ILIKE: 0 matching source lines
+
+FILTER: 13 matching source lines
+  api/app/Http/Controllers/AttendanceController.php:94 $result['items'] = $result['items']->filter(fn ($row) => (! isset($v['status']) || $row->status === $v['status']) && (! isset($v['from']) || $row->date >= $v['from']) && (! isset($v['to']) || $row->date <= $v['to']))->values();
+  api/app/Http/Controllers/FeeController.php:85 return Domain::response(['items' => $items, 'balance_minor' => $items->sum('balance_minor'), 'arrears_minor' => $items->filter(fn ($i) => $i['period'] < now()->format('Y-m'))->sum('balance_minor'), 'payments' => $payments, 'discounts' => $discounts, 'fee_schedule' => DB::table('fee_schedules as f')->whereExists(fn ($q) => $q->selectRaw('1')->from('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->where('e.student_id', $student)->where('e.status', 'active')->whereColumn('s.class_id', 'f.class_id')->whereColumn('s.academic_session_id', 'f.academic_session_id'))->get(['f.kin [long source line abbreviated; see linked file]
+  api/app/Services/AcademicFilters.php:9 /** Request filters only intersect SchoolAccess; no filter can grant access. */
+  api/app/Services/AcademicSummary.php:66 $records = $records->filter(fn ($row) => $access->sections($user, $row->date)->where('sections.id', $row->section_id)->exists());
+  api/app/Services/ParentAcademics.php:37 $trend = $periods->filter(function ($p) use ($selected, $groups, $subjects) {
+  api/resources/views/welcome.blade.php:18 /*! tailwindcss v4.0.7 | MIT License | https://tailwindcss.com */@layer theme{:root,:host{--font-sans:'Instrument Sans',ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";--font-serif:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--color-red-50:oklch(.971 .013 17.38);--color-red-100:oklch(.936 .032 17.717);--color-red-200:oklch(.885 .062 18.334);--color-red-300:oklch(.808 .114 19.571);--color-red-400:oklch(.704 .191 22.216);- [long source line abbreviated; see linked file]
+  api/routes/mobile.php:20 Route::get('academic-filter-options', [CatalogController::class, 'filterOptions']);
+  api/tests/Feature/RbacFilterRegressionTest.php:23 $this->asUser($u)->getJson('/api/v1/academic-filter-options?section_id='.$this->section)->assertOk()->assertJsonCount(1, 'data.subjects')->assertJsonPath('data.subjects.0.id', $this->subject);
+  api/tests/Feature/RbacFilterRegressionTest.php:30 $this->asUser($this->admin)->getJson('/api/v1/academic-filter-options?section_id='.$this->section)->assertOk()->assertJsonCount(1, 'data.subjects')->assertJsonPath('data.subjects.0.id', $this->subject);
+  api/tests/Feature/RbacFilterRegressionTest.php:32 $this->getJson('/api/v1/academic-filter-options?class_id='.$class)->assertOk()->assertJsonCount(1, 'data.subjects');
+  api/tests/Feature/RbacScopeTest.php:34 foreach (['auth/me', 'school-settings', 'students', 'staff-accounts', 'rbac', 'guardians', 'catalog/sections', 'academic-filter-options', 'coordinator', 'finance/invoices', 'imports', 'tickets'] as $path) {
+  api/tests/Feature/RbacScopeTest.php:124 $this->getJson('/api/v1/academic-filter-options?section_id='.$this->section)->assertJsonCount(1, 'data.sections')->assertJsonCount(1, 'data.subjects');
+  api/tests/Feature/RbacScopeTest.php:201 $this->getJson('/api/v1/academic-filter-options?class_id='.$otherClass)->assertJsonCount(0, 'data.sections');
+
+DISTINCT ON: 0 matching source lines
+
+AT TIME ZONE: 0 matching source lines
+
+to_char(: 0 matching source lines
+
+::: 1834 matching source lines
+  api/database/migrations/2026_10_21_000006_guard_financial_transitions.php:26 IF NEW.status='paid' AND NEW.amount_minor>50000 AND (OLD.status<>'approved' OR OLD.approved_at IS NULL OR NEW.paid_on<OLD.approved_at::date) THEN RAISE EXCEPTION 'Prior management approval required above PKR 500' USING ERRCODE='23514'; END IF;
+  Other occurrences inspected: PHP static methods/constants (::uuid, ::class, DB::table, etc.).
+
+pg_: 1 matching source lines
+  api/app/Services/Finance/FinancialLock.php:15 DB::select('SELECT pg_advisory_xact_lock(?)', [hexdec(substr(hash('sha256', $kind.':'.$id), 0, 14))]);
+
+hashtextextended: 0 matching source lines
+
+jsonb: 1 matching source lines
+  api/database/migrations/2026_10_21_000006_guard_financial_transitions.php:17 IF TG_OP='UPDATE' AND (to_jsonb(OLD)-ARRAY['status','receipt_number','verified_by','verified_at','updated_at']) <> (to_jsonb(NEW)-ARRAY['status','receipt_number','verified_by','verified_at','updated_at']) THEN RAISE EXCEPTION 'Payment values are immutable; cancel and recreate' USING ERRCODE='23514'; END IF;
+
+array_agg: 0 matching source lines
+
+string_agg: 0 matching source lines
+
+date_trunc: 0 matching source lines
+
+generate_series: 0 matching source lines
+
+Other PostgreSQL constructs: 30 matching source lines
+  api/app/Console/Commands/CreateSuperAdmin.php:56 foreach ($validator->errors()->all() as $message) {
+  api/app/Http/Controllers/AssessmentController.php:94 $roster = $this->calendar->roster($a->section_id, $a->date)->pluck('id')->all();
+  api/app/Http/Controllers/AttendanceController.php:39 $roster = $this->calendar->roster($section->id, $v['date'])->pluck('id')->all();
+  api/app/Http/Controllers/DiaryController.php:123 $roster = $this->calendar->roster($v['section_id'], $v['date'])->pluck('id')->all();
+  api/app/Http/Controllers/StaffAccountController.php:25 if (array_diff(array_keys($r->all()), $allowed)) {
+  api/app/Http/Controllers/StaffDirectoryController.php:103 $before = $u->roles()->pluck('code')->all();
+  api/app/Services/Finance/JournalService.php:56 $lines = DB::table('journal_lines')->where('journal_entry_id', $id)->get()->map(fn ($l) => ['account_id' => $l->account_id, 'debit_minor' => (int) $l->credit_minor, 'credit_minor' => (int) $l->debit_minor])->all();
+  api/app/Services/Finance/PaymentService.php:75 $this->lockInvoices($allocations->pluck('fee_invoice_id')->all());
+  api/app/Services/ParentAcademics.php:36 $subjects = $groups->get($key)->map(fn ($r) => $r->subject_id.':'.(float) $r->maximum_marks)->sort()->values()->all();
+  api/app/Services/ParentAcademics.php:38 return $p['section_id'] === $selected['section_id'] && $p['date'] <= $selected['date'] && $p['academic_session_id'] === $selected['academic_session_id'] && $p['type'] === $selected['type'] && $p['maximum_marks'] === $selected['maximum_marks'] && $groups->get($p['key'])->map(fn ($r) => $r->subject_id.':'.(float) $r->maximum_marks)->sort()->values()->all() === $subjects;
+  api/app/Services/ParentChildren.php:19 $ids = $children->pluck('id')->all();
+  api/app/Services/ReportData.php:80 $rows = $q->get(['a.id', 's.registration_number', 'i.voucher_number', 'a.amount_minor'])->map(fn ($a) => ['registration_number' => $a->registration_number, 'voucher_number' => $a->voucher_number, 'amount_minor' => $a->amount_minor, 'refunded_minor' => (int) DB::table('refund_allocations')->where('payment_allocation_id', $a->id)->sum('amount_minor')])->all();
+  api/app/Services/ReportData.php:87 $rows = DB::table('fee_invoices')->where('student_id', $student->id)->where('period', 'like', $year.'-%')->orderBy('period')->get()->map(fn ($i) => ['voucher_number' => $i->voucher_number, 'period' => $i->period, 'due_on' => $i->due_on, ...app(InvoiceBalance::class)->calculate($i)])->all();
+  api/app/Services/ReportData.php:93 $rows = $summary['items']->map(fn ($i) => (array) $i)->all();
+  api/app/Services/ReportData.php:125 })->groupBy('a.id', 'a.code', 'a.name', 'a.type')->orderBy('a.code')->selectRaw('a.code,a.name,a.type,coalesce(sum(l.debit_minor),0) as debit_minor,coalesce(sum(l.credit_minor),0) as credit_minor')->get()->map(fn ($i) => (array) $i)->all();
+  api/app/Services/ReportData.php:133 }$rows = $q->orderBy('registration_number')->limit(5001)->get(['registration_number', 'full_name', 'admitted_on', 'status'])->map(fn ($i) => (array) $i)->all();
+  api/app/Services/ReportData.php:155 $rows = $q->join('students as s', 's.id', '=', 't.student_id')->orderByDesc('t.created_at')->limit(5001)->get(['t.number', 's.registration_number', 't.category', 't.subject', 't.status', 't.created_at', 't.resolved_at', 't.closed_at'])->map(fn ($i) => (array) $i)->all();
+  api/database/migrations/2026_10_21_000005_create_financial_ledger.php:254 CREATE OR REPLACE FUNCTION infotech_journal_balance() RETURNS trigger LANGUAGE plpgsql AS $$
+  api/database/migrations/2026_10_21_000005_create_financial_ledger.php:262 CREATE CONSTRAINT TRIGGER journal_entry_balance AFTER INSERT ON journal_entries DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION infotech_journal_balance();
+  api/database/migrations/2026_10_21_000005_create_financial_ledger.php:263 CREATE CONSTRAINT TRIGGER journal_line_balance AFTER INSERT ON journal_lines DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION infotech_journal_balance();
+  api/database/migrations/2026_10_21_000005_create_financial_ledger.php:264 CREATE OR REPLACE FUNCTION infotech_immutable_finance() RETURNS trigger LANGUAGE plpgsql AS $$
+  api/database/migrations/2026_10_21_000006_guard_financial_transitions.php:14 CREATE OR REPLACE FUNCTION infotech_guard_payment() RETURNS trigger LANGUAGE plpgsql AS $$
+  api/database/migrations/2026_10_21_000006_guard_financial_transitions.php:21 CREATE OR REPLACE FUNCTION infotech_guard_expense() RETURNS trigger LANGUAGE plpgsql AS $$
+  api/database/migrations/2026_10_21_000006_guard_financial_transitions.php:30 CREATE OR REPLACE FUNCTION infotech_guard_payroll() RETURNS trigger LANGUAGE plpgsql AS $$
+  api/tests/Feature/CreateSuperAdminCommandTest.php:52 $this->assertSame(['super_admin'], $user->roles()->pluck('code')->all());
+  api/tests/Feature/CreateSuperAdminCommandTest.php:78 $this->assertSame(['teacher'], $existing->roles()->pluck('code')->all());
+  api/tests/Feature/CreateSuperAdminCommandTest.php:124 DB::unprepared("CREATE FUNCTION validation_reject_admin_assignment() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Fictional assignment failure' USING ERRCODE='23514'; END $$");
+  api/tests/Feature/RbacScopeTest.php:152 $this->assertSame(['teacher'], $u->roles()->pluck('code')->all());
+  api/tests/Feature/RbacScopeTest.php:155 $this->assertSame(['accountant_clerk'], $u->roles()->pluck('code')->all());
+  api/tests/Feature/SecurityReviewTest.php:61 DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+
+Raw SQL / explicit lock inventory (line locations; each expression reviewed):
+Classification: standard/MariaDB queries and metadata; PostgreSQL DDL is inside migration driver guards, FinancialLock pg_ is guarded, PostgreSQL deferred/test trigger code is test/driver-guarded.
+  api/app/Http/Controllers/AccountingController.php: 16
+  api/app/Http/Controllers/AnnouncementController.php: 37
+  api/app/Http/Controllers/AssessmentController.php: 166
+  api/app/Http/Controllers/CatalogController.php: 44
+  api/app/Http/Controllers/DashboardController.php: 25, 29, 36, 67, 76, 84, 85, 86, 87, 88
+  api/app/Http/Controllers/DiaryController.php: 25, 26, 33, 48
+  api/app/Http/Controllers/FeeController.php: 32, 33, 34, 39, 41, 43, 45, 47, 85
+  api/app/Http/Controllers/PaymentController.php: 29
+  api/app/Http/Controllers/TicketController.php: 48
+  api/app/Services/Finance/FinancialLock.php: 15
+  api/app/Services/Finance/InvoiceBalance.php: 15, 16, 17
+  api/app/Services/ParentChildren.php: 26
+  api/app/Services/Push/PushDispatcher.php: 37
+  api/app/Services/ReportData.php: 125
+  api/app/Services/SchoolAccess.php: 45, 58, 119, 125
+  api/database/migrations/2026_10_21_000001_create_foundation.php: 82, 83, 84
+  api/database/migrations/2026_10_21_000002_create_student_management.php: 218, 224, 230, 236, 242, 248, 254, 260, 266
+  api/database/migrations/2026_10_21_000004_create_academic_workflows.php: 162, 163, 164, 165, 166, 167
+  api/database/migrations/2026_10_21_000005_create_financial_ledger.php: 251, 253, 268, 270, 279, 280
+  api/database/migrations/2026_10_21_000006_guard_financial_transitions.php: 13, 44, 45, 46, 48
+  api/database/migrations/2026_10_21_000007_create_school_communication.php: 98, 99, 100
+  api/database/migrations/2026_10_22_000011_refine_staff_scopes.php: 43, 49, 55, 139
+  api/database/migrations/2026_10_27_000014_add_mysql_integrity.php: 20, 25, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 99, 111, 112, 113, 123, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203
+  api/tests/Feature/CreateSuperAdminCommandTest.php: 124, 125
+  api/tests/Feature/MySqlCompatibilityTest.php: 24, 130, 131, 134
+  api/tests/Feature/SecurityReviewTest.php: 61
+  api/tests/Support/assert-validation-database.php: 20
+  api/tests/Support/diagnose-database-driver.php: 12
+Total raw SQL/explicit-lock source lines: 223
+Source files scanned by keyword inventory: 155
+
+Source file manifest:
+api/app/Console/Commands/CreateSuperAdmin.php
+api/app/Contracts/PushProvider.php
+api/app/Contracts/SmsProvider.php
+api/app/Contracts/WhatsAppProvider.php
+api/app/Http/Controllers/AcademicSettingsController.php
+api/app/Http/Controllers/AccountingController.php
+api/app/Http/Controllers/AnnouncementController.php
+api/app/Http/Controllers/AssessmentController.php
+api/app/Http/Controllers/AttendanceController.php
+api/app/Http/Controllers/AuthController.php
+api/app/Http/Controllers/BehaviorController.php
+api/app/Http/Controllers/CatalogController.php
+api/app/Http/Controllers/Controller.php
+api/app/Http/Controllers/CoordinatorController.php
+api/app/Http/Controllers/DashboardController.php
+api/app/Http/Controllers/DiaryController.php
+api/app/Http/Controllers/ExamScheduleController.php
+api/app/Http/Controllers/ExpenseController.php
+api/app/Http/Controllers/FeeConfigurationController.php
+api/app/Http/Controllers/FeeController.php
+api/app/Http/Controllers/GuardianController.php
+api/app/Http/Controllers/ImportController.php
+api/app/Http/Controllers/NotificationController.php
+api/app/Http/Controllers/ParentAuthController.php
+api/app/Http/Controllers/ParentChildController.php
+api/app/Http/Controllers/ParentHomeController.php
+api/app/Http/Controllers/PaymentController.php
+api/app/Http/Controllers/PayrollController.php
+api/app/Http/Controllers/PrivateFileController.php
+api/app/Http/Controllers/PushDeviceController.php
+api/app/Http/Controllers/RbacController.php
+api/app/Http/Controllers/ReportController.php
+api/app/Http/Controllers/StaffAccountController.php
+api/app/Http/Controllers/StaffDirectoryController.php
+api/app/Http/Controllers/StudentController.php
+api/app/Http/Controllers/TicketController.php
+api/app/Http/Middleware/AuthenticateSession.php
+api/app/Http/Middleware/RequirePermission.php
+api/app/Models/Role.php
+api/app/Models/User.php
+api/app/Providers/AppServiceProvider.php
+api/app/Services/AcademicCalendar.php
+api/app/Services/AcademicFilters.php
+api/app/Services/AcademicSummary.php
+api/app/Services/AnnouncementAccess.php
+api/app/Services/Finance/DocumentNumber.php
+api/app/Services/Finance/ExpenseService.php
+api/app/Services/Finance/FeeService.php
+api/app/Services/Finance/FinancialLock.php
+api/app/Services/Finance/InvoiceBalance.php
+api/app/Services/Finance/JournalService.php
+api/app/Services/Finance/PaymentService.php
+api/app/Services/Finance/PayrollService.php
+api/app/Services/GuardianIdentity.php
+api/app/Services/ImportDispatcher.php
+api/app/Services/NotificationService.php
+api/app/Services/ParentAcademics.php
+api/app/Services/ParentChildren.php
+api/app/Services/ProfilePhotoService.php
+api/app/Services/Push/DisabledPushProvider.php
+api/app/Services/Push/DisabledWhatsAppProvider.php
+api/app/Services/Push/FcmPushProvider.php
+api/app/Services/Push/PushDispatcher.php
+api/app/Services/ReportData.php
+api/app/Services/ReportRenderer.php
+api/app/Services/SchoolAccess.php
+api/app/Services/SessionIssuer.php
+api/app/Services/Sms/DisabledSmsProvider.php
+api/app/Services/Sms/LocalSmsProvider.php
+api/app/Services/SpreadsheetReader.php
+api/app/Services/StudentService.php
+api/app/Services/TicketAccess.php
+api/app/Support/Audit.php
+api/app/Support/Domain.php
+api/bootstrap/app.php
+api/bootstrap/providers.php
+api/config/app.php
+api/config/auth.php
+api/config/cache.php
+api/config/cors.php
+api/config/database.php
+api/config/filesystems.php
+api/config/logging.php
+api/config/mail.php
+api/config/queue.php
+api/config/school.php
+api/config/services.php
+api/config/session.php
+api/database/factories/UserFactory.php
+api/database/migrations/0001_01_01_000000_create_users_table.php
+api/database/migrations/0001_01_01_000001_create_cache_table.php
+api/database/migrations/0001_01_01_000002_create_jobs_table.php
+api/database/migrations/2026_10_21_000001_create_foundation.php
+api/database/migrations/2026_10_21_000002_create_student_management.php
+api/database/migrations/2026_10_21_000003_create_private_files.php
+api/database/migrations/2026_10_21_000004_create_academic_workflows.php
+api/database/migrations/2026_10_21_000005_create_financial_ledger.php
+api/database/migrations/2026_10_21_000006_guard_financial_transitions.php
+api/database/migrations/2026_10_21_000007_create_school_communication.php
+api/database/migrations/2026_10_21_000008_create_import_pipeline.php
+api/database/migrations/2026_10_21_000009_create_exam_schedule.php
+api/database/migrations/2026_10_21_000010_create_push_delivery.php
+api/database/migrations/2026_10_22_000011_refine_staff_scopes.php
+api/database/migrations/2026_10_23_000012_add_guardian_profile_photos.php
+api/database/migrations/2026_10_26_000013_add_staff_account_fields.php
+api/database/migrations/2026_10_27_000014_add_mysql_integrity.php
+api/database/seeders/DatabaseSeeder.php
+api/database/seeders/FinanceConfigurationSeeder.php
+api/database/seeders/MobilePermissionSeeder.php
+api/public/index.php
+api/resources/css/app.css
+api/resources/js/app.js
+api/resources/js/bootstrap.js
+api/resources/views/welcome.blade.php
+api/routes/academics.php
+api/routes/api.php
+api/routes/communication.php
+api/routes/console.php
+api/routes/finance.php
+api/routes/imports.php
+api/routes/mobile.php
+api/routes/reports.php
+api/routes/web.php
+api/tests/Feature/AcademicWorkflowTest.php
+api/tests/Feature/AuthTest.php
+api/tests/Feature/CommunicationTest.php
+api/tests/Feature/CreateSuperAdminCommandTest.php
+api/tests/Feature/DashboardTest.php
+api/tests/Feature/FinalDocumentValidationTest.php
+api/tests/Feature/FinanceWorkflowTest.php
+api/tests/Feature/ImportPipelineTest.php
+api/tests/Feature/IntegrityTest.php
+api/tests/Feature/MySqlCompatibilityTest.php
+api/tests/Feature/ParentExperienceTest.php
+api/tests/Feature/ParentOtpTest.php
+api/tests/Feature/PrivateFileTest.php
+api/tests/Feature/ProfilePhotoTest.php
+api/tests/Feature/PushNotificationTest.php
+api/tests/Feature/RbacFilterRegressionTest.php
+api/tests/Feature/RbacScopeTest.php
+api/tests/Feature/ReportsTest.php
+api/tests/Feature/SecurityReviewTest.php
+api/tests/Feature/StaffAccountTest.php
+api/tests/Feature/StudentManagementTest.php
+api/tests/Support/assert-validation-database.php
+api/tests/Support/diagnose-database-driver.php
+api/tests/Support/diagnose-login-operation.php
+api/tests/Support/MobileTestCase.php
+api/tests/Support/MobileValidationSeeder.php
+api/tests/Support/ParentValidationSeeder.php
+api/tests/Support/rbac-development-state.php
+api/tests/Support/StaffAccountValidationSeeder.php
+api/tests/Support/validate-local-auth.php
+api/tests/TestCase.php
+api/tests/Unit/ExampleTest.php

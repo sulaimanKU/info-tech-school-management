@@ -2,6 +2,8 @@
 
 UUIDs identify domain records; immutable registration/voucher/receipt numbers are operational identifiers. Foreign keys retain history. Money is integer PKR minor units. PostgreSQL adds partial unique, check, immutable-record and deferred journal-balance constraints.
 
+MariaDB/MySQL equivalents are added by `2026_10_27_000014_add_mysql_integrity.php`: checks, invisible conditional unique keys, immutable-record/transition triggers, and transaction lock rows. Journal balance is validated atomically by `JournalService`; MariaDB has no deferred constraint trigger. See [the compatibility audit](database-compatibility-report.md).
+
 | Table | Migration |
 |---|---|
 | users | 0001_01_01_000000_create_users_table.php |
@@ -136,3 +138,5 @@ Local configuration caveat: invalid existing APP_KEY must be restored from origi
 Current pass: PostgreSQL 129 tests/960 assertions PASS; Flutter 76 PASS; analyze/Pint/format clean; four functional native cases passed across runs; physical-phone debug APK built. See [final-media-report.md](final-media-report.md), [local OTP commands](local-parent-otp.md) and [file inventory](final-media-files.md). Current key/decrypt/lookup integrity checks pass; earlier APP_KEY-invalid notes describe the earlier session only.
 
 Migration 2026_10_23_000012_add_guardian_profile_photos adds nullable UUID foreign references parent_guardians.photo_file_id and private_files.parent_guardian_id. No RBAC/secret storage replacement or development DB reset.
+
+Guardian storage policy (28 October 2026): parent_guardians.cnic is a unique normalized 13-character identity, mobile is a readable +923 phone number. Both become NOT NULL after validated finalization. import_batches.source_rows holds readable temporary JSON. Legacy ciphertext/helper columns are retained only until school:convert-readable-data --drop-legacy succeeds. See [conversion procedure](readable-data-storage.md).

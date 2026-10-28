@@ -162,6 +162,7 @@ Future<void> saveProfilePhoto(
   ProfilePhotoDraft? draft,
   String id, {
   bool guardian = false,
+  bool staff = false,
 }) async {
   if (draft == null) return;
   if (draft.bytes != null) {
@@ -170,16 +171,24 @@ Future<void> saveProfilePhoto(
     );
     try {
       await temp.writeAsBytes(draft.bytes!, flush: true);
-      await auth.upload('files', temp.path, {
-        'purpose': 'photo',
-        guardian ? 'parent_guardian_id' : 'student_id': id,
-      });
+      await auth.upload(
+        staff ? 'account/photo' : 'files',
+        temp.path,
+        staff
+            ? {}
+            : {
+                'purpose': 'photo',
+                guardian ? 'parent_guardian_id' : 'student_id': id,
+              },
+      );
     } finally {
       if (await temp.exists()) await temp.delete();
     }
   } else if (draft.removed && draft.existingId != null) {
     await auth.call(
-      '${guardian ? 'guardians' : 'students'}/$id/photo',
+      staff
+          ? 'account/photo'
+          : '${guardian ? 'guardians' : 'students'}/$id/photo',
       method: 'DELETE',
     );
   }

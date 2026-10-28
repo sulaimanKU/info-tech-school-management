@@ -84,7 +84,7 @@ final class AcademicFilters
             $q->whereIn('students.id', $e->select('e.student_id'));
         }
         if (! empty($v['search'])) {
-            $q->where(fn ($q) => $q->where('students.full_name', 'ilike', '%'.$v['search'].'%')->orWhere('students.registration_number', 'ilike', '%'.$v['search'].'%'));
+            $q->where(fn ($q) => $q->where('students.full_name', 'like', '%'.$v['search'].'%')->orWhere('students.registration_number', 'like', '%'.$v['search'].'%'));
         }
         if (! empty($v['status'])) {
             $q->where('students.status', $v['status']);

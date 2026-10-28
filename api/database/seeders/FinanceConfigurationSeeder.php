@@ -22,6 +22,7 @@ class FinanceConfigurationSeeder extends Seeder
                     Domain::insert('payment_methods', ['code' => $code, 'name' => $name, 'account_id' => DB::table('accounts')->where('code', $code === 'cash' ? 'cash' : 'bank')->value('id'), 'requires_verification' => $verify]);
                 }
             }
+            $this->call(ManualPaymentMethodSeeder::class);
             foreach (['salaries', 'electricity', 'internet', 'stationery', 'cleaning', 'repairs', 'equipment', 'maintenance', 'events', 'other'] as $code) {
                 if (! DB::table('expense_categories')->where('code', $code)->exists()) {
                     Domain::insert('expense_categories', ['code' => $code, 'name' => ucfirst($code)]);

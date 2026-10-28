@@ -8,6 +8,61 @@ class Strings {
   String text(String key) =>
       (locale.languageCode == 'ur' ? ur : en)[key] ?? en[key] ?? key;
   static const en = {
+    'mobile': 'Mobile number',
+    'paidOn': 'Paid on',
+    'accountError_viewerUnavailable':
+        'Install or enable a PDF viewer to open this document.',
+    'accountError_configuration':
+        'The school server is not configured. Contact support.',
+    'accountError_validation': 'Check the information you entered.',
+    'accountError_rateLimit':
+        'Too many attempts. Wait a minute before trying again.',
+    'accountError_notFound': 'The requested record is unavailable. Contact your administrator if it should exist.',
+    'accountError_forbidden': 'This staff feature is not permitted for your account. Contact your administrator.',
+    'accountError_unauthorized':
+        'Your session has expired. Please sign in again.',
+    'accountError_integrationUnavailable':
+        'The service is temporarily unavailable. Try again later.',
+    'accountError_server':
+        'The server is unavailable. Please try again shortly.',
+    'accountError_network':
+        'You are offline. Check your connection and try again.',
+    'accountTryAgain': 'Try again',
+    'accountPasswordMismatch': 'The new passwords do not match.',
+    'accountPasswordDifferent':
+        'Choose a password different from your current password.',
+    'accountPasswordLength': 'Use at least 12 characters.',
+    'accountWrongPassword': 'The current password is incorrect.',
+    'accountPasswordChanged': 'Password changed. Please sign in again.',
+    'accountConfirmPassword': 'Confirm new password',
+    'accountNewPassword': 'New password',
+    'accountCurrentPassword': 'Current password',
+    'accountSalaryPdf': 'View salary PDF',
+    'accountNetSalary': 'Net salary',
+    'accountAdjustment': 'Adjustments',
+    'accountBaseSalary': 'Base salary',
+    'accountSalaryPrivate': 'Only your own paid salary documents appear here.',
+    'accountNoSalaryNote':
+        'Your paid salary slips will appear here when payroll is released.',
+    'accountNoSalary': 'No paid salary slips yet',
+    'accountMobileInvalid': 'Enter a valid phone number or leave it empty.',
+    'accountSaved': 'Your profile has been updated.',
+    'accountEditNote': 'Email, roles, permissions and employment/payroll details cannot be changed here.',
+    'accountEditProfile': 'Edit profile',
+    'staffNotLinked': 'Your account is available, but an employment profile is not linked. Ask your school administrator to link your staff record.',
+    'accountSessionNote':
+        'Sessions expire automatically. Sign out on shared devices.',
+    'accountPasswordPolicy': 'Use 12–1024 characters. Changing your password signs out all sessions; sign in again.',
+    'accountChangePassword': 'Change password',
+    'accountSecurity': 'Account security',
+    'accountSalarySlips': 'My salary slips',
+    'accountSalary': 'Salary & payroll',
+    'accountOfficialNote':
+        'Official details are maintained by authorized administrators.',
+    'accountEmployment': 'Employment information',
+    'accountEditableNote':
+        'You can update your name, contact details and photo.',
+    'accountPersonal': 'Personal information',
     'parentHomeworkTab': 'Homework',
     'parentMessagesTab': 'Messages',
     'academicProgress': 'Academic progress',
@@ -189,7 +244,7 @@ class Strings {
     "pushNotConfigured": "Push delivery is not configured for this build. School updates remain available in notification history.",
     "pushPermissionHelp": "Allow notifications in Android settings, then retry. Delivery also requires a configured school server.",
     "accountSupportBody": "For account access, mobile-number corrections, guardian verification, or child-link corrections, visit the INFO-TECH school office at Sangao Campus, Mardan. The app cannot change verified identities. Never share a password or one-time code with another person.",
-    "privacyPolicyBody": "The school uses authorized student, guardian, academic and financial records to administer education and school services. Access is restricted by role, teaching assignment and verified guardian links. Guardian identity numbers are encrypted and shown masked. Private files require sign-in. Secure device storage holds saved sessions and locally saved drafts; passwords are never saved. Optional notifications use Firebase and contain no child details. Documents opened in another app are subject to that app’s privacy practices. Contact the school office for access, correction, retention or deletion requests. The school must confirm its retention schedule and publish its approved policy before production deployment.",
+    "privacyPolicyBody": "The school uses authorized student, guardian, academic and financial records to administer education and school services. Access is restricted by role, teaching assignment and verified guardian links. Guardian identity numbers are stored in readable school records and shown masked in the app. Private files require sign-in. Secure device storage holds saved sessions and locally saved drafts; passwords are never saved. Optional notifications use Firebase and contain no child details. Documents opened in another app are subject to that app’s privacy practices. Contact the school office for access, correction, retention or deletion requests. The school must confirm its retention schedule and publish its approved policy before production deployment.",
     "termsConditionsBody": "Use this application only for authorized school activities. Keep your account and device secure and report incorrect records to the school. Submitted attendance, published results and finalized payments require controlled correction workflows. A pending bank payment is not a verified receipt. Offline drafts are not school submissions until the server confirms them. Service availability depends on connectivity. The school must approve these operational terms and provide its official contact details before production use.",
     "report_admission": "Admission form",
     "report_student_id": "Student ID card",
@@ -366,7 +421,7 @@ class Strings {
     "approvePayroll": "Approve payroll",
     "baseSalary": "Base salary (PKR)",
     "adjustments": "Adjustments",
-    "myStaffProfile": "My staff profile / salary slips",
+    'myStaffProfile': 'Profile & Account',
     "financeConfiguration": "Financial configuration",
     "fee-schedules": "Fee schedules",
     "fee-assignments": "Student fee assignments",
@@ -717,6 +772,61 @@ class Strings {
     'parent_guardian': 'Parent / Guardian',
   };
   static const ur = {
+    'mobile': 'موبائل نمبر',
+    'paidOn': 'ادائیگی کی تاریخ',
+    'accountError_viewerUnavailable':
+        'دستاویز کھولنے کے لیے پی ڈی ایف ویور نصب یا فعال کریں۔',
+    'accountError_configuration':
+        'سکول سرور کی ترتیب موجود نہیں۔ معاونت سے رابطہ کریں۔',
+    'accountError_validation': 'درج کردہ معلومات درست کریں۔',
+    'accountError_rateLimit':
+        'کوششیں زیادہ ہو گئی ہیں۔ ایک منٹ بعد دوبارہ کوشش کریں۔',
+    'accountError_notFound':
+        'مطلوبہ ریکارڈ دستیاب نہیں۔ ضرورت ہو تو منتظم سے رابطہ کریں۔',
+    'accountError_forbidden':
+        'اس عملے کی سہولت کی آپ کو اجازت نہیں۔ منتظم سے رابطہ کریں۔',
+    'accountError_unauthorized':
+        'آپ کا سیشن ختم ہو گیا ہے۔ دوبارہ لاگ ان کریں۔',
+    'accountError_integrationUnavailable':
+        'سروس عارضی طور پر دستیاب نہیں۔ بعد میں کوشش کریں۔',
+    'accountError_server': 'سرور دستیاب نہیں۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔',
+    'accountError_network':
+        'انٹرنیٹ دستیاب نہیں۔ رابطہ چیک کر کے دوبارہ کوشش کریں۔',
+    'accountTryAgain': 'دوبارہ کوشش کریں',
+    'accountPasswordMismatch': 'نئے پاس ورڈ یکساں نہیں ہیں۔',
+    'accountPasswordDifferent': 'موجودہ پاس ورڈ سے مختلف پاس ورڈ منتخب کریں۔',
+    'accountPasswordLength': 'کم از کم ۱۲ حروف استعمال کریں۔',
+    'accountWrongPassword': 'موجودہ پاس ورڈ درست نہیں۔',
+    'accountPasswordChanged': 'پاس ورڈ تبدیل ہو گیا۔ دوبارہ لاگ ان کریں۔',
+    'accountConfirmPassword': 'نئے پاس ورڈ کی تصدیق',
+    'accountNewPassword': 'نیا پاس ورڈ',
+    'accountCurrentPassword': 'موجودہ پاس ورڈ',
+    'accountSalaryPdf': 'تنخواہ کی پی ڈی ایف دیکھیں',
+    'accountNetSalary': 'خالص تنخواہ',
+    'accountAdjustment': 'رد و بدل',
+    'accountBaseSalary': 'بنیادی تنخواہ',
+    'accountSalaryPrivate':
+        'یہاں صرف آپ کی اپنی ادا شدہ تنخواہ کی دستاویزات ہیں۔',
+    'accountNoSalaryNote':
+        'پے رول جاری ہونے پر ادا شدہ تنخواہ کی رسید یہاں نظر آئے گی۔',
+    'accountNoSalary': 'ابھی ادا شدہ تنخواہ کی رسید موجود نہیں',
+    'accountMobileInvalid': 'درست فون نمبر درج کریں یا خالی چھوڑ دیں۔',
+    'accountSaved': 'آپ کی پروفائل محفوظ ہو گئی۔',
+    'accountEditNote': 'ای میل، کردار، اختیارات اور ملازمت یا تنخواہ کی تفصیلات یہاں تبدیل نہیں ہو سکتیں۔',
+    'accountEditProfile': 'پروفائل میں ترمیم',
+    'staffNotLinked': 'آپ کا اکاؤنٹ دستیاب ہے مگر ملازمت کی پروفائل منسلک نہیں۔ منتظم سے اپنا عملے کا ریکارڈ منسلک کروائیں۔',
+    'accountSessionNote':
+        'سیشن خود بخود ختم ہوتے ہیں۔ مشترکہ آلے پر لاگ آؤٹ کریں۔',
+    'accountPasswordPolicy': '۱۲ سے ۱۰۲۴ حروف استعمال کریں۔ پاس ورڈ تبدیل کرنے پر تمام سیشن ختم ہوں گے؛ دوبارہ لاگ ان کریں۔',
+    'accountChangePassword': 'پاس ورڈ تبدیل کریں',
+    'accountSecurity': 'اکاؤنٹ کی حفاظت',
+    'accountSalarySlips': 'میری تنخواہ کی رسیدیں',
+    'accountSalary': 'تنخواہ اور پے رول',
+    'accountOfficialNote': 'سرکاری تفصیلات صرف مجاز منتظمین تبدیل کر سکتے ہیں۔',
+    'accountEmployment': 'ملازمت کی معلومات',
+    'accountEditableNote':
+        'آپ اپنا نام، رابطے کی تفصیلات اور تصویر تبدیل کر سکتے ہیں۔',
+    'accountPersonal': 'ذاتی معلومات',
     'parentHomeworkTab': 'ہوم ورک',
     'parentMessagesTab': 'پیغامات',
     'academicProgress': 'تعلیمی پیش رفت',
@@ -1074,7 +1184,7 @@ class Strings {
     "approvePayroll": "تنخواہیں منظور کریں",
     "baseSalary": "بنیادی تنخواہ (روپے)",
     "adjustments": "ایڈجسٹمنٹ",
-    "myStaffProfile": "میری پروفائل / تنخواہ کی رسیدیں",
+    'myStaffProfile': 'پروفائل اور اکاؤنٹ',
     "financeConfiguration": "مالی ترتیبات",
     "fee-schedules": "فیس کے شیڈول",
     "fee-assignments": "طلبہ کی فیس کی تفویض",

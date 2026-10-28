@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Finance\EffectiveConfiguration;
 use App\Services\SchoolAccess;
 use App\Support\Audit;
 use App\Support\Domain;
@@ -12,6 +13,11 @@ class FeeConfigurationController extends Controller
 {
     public function __construct(private SchoolAccess $access) {}
 
+    private function requireConfiguration(Request $r): void
+    {
+        abort_unless($r->user()->hasPermission('finance.configure') || $r->user()->hasPermission('finance.approve'), 403);
+    }
+
     public function show(Request $r)
     {
         $this->access->require($r->user(), 'finance.read');
@@ -21,23 +27,25 @@ class FeeConfigurationController extends Controller
 
     public function schedule(Request $r)
     {
-        $this->access->require($r->user(), 'finance.approve');
+        $this->requireConfiguration($r);
         $v = $r->validate(['academic_session_id' => 'required|uuid|exists:academic_sessions,id', 'class_id' => 'required|uuid|exists:classes,id', 'kind' => 'required|in:tuition,admission_promotion', 'amount_minor' => 'required|integer|min:0|max:1000000000', 'effective_on' => 'required|date']);
 
-        return $this->insert($r, 'fee_schedules', [...$v, 'approved_by' => $r->user()->id]);
+        return Domain::response(['id' => app(EffectiveConfiguration::class)->save($r->user(), 'fee_schedules', array_intersect_key($v, array_flip(['academic_session_id', 'class_id', 'kind', 'effective_on'])), [...$v, 'approved_by' => $r->user()->id])], 201);
     }
 
     public function assignment(Request $r)
     {
-        $this->access->require($r->user(), 'finance.approve');
+        $this->requireConfiguration($r);
         $v = $r->validate(['student_id' => 'required|uuid|exists:students,id', 'academic_session_id' => 'required|uuid|exists:academic_sessions,id', 'fee_category_id' => 'nullable|uuid|exists:fee_categories,id', 'tuition_override_minor' => 'nullable|integer|min:0|max:1000000000', 'effective_on' => 'required|date']);
 
-        return $this->insert($r, 'student_fee_assignments', [...$v, 'approved_by' => $r->user()->id]);
+        $this->access->student($r->user(), $v['student_id']);
+
+        return Domain::response(['id' => app(EffectiveConfiguration::class)->save($r->user(), 'student_fee_assignments', array_intersect_key($v, array_flip(['student_id', 'academic_session_id', 'effective_on'])), ['fee_category_id' => null, 'tuition_override_minor' => null, ...$v, 'approved_by' => $r->user()->id])], 201);
     }
 
     public function policy(Request $r)
     {
-        $this->access->require($r->user(), 'finance.approve');
+        $this->requireConfiguration($r);
         $v = $r->validate(['code' => 'required|alpha_dash|max:40|unique:discount_policies,code', 'name' => 'required|string|max:120', 'maximum_basis_points' => 'required|integer|min:0|max:10000', 'applies_to' => 'required|in:tuition,all']);
 
         return $this->insert($r, 'discount_policies', $v);
@@ -45,7 +53,7 @@ class FeeConfigurationController extends Controller
 
     public function method(Request $r)
     {
-        $this->access->require($r->user(), 'finance.approve');
+        $this->requireConfiguration($r);
         $v = $r->validate(['code' => 'required|alpha_dash|max:40|unique:payment_methods,code', 'name' => 'required|string|max:120', 'account_id' => 'required|uuid|exists:accounts,id', 'requires_verification' => 'required|boolean']);
         abort_unless(DB::table('accounts')->where('id', $v['account_id'])->where('type', 'asset')->where('is_active', true)->exists(), 422);
 

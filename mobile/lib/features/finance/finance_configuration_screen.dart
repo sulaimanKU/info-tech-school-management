@@ -152,20 +152,15 @@ class _FinanceConfigurationScreenState
         ]);
       case 'compensation':
       case 'payroll-adjustments':
-        final staff = await widget.auth.call('catalog/staff');
-        final users = await widget.auth.call('staff-accounts');
-        final names = {
-          for (final u in users['items'] as List) u['id']: u['name'],
-        };
+        final payroll = await widget.auth.call('finance/payroll');
         fields.add(
           FormFieldSpec(
             'staff_profile_id',
             'staffProfile',
             kind: FieldKind.choice,
             options: {
-              for (final p in staff['items'] as List)
-                (p['id'] as String):
-                    '${names[p['user_id']]} · ${p['employee_number']}',
+              for (final p in payroll['staff'] as List)
+                (p['id'] as String): '${p['name']} · ${p['employee_number']}',
             },
           ),
         );
@@ -232,7 +227,8 @@ class _FinanceConfigurationScreenState
               children: [
                 StatusBanner(message: s.text('discountRule')),
                 const SizedBox(height: AppSpace.lg),
-                if (widget.auth.can('finance.approve'))
+                if (widget.auth.can('finance.configure') ||
+                    widget.auth.can('finance.approve'))
                   Wrap(
                     spacing: AppSpace.sm,
                     runSpacing: AppSpace.sm,
@@ -242,8 +238,10 @@ class _FinanceConfigurationScreenState
                         'fee-assignments',
                         'discount-policies',
                         'payment-methods',
-                        'compensation',
-                        'payroll-adjustments',
+                        if (widget.auth.can('finance.approve')) ...[
+                          'compensation',
+                          'payroll-adjustments',
+                        ],
                       ])
                         OutlinedButton(
                           onPressed: () => form(kind),

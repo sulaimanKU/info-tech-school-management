@@ -27,7 +27,7 @@ class TicketController extends Controller
         if (! empty($v['search'])) {
             $q->where(function ($q) use ($v) {
                 $search = '%'.$v['search'].'%';
-                $q->where('t.subject', 'ilike', $search)->orWhere('t.number', 'ilike', $search)->orWhereIn('t.student_id', DB::table('students')->where('full_name', 'ilike', $search)->orWhere('registration_number', 'ilike', $search)->select('id'))->orWhereIn('t.guardian_user_id', DB::table('parent_guardians')->where('full_name', 'ilike', $search)->select('user_id'));
+                $q->where('t.subject', 'like', $search)->orWhere('t.number', 'like', $search)->orWhereIn('t.student_id', DB::table('students')->where('full_name', 'like', $search)->orWhere('registration_number', 'like', $search)->select('id'))->orWhereIn('t.guardian_user_id', DB::table('parent_guardians')->where('full_name', 'like', $search)->select('user_id'));
             });
         }
         if (isset($v['student_id'])) {

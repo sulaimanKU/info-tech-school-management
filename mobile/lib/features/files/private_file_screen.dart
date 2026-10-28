@@ -18,10 +18,12 @@ class PrivateFileScreen extends StatefulWidget {
     required this.id,
     required this.mime,
     this.path,
+    this.errorBuilder,
   });
   final AuthController auth;
   final String id, mime;
   final String? path;
+  final Widget Function(BuildContext, String, VoidCallback)? errorBuilder;
   @override
   State<PrivateFileScreen> createState() => _PrivateFileScreenState();
 }
@@ -83,7 +85,8 @@ class _PrivateFileScreenState extends State<PrivateFileScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.text('privateDocument'))),
       body: error != null
-          ? DataState(error: error, onRetry: load)
+          ? widget.errorBuilder?.call(context, error!, load) ??
+                DataState(error: error, onRetry: load)
           : bytes == null
           ? const DataState()
           : widget.mime.startsWith('image/')

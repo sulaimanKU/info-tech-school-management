@@ -12,8 +12,9 @@ class AccountingController extends Controller
     public function trialBalance(Request $r, SchoolAccess $access)
     {
         $access->require($r->user(), 'finance.read');
-        $v = $r->validate(['from' => 'required|date', 'to' => 'required|date|after_or_equal:from']);
-        $lines = DB::table('journal_lines as l')->join('journal_entries as e', 'e.id', '=', 'l.journal_entry_id')->join('accounts as a', 'a.id', '=', 'l.account_id')->whereBetween('e.date', [$v['from'], $v['to']])->groupBy('a.id', 'a.code', 'a.name', 'a.type')->get(['a.id', 'a.code', 'a.name', 'a.type', DB::raw('SUM(l.debit_minor) AS debit_minor'), DB::raw('SUM(l.credit_minor) AS credit_minor')]);
+        // Omitted dates report the complete ledger; an explicit range must be complete and valid.
+        $v = $r->validate(['from' => 'required_with:to|date', 'to' => 'required_with:from|date|after_or_equal:from']);
+        $lines = DB::table('journal_lines as l')->join('journal_entries as e', 'e.id', '=', 'l.journal_entry_id')->join('accounts as a', 'a.id', '=', 'l.account_id')->when(isset($v['from']), fn ($q) => $q->whereBetween('e.date', [$v['from'], $v['to']]))->groupBy('a.id', 'a.code', 'a.name', 'a.type')->get(['a.id', 'a.code', 'a.name', 'a.type', DB::raw('SUM(l.debit_minor) AS debit_minor'), DB::raw('SUM(l.credit_minor) AS credit_minor')]);
         $debit = (int) $lines->sum('debit_minor');
         $credit = (int) $lines->sum('credit_minor');
 

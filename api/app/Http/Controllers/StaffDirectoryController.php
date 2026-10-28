@@ -38,7 +38,7 @@ class StaffDirectoryController extends Controller
         $v = $r->validate(['search' => 'nullable|string|max:100', 'role' => 'nullable|string|exists:roles,code', 'status' => 'nullable|in:active,inactive', 'page' => 'nullable|integer|min:1']);
         $q = $this->query();
         if (! empty($v['search'])) {
-            $q->where(fn ($q) => $q->where('name', 'ilike', '%'.$v['search'].'%')->orWhere('email', 'ilike', '%'.$v['search'].'%'));
+            $q->where(fn ($q) => $q->where('name', 'like', '%'.$v['search'].'%')->orWhere('email', 'like', '%'.$v['search'].'%'));
         }
         if (! empty($v['role'])) {
             $q->whereHas('roles', fn ($q) => $q->where('code', $v['role']));

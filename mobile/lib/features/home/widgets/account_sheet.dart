@@ -7,7 +7,7 @@ import '../../../shared/widgets/school_brand.dart';
 import '../../../shared/widgets/surface_card.dart';
 import '../../auth/auth_controller.dart';
 import '../../support/support_screen.dart';
-import '../../finance/payroll_screen.dart';
+import '../../account/staff_account_screen.dart';
 import '../../communication/push_service.dart';
 
 Future<void> confirmLogout(BuildContext context, AuthController auth) async {
@@ -121,7 +121,7 @@ void showAccountSheet(
                       Navigator.push(
                         context,
                         MaterialPageRoute<void>(
-                          builder: (_) => MyStaffProfileScreen(auth: auth),
+                          builder: (_) => StaffAccountScreen(auth: auth),
                         ),
                       );
                     },

@@ -37,9 +37,11 @@ class FormFieldSpec {
     this.picker,
     this.photoAuth,
     this.section,
+    this.visibleWhen,
   });
   final AuthController? photoAuth;
   final String? section;
+  final bool Function(Map<String, dynamic>)? visibleWhen;
   final String name, label;
   final FieldKind kind;
   final bool required;
@@ -130,6 +132,7 @@ class _DomainFormState extends State<DomainForm> {
     });
     final data = <String, dynamic>{};
     for (final f in widget.fields) {
+      if (f.visibleWhen != null && !f.visibleWhen!(values)) continue;
       final value = controllers[f.name]?.text.trim() ?? values[f.name];
       if (value == null || value == '') {
         if (f.required) continue;
@@ -196,9 +199,11 @@ class _DomainFormState extends State<DomainForm> {
                           }),
                         ),
                       for (final f in widget.fields)
-                        if (widget.academicAuth == null ||
-                            !['section_id', 'subject_id'].contains(f.name))
+                        if ((f.visibleWhen == null || f.visibleWhen!(values)) &&
+                            (widget.academicAuth == null ||
+                            !['section_id', 'subject_id'].contains(f.name)))
                           Padding(
+                            key: ValueKey(f.name),
                             padding: const EdgeInsets.only(bottom: AppSpace.lg),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
