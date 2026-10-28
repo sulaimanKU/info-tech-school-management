@@ -31,9 +31,9 @@ final class PaymentService
                 return $old->id;
             }
             $method = DB::table('payment_methods')->where('id', $v['payment_method_id'])->where('is_active', true)->firstOrFail();
-            if ($method->code === 'cash') {
-                $v['reference'] = null;
-                $v['proof_file_id'] = null;
+            abort_unless(DB::table('accounts')->where('id', $method->account_id)->where('type', 'asset')->where('is_active', true)->exists(), 422);
+            if (! empty($v['reference'])) {
+                app(FinancialLock::class)->request('payment-reference', $method->id.':'.$v['reference']);
             }
             if (! empty($v['reference']) && DB::table('payments')->where('payment_method_id', $method->id)->where('reference', $v['reference'])->exists()) {
                 Domain::fail('reference', 'This reference has already been recorded for this payment method.');

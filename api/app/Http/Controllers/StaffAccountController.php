@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\Finance\PayrollService;
 use App\Services\ProfilePhotoService;
 use App\Services\ReportData;
 use App\Services\ReportRenderer;
@@ -93,7 +94,13 @@ class StaffAccountController extends Controller
     {
         $this->input($r, []);
         $profile = DB::table('staff_profiles')->where('user_id', $r->user()->id)->first();
-        $items = $profile ? DB::table('payroll_items as i')->join('payroll_periods as p', 'p.id', '=', 'i.payroll_period_id')->where('i.staff_profile_id', $profile->id)->where('p.status', 'paid')->orderByDesc('p.period')->get(['i.id', 'i.base_salary_minor', 'i.adjustment_minor', 'i.net_salary_minor', 'p.period', 'p.paid_on', 'p.status']) : collect();
+        $items = $profile ? DB::table('payroll_items as i')->join('payroll_periods as p', 'p.id', '=', 'i.payroll_period_id')->where('i.staff_profile_id', $profile->id)->whereIn('p.status', ['approved', 'paid'])->orderByDesc('p.period')->get(['i.id', 'i.base_salary_minor', 'i.adjustment_minor', 'i.net_salary_minor', 'p.period', 'p.paid_on', 'p.status', 'p.id as payroll_period_id'])->map(function ($item) {
+            $details = app(PayrollService::class)->details(DB::table('payroll_periods')->find($item->payroll_period_id));
+            $amounts = $details['items']->firstWhere('id', $item->id);
+            $history = DB::table('payroll_payment_allocations as a')->join('payroll_payments as p', 'p.id', '=', 'a.payroll_payment_id')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')->where('a.payroll_item_id', $item->id)->orderByDesc('p.paid_on')->get(['p.paid_on', 'a.amount_minor', 'p.reference', 'p.notes', 'm.name as method']);
+
+            return [...(array) $item, 'paid_minor' => $amounts['paid_minor'], 'balance_minor' => $amounts['balance_minor'], 'payment_status' => $amounts['payment_status'], 'payments' => $history];
+        }) : collect();
 
         return Domain::response(['profile' => $profile, 'staff_linked' => $profile !== null, 'items' => $items])->header('Cache-Control', 'private, no-store');
     }
@@ -101,7 +108,7 @@ class StaffAccountController extends Controller
     public function salaryDocument(Request $r, string $item)
     {
         $this->input($r, []);
-        DB::table('payroll_items as i')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('payroll_periods as p', 'p.id', '=', 'i.payroll_period_id')->where('i.id', $item)->where('s.user_id', $r->user()->id)->where('p.status', 'paid')->firstOrFail();
+        DB::table('payroll_items as i')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('payroll_periods as p', 'p.id', '=', 'i.payroll_period_id')->where('i.id', $item)->where('s.user_id', $r->user()->id)->whereIn('p.status', ['approved', 'paid'])->firstOrFail();
         $r->merge(['payroll_item_id' => $item]);
 
         return app(ReportController::class)->show($r, 'salary_slip', app(ReportData::class), app(ReportRenderer::class));

@@ -11,17 +11,7 @@ class FinanceConfigurationSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-            $accounts = ['receivables' => ['Student receivables', 'asset'], 'cash' => ['Cash', 'asset'], 'bank' => ['Bank', 'asset'], 'tuition_revenue' => ['School fee revenue', 'revenue'], 'discount_expense' => ['Scholarships and discounts', 'expense'], 'adjustment_expense' => ['Approved fee adjustments', 'expense'], 'operating_expense' => ['School operating expenses', 'expense'], 'salary_expense' => ['Staff salary expense', 'expense'], 'payroll_payable' => ['Payroll payable', 'liability'], 'opening_equity' => ['Opening balance equity', 'equity']];
-            foreach ($accounts as $code => [$name,$type]) {
-                if (! DB::table('accounts')->where('code', $code)->exists()) {
-                    Domain::insert('accounts', compact('code', 'name', 'type'));
-                }
-            }
-            foreach (['cash' => ['Cash', false], 'bank_transfer' => ['Bank transfer', true]] as $code => [$name,$verify]) {
-                if (! DB::table('payment_methods')->where('code', $code)->exists()) {
-                    Domain::insert('payment_methods', ['code' => $code, 'name' => $name, 'account_id' => DB::table('accounts')->where('code', $code === 'cash' ? 'cash' : 'bank')->value('id'), 'requires_verification' => $verify]);
-                }
-            }
+            $this->call(FinanceAccountSeeder::class);
             $this->call(ManualPaymentMethodSeeder::class);
             foreach (['salaries', 'electricity', 'internet', 'stationery', 'cleaning', 'repairs', 'equipment', 'maintenance', 'events', 'other'] as $code) {
                 if (! DB::table('expense_categories')->where('code', $code)->exists()) {

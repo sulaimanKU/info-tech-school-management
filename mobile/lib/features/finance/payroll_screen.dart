@@ -48,15 +48,32 @@ class PayrollScreen extends StatelessWidget {
     auth: auth,
     path: 'finance/payroll',
     title: 'payroll',
-    summary: (response) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      if (auth.can('finance.approve'))
-        OutlinedButton.icon(onPressed: () => Navigator.push<void>(context, MaterialPageRoute(builder: (_) => FinanceConfigurationScreen(auth: auth))), icon: const Icon(Icons.settings), label: const Text('Configure salary / adjustments')),
-      for (final salary in response['compensation'] as List? ?? [])
-        ListTile(title: Text('${salary['name']} ? ${salary['employee_number']}'), subtitle: Text('Effective: ${salary['effective_on']}'), trailing: Text(Money.format(salary['base_salary_minor']))),
-    ]),
+    summary: (response) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (auth.can('payroll.approve'))
+          OutlinedButton.icon(
+            onPressed: () => Navigator.push<void>(
+              context,
+              MaterialPageRoute(
+                builder: (_) => FinanceConfigurationScreen(auth: auth),
+              ),
+            ),
+            icon: const Icon(Icons.settings),
+            label: const Text('Configure salary / adjustments'),
+          ),
+        for (final salary in response['compensation'] as List? ?? [])
+          ListTile(
+            title: Text('${salary['name']} ? ${salary['employee_number']}'),
+            subtitle: Text('Effective: ${salary['effective_on']}'),
+            trailing: Text(Money.format(salary['base_salary_minor'])),
+          ),
+      ],
+    ),
     recordTitle: (r) => r['period'] as String,
-    recordSubtitle: (r) => Money.format(r['total_minor']),
-    onCreate: auth.can('finance.write') ? create : null,
+    recordSubtitle: (r) =>
+        'Net: ${Money.format(r['total_minor'])} ? Paid: ${Money.format(r['paid_minor'] ?? 0)} ? Remaining: ${Money.format(r['balance_minor'] ?? r['total_minor'])} ? ${r['payment_status'] ?? r['status']}',
+    onCreate: auth.can('payroll.write') ? create : null,
     onOpen: (c, r) async {
       await Navigator.push<void>(
         c,
@@ -141,9 +158,15 @@ class _PayrollDetailScreenState extends State<PayrollDetailScreen> {
                       ),
                       if (data!['paid_on'] != null)
                         Text('${s.text('paymentDate')}: ${data!['paid_on']}'),
-                      if (data!['method'] != null) Text(data!['method'] as String),
-                      if (data!['paid_minor'] != null) Text('Paid: ${Money.format(data!['paid_minor'])}'),
-                      if (data!['reference'] != null) Text(data!['reference'] as String),
+                      if (data!['method'] != null)
+                        Text(data!['method'] as String),
+                      if (data!['paid_minor'] != null)
+                        Text('Paid: ${Money.format(data!['paid_minor'])}'),
+                      Text(
+                        'Remaining: ${Money.format(data!['balance_minor'] ?? data!['total_minor'])} ? ${data!['payment_status'] ?? data!['status']}',
+                      ),
+                      if (data!['reference'] != null)
+                        Text(data!['reference'] as String),
                     ],
                   ),
                 ),
@@ -163,26 +186,75 @@ class _PayrollDetailScreenState extends State<PayrollDetailScreen> {
                     subtitle: Text(
                       '${s.text('baseSalary')}: ${Money.format(item['base_salary_minor'])}\n${s.text('adjustments')}: ${Money.format(item['adjustment_minor'])}',
                     ),
-                    trailing: Text(Money.format(item['net_salary_minor'])),
+                    trailing: Text(
+                      'Net: ${Money.format(item['net_salary_minor'])}\nPaid: ${Money.format(item['paid_minor'] ?? 0)}\nDue: ${Money.format(item['balance_minor'] ?? item['net_salary_minor'])}',
+                    ),
                   ),
-                if (widget.auth.can('finance.approve') &&
+                if (widget.auth.can('payroll.write') &&
+                    data!['status'] == 'approved')
+                  for (final item in data!['items'] as List)
+                    if ((item['balance_minor'] as num? ?? 0) > 0)
+                      OutlinedButton(
+                        onPressed: busy
+                            ? null
+                            : () async {
+                                try {
+                                  await disbursementForm(
+                                    context,
+                                    widget.auth,
+                                    'finance/payroll/${widget.id}/pay',
+                                    outstanding: (item['balance_minor'] as num)
+                                        .toInt(),
+                                    payrollItemId: item['id'] as String,
+                                    staffName: item['name'] as String,
+                                  );
+                                  await load();
+                                } on ApiFailure catch (e) {
+                                  if (mounted) setState(() => error = e.code);
+                                }
+                              },
+                        child: Text('Record salary payment ? ${item['name']}'),
+                      ),
+                const SizedBox(height: AppSpace.lg),
+                Text(
+                  'Salary payment history',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                if ((data!['payments'] as List? ?? []).isEmpty)
+                  const ListTile(title: Text('No salary payments recorded')),
+                for (final payment in data!['payments'] as List? ?? [])
+                  ListTile(
+                    title: Text(
+                      '${payment['paid_on']} ? ${Money.format(payment['amount_minor'])}',
+                    ),
+                    subtitle: Text(
+                      '${payment['method']} ? ${payment['reference'] ?? ''}\n${payment['notes'] ?? ''}\n${payment['recorded_by_name'] ?? ''}',
+                    ),
+                  ),
+                if (widget.auth.can('payroll.approve') &&
                     data!['status'] == 'draft')
                   FilledButton(
                     onPressed: busy ? null : approve,
                     child: Text(s.text('approvePayroll')),
                   ),
-                if (widget.auth.can('finance.write') &&
+                if (widget.auth.can('payroll.write') &&
                     data!['status'] == 'approved')
                   FilledButton(
                     onPressed: busy
                         ? null
                         : () async {
-                            await disbursementForm(
-                              context,
-                              widget.auth,
-                              'finance/payroll/${widget.id}/pay',
-                            );
-                            load();
+                            try {
+                              await disbursementForm(
+                                context,
+                                widget.auth,
+                                'finance/payroll/${widget.id}/pay',
+                                outstanding: (data!['balance_minor'] as num)
+                                    .toInt(),
+                              );
+                              await load();
+                            } on ApiFailure catch (e) {
+                              if (mounted) setState(() => error = e.code);
+                            }
                           },
                     child: Text(s.text('disburse')),
                   ),

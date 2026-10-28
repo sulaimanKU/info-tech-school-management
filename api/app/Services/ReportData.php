@@ -6,6 +6,7 @@ use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\ExamScheduleController;
 use App\Http\Controllers\FeeController;
 use App\Services\Finance\InvoiceBalance;
+use App\Services\Finance\PayrollService;
 use App\Support\Domain;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -114,13 +115,18 @@ final class ReportData
                 $rows = array_map(fn ($i) => array_intersect_key($i, array_flip(['title', 'class_name', 'section_name', 'subject_name', 'date', 'starts_at', 'ends_at', 'room', 'status'])), $this->response(app(ExamScheduleController::class)->index($r))['items']);
                 break;
             case 'salary_slip':
-                $item = DB::table('payroll_items as i')->join('payroll_periods as p', 'p.id', '=', 'i.payroll_period_id')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->where('i.id', $v['payroll_item_id'] ?? '')->where('p.status', 'paid')->first(['i.*', 'p.period', 'p.paid_on', 's.user_id', 's.employee_number', 'u.name']);
+                $item = DB::table('payroll_items as i')->join('payroll_periods as p', 'p.id', '=', 'i.payroll_period_id')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->where('i.id', $v['payroll_item_id'] ?? '')->whereIn('p.status', ['approved', 'paid'])->first(['i.*', 'p.period', 'p.paid_on', 'p.id as payroll_period_id', 's.user_id', 's.employee_number', 'u.name']);
                 abort_if(! $item, 404);
-                abort_unless($item->user_id === $r->user()->id || $r->user()->hasPermission('finance.read'), 403);
-                $rows = [array_intersect_key((array) $item, array_flip(['name', 'employee_number', 'period', 'paid_on', 'base_salary_minor', 'adjustment_minor', 'net_salary_minor']))];
+                abort_unless($item->user_id === $r->user()->id || $r->user()->hasPermission('payroll.read'), 403);
+                $details = app(PayrollService::class)->details(DB::table('payroll_periods')->find($item->payroll_period_id));
+                $amounts = $details['items']->firstWhere('id', $item->id);
+                abort_unless($amounts['paid_minor'] > 0, 404);
+                $item->paid_minor = $amounts['paid_minor'];
+                $item->balance_minor = $amounts['balance_minor'];
+                $rows = [array_intersect_key((array) $item, array_flip(['name', 'employee_number', 'period', 'paid_on', 'base_salary_minor', 'adjustment_minor', 'net_salary_minor', 'paid_minor', 'balance_minor']))];
                 break;
             case 'financial':
-                $this->access->require($r->user(), 'finance.read');
+                $this->access->require($r->user(), 'accounting.read');
                 $this->access->require($r->user(), 'reports.export');
                 $this->access->require($r->user(), 'students.read.all');
                 $meta['Report'] = 'Trial balance';

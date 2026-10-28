@@ -408,12 +408,15 @@ class StaffSalaryScreen extends StatelessWidget {
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           AppBadge(
-                            label: s.text(row['status'] as String),
+                            label: s.text(
+                              (row['payment_status'] ?? row['status'])
+                                  as String,
+                            ),
                             status: row['status'] as String,
                           ),
                           ValueRow(
                             label: s.text('paidOn'),
-                            value: row['paid_on'].toString(),
+                            value: row['paid_on']?.toString() ?? '?',
                           ),
                           ValueRow(
                             label: s.text('accountBaseSalary'),
@@ -428,24 +431,49 @@ class StaffSalaryScreen extends StatelessWidget {
                             value: Money.format(row['net_salary_minor']),
                             emphasis: true,
                           ),
-                          TextButton.icon(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute<void>(
-                                builder: (_) => PrivateFileScreen(
-                                  auth: auth,
-                                  id: row['id'] as String,
-                                  mime: 'application/pdf',
-                                  path:
-                                      'account/salary-slips/${row['id']}/document',
-                                  errorBuilder: (context, code, retry) =>
-                                      AccountFailure(code: code, retry: retry),
-                                ),
+                          if (row['paid_minor'] != null)
+                            ValueRow(
+                              label: 'Amount paid',
+                              value: Money.format(row['paid_minor']),
+                            ),
+                          if (row['balance_minor'] != null)
+                            ValueRow(
+                              label: 'Remaining salary',
+                              value: Money.format(row['balance_minor']),
+                            ),
+                          for (final payment in row['payments'] as List? ?? [])
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                '${payment['paid_on']} ? ${Money.format(payment['amount_minor'])}',
+                              ),
+                              subtitle: Text(
+                                '${payment['method']} ? ${payment['reference'] ?? ''}\n${payment['notes'] ?? ''}',
                               ),
                             ),
-                            icon: const Icon(Icons.picture_as_pdf_outlined),
-                            label: Text(s.text('accountSalaryPdf')),
-                          ),
+                          if (row['paid_minor'] == null ||
+                              (row['paid_minor'] as num) > 0)
+                            TextButton.icon(
+                              onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (_) => PrivateFileScreen(
+                                    auth: auth,
+                                    id: row['id'] as String,
+                                    mime: 'application/pdf',
+                                    path:
+                                        'account/salary-slips/${row['id']}/document',
+                                    errorBuilder: (context, code, retry) =>
+                                        AccountFailure(
+                                          code: code,
+                                          retry: retry,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                              icon: const Icon(Icons.picture_as_pdf_outlined),
+                              label: Text(s.text('accountSalaryPdf')),
+                            ),
                         ],
                       ),
                     ),

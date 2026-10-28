@@ -1,3 +1,5 @@
+import 'finance_summary_screen.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../design/app_theme.dart';
@@ -22,18 +24,35 @@ class FinanceHubScreen extends StatelessWidget {
     final s = Strings.of(context);
     final entries = [
       if (auth.can('finance.read')) ...[
-      ('feeVouchers', Icons.receipt_long_outlined, InvoiceScreen(auth: auth)),
-      ('paymentHistory', Icons.payments_outlined, PaymentScreen(auth: auth)),
-      ('discounts', Icons.discount_outlined, DiscountScreen(auth: auth)),
-      ('expenses', Icons.shopping_bag_outlined, ExpenseScreen(auth: auth)),
-      ('payroll', Icons.account_balance_outlined, PayrollScreen(auth: auth)),
-      ('trialBalance', Icons.balance_outlined, TrialBalanceScreen(auth: auth)),
-      (
-        'financeConfiguration',
-        Icons.settings_outlined,
-        FinanceConfigurationScreen(auth: auth),
-      ),
+        (
+          'Finance overview',
+          Icons.dashboard_outlined,
+          FinanceSummaryScreen(auth: auth),
+        ),
+        ('feeVouchers', Icons.receipt_long_outlined, InvoiceScreen(auth: auth)),
+        ('paymentHistory', Icons.payments_outlined, PaymentScreen(auth: auth)),
+        ('discounts', Icons.discount_outlined, DiscountScreen(auth: auth)),
+        ('expenses', Icons.shopping_bag_outlined, ExpenseScreen(auth: auth)),
+        if (auth.can('payroll.read'))
+          (
+            'payroll',
+            Icons.account_balance_outlined,
+            PayrollScreen(auth: auth),
+          ),
+        if (auth.can('accounting.read'))
+          (
+            'trialBalance',
+            Icons.balance_outlined,
+            TrialBalanceScreen(auth: auth),
+          ),
+        (
+          'financeConfiguration',
+          Icons.settings_outlined,
+          FinanceConfigurationScreen(auth: auth),
+        ),
       ],
+      if (auth.can('payroll.read') && !auth.can('finance.read'))
+        ('payroll', Icons.account_balance_outlined, PayrollScreen(auth: auth)),
     ];
     return Scaffold(
       appBar: AppBar(title: Text(s.text('finance'))),
@@ -43,11 +62,25 @@ class FinanceHubScreen extends StatelessWidget {
           if (auth.can('finance.read') && auth.can('students.read'))
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpace.lg),
-              child: ActionTile(icon: Icons.person_search, title: auth.can('finance.write') ? 'Student fees / Record payment' : 'Student fees', onTap: () async {
-                final student = await chooseStudent(context, auth);
-                if (student == null || !context.mounted) return;
-                await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => StudentFeeScreen(auth: auth, studentId: student['id'] as String)));
-              }),
+              child: ActionTile(
+                icon: Icons.person_search,
+                title: auth.can('finance.write')
+                    ? 'Student fees / Record payment'
+                    : 'Student fees',
+                onTap: () async {
+                  final student = await chooseStudent(context, auth);
+                  if (student == null || !context.mounted) return;
+                  await Navigator.push<void>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StudentFeeScreen(
+                        auth: auth,
+                        studentId: student['id'] as String,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           for (final entry in entries)
             Padding(

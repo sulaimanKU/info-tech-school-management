@@ -4,7 +4,7 @@ This matrix describes default seeded grants and the current Laravel scopes. Futu
 
 | Role | Default permissions | Object scope |
 | --- | --- | --- |
-| Super Admin / Managing Director | All 20; active-role server bypass | All applicable school objects |
+| Super Admin / Managing Director | All 24; active-role server bypass | All applicable school objects |
 | School Administrator | Operational administration; excludes rbac.manage, finance.write, finance.approve | School scope where students.read.all granted |
 | Coordinator | students.read, academics.read/write/review, attendance.correct, communication.manage, announcements.manage, reports.export | Current assigned classes/sections and valid record dates; no default students.read.all |
 | Accountant / Clerk | students.read, students.read.all, finance.read/write, reports.export | Finance and necessary student identity; no unrelated academic/private access |
@@ -29,6 +29,10 @@ S=Super Admin, A=Administrator, C=Coordinator, F=Accountant, T=Teacher. Parent u
 | academics.review | S, A, C |
 | attendance.correct | S, A, C |
 | finance.read | S, A, F |
+| payroll.read | S, F |
+| payroll.write | S, F |
+| payroll.approve | S |
+| accounting.read | S, F |
 | finance.configure | S, A (fee schedules, fee assignments, discount policies, payment methods only) |
 | finance.write | S, F |
 | finance.approve | S |
@@ -49,3 +53,5 @@ Announcements support school/class/section/role/individual targeting under publi
 Default grant changes do not silently restore legacy revoked grants. Migration adds only the three new permission grants, removes the Coordinator global-student default, and retains the existing role system.
 
 28 October 2026 continuation: seeded administrators receive finance.configure instead of finance.write/finance.approve. Configuration permission never authorizes payroll, compensation, adjustments, payments, expenses, discount approvals or journal posting. Existing explicitly assigned database grants remain authoritative and are not silently revoked by an insert-only seeder; review any grants created by older seeder versions before a future release.
+
+Finance completion (28 October 2026): payroll list/detail, generation/payment and salary setup/approval now require payroll.read, payroll.write and payroll.approve respectively. Journals, trial balance and financial ledger exports require accounting.read. Fee-only administrators do not receive these grants. Own staff salary access remains ownership-based. MobilePermissionSeeder inserts these explicit defaults without deleting existing custom grants; custom roles must be reviewed and granted deliberately before release.

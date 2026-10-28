@@ -42,6 +42,44 @@ class _FinanceConfigurationScreenState
     }
   }
 
+  Future<void> editMethod(Map<String, dynamic> method) async {
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DomainForm(
+          title: 'Payment method settings',
+          summary: const Text(
+            'Changes affect future entries. Existing pending payments still require manual management approval. Ledger mappings and payment history are preserved.',
+          ),
+          fields: [
+            FormFieldSpec('name', 'name', initial: method['name']),
+            FormFieldSpec(
+              'is_active',
+              'Active',
+              kind: FieldKind.boolean,
+              initial: method['is_active'],
+            ),
+            if (method['code'] != 'cash')
+              FormFieldSpec(
+                'requires_verification',
+                'Requires manual management review',
+                kind: FieldKind.boolean,
+                initial: method['requires_verification'],
+              ),
+          ],
+          onSubmit: (v) async {
+            await widget.auth.call(
+              'finance/payment-methods/${method['id']}',
+              method: 'PATCH',
+              body: v,
+            );
+          },
+        ),
+      ),
+    );
+    await load();
+  }
+
   Future<void> form(String kind) async {
     final s = Strings.of(context);
     final fields = <FormFieldSpec>[];
@@ -147,7 +185,7 @@ class _FinanceConfigurationScreenState
             'requires_verification',
             'requiresVerification',
             kind: FieldKind.boolean,
-            initial: true,
+            initial: false,
           ),
         ]);
       case 'compensation':
@@ -228,17 +266,21 @@ class _FinanceConfigurationScreenState
                 StatusBanner(message: s.text('discountRule')),
                 const SizedBox(height: AppSpace.lg),
                 if (widget.auth.can('finance.configure') ||
-                    widget.auth.can('finance.approve'))
+                    widget.auth.can('finance.approve') ||
+                    widget.auth.can('payroll.approve'))
                   Wrap(
                     spacing: AppSpace.sm,
                     runSpacing: AppSpace.sm,
                     children: [
                       for (final kind in [
-                        'fee-schedules',
-                        'fee-assignments',
-                        'discount-policies',
-                        'payment-methods',
-                        if (widget.auth.can('finance.approve')) ...[
+                        if (widget.auth.can('finance.configure') ||
+                            widget.auth.can('finance.approve')) ...[
+                          'fee-schedules',
+                          'fee-assignments',
+                          'discount-policies',
+                          'payment-methods',
+                        ],
+                        if (widget.auth.can('payroll.approve')) ...[
                           'compensation',
                           'payroll-adjustments',
                         ],
@@ -250,6 +292,41 @@ class _FinanceConfigurationScreenState
                     ],
                   ),
                 const SizedBox(height: AppSpace.xl),
+                Text(
+                  'Manual payment methods',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const Text(
+                  'Labels for staff-entered payments. No bank or payment-gateway connection is used. Any review is performed by school management.',
+                ),
+                if ((config!['payment_methods'] as List? ?? []).isEmpty)
+                  const ListTile(
+                    title: Text(
+                      'No active methods. Ask the administrator to add defaults.',
+                    ),
+                  ),
+                for (final method
+                    in (config!['payment_method_settings'] ??
+                                config!['payment_methods'])
+                            as List? ??
+                        [])
+                  ListTile(
+                    onTap:
+                        widget.auth.can('finance.configure') ||
+                            widget.auth.can('finance.approve')
+                        ? () => editMethod(
+                            (method as Map).cast<String, dynamic>(),
+                          )
+                        : null,
+                    title: Text(
+                      '${method['name']}${method['is_active'] == false ? ' ? Inactive' : ''}',
+                    ),
+                    subtitle: Text(
+                      method['requires_verification'] == true
+                          ? 'Manual management review required'
+                          : 'Recorded immediately by authorized staff',
+                    ),
+                  ),
                 for (final item in config!['schedules'] as List)
                   ListTile(
                     title: Text(

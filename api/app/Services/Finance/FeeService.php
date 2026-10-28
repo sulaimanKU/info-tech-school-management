@@ -13,6 +13,49 @@ final class FeeService
 {
     public function __construct(private JournalService $journal, private InvoiceBalance $balance) {}
 
+    public function configuredAmount(string $student, string $session, string $class, string $kind, string $start, string $end): ?int
+    {
+        $schedule = DB::table('fee_schedules')->where('academic_session_id', $session)->where('class_id', $class)->where('kind', $kind)->where('effective_on', '<=', $end)->orderByDesc('effective_on')->first();
+        if (! $schedule) {
+            return null;
+        }
+        $assignment = DB::table('student_fee_assignments')->where('student_id', $student)->where('academic_session_id', $session)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
+
+        return $kind === 'tuition' && $assignment?->tuition_override_minor !== null ? (int) $assignment->tuition_override_minor : (int) $schedule->amount_minor;
+    }
+
+    public function tuitionQuote(string $student, string $session, string $period): ?array
+    {
+        $start = $period.'-01';
+        $end = Carbon::parse($start)->endOfMonth()->toDateString();
+        $enrollment = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->where('e.student_id', $student)->where('e.academic_session_id', $session)->where('e.starts_on', '<=', $end)->where(fn ($q) => $q->whereNull('e.ends_on')->orWhere('e.ends_on', '>=', $start))->orderByDesc('e.starts_on')->first(['s.class_id']);
+        if (! $enrollment) {
+            return null;
+        }
+        $gross = $this->configuredAmount($student, $session, $enrollment->class_id, 'tuition', $start, $end);
+        if ($gross === null) {
+            return null;
+        }
+        $discount = $this->discount($student, $session, $start, $gross, $gross);
+
+        return ['gross_minor' => $gross, 'discount_minor' => $discount, 'net_minor' => $gross - $discount];
+    }
+
+    private function discount(string $student, string $session, string $start, int $gross, int $discountBase): int
+    {
+        $discount = 0;
+        $policies = DB::table('student_discounts as d')->join('discount_policies as p', 'p.id', '=', 'd.discount_policy_id')->where('d.student_id', $student)->where('d.academic_session_id', $session)->where('d.status', 'approved')->whereNull('d.revoked_at')->where('d.starts_on', '<=', $start)->where('d.ends_on', '>=', $start)->where('p.is_active', true)->get(['d.basis_points', 'p.maximum_basis_points', 'p.applies_to']);
+        // Highest applicable monetary discount wins. Stacking is deliberately not enabled.
+        foreach ($policies as $policy) {
+            if ($policy->basis_points > $policy->maximum_basis_points) {
+                continue;
+            }$base = $policy->applies_to === 'all' ? $gross : $discountBase;
+            $discount = max($discount, intdiv($base * (int) $policy->basis_points + 5000, 10000));
+        }
+
+        return $discount;
+    }
+
     public function generate(User $user, array $v): string
     {
         return DB::transaction(function () use ($user, $v) {
@@ -43,14 +86,11 @@ final class FeeService
             $discountBase = 0;
             if (in_array($v['kind'], ['tuition', 'admission', 'promotion'])) {
                 $kind = $v['kind'] === 'tuition' ? 'tuition' : 'admission_promotion';
-                $schedule = DB::table('fee_schedules')->where('academic_session_id', $session->id)->where('class_id', $enrollment->class_id)->where('kind', $kind)->where('effective_on', '<=', $end)->orderByDesc('effective_on')->first();
-                if (! $schedule) {
+                $configured = $this->configuredAmount($student->id, $session->id, $enrollment->class_id, $kind, $start, $end);
+                if ($configured === null) {
                     Domain::fail('fee_schedule', 'Configure a fee schedule for this class and session.');
-                }$amount = (int) $schedule->amount_minor;
-                $assignment = DB::table('student_fee_assignments')->where('student_id', $student->id)->where('academic_session_id', $session->id)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
-                if ($kind === 'tuition' && $assignment?->tuition_override_minor !== null) {
-                    $amount = (int) $assignment->tuition_override_minor;
                 }
+                $amount = $configured;
                 if ($v['kind'] === 'promotion' && ! DB::table('student_transitions as t')->join('enrollments as e', 'e.id', '=', 't.to_enrollment_id')->where('t.student_id', $student->id)->where('t.type', 'promotion')->where('e.academic_session_id', $session->id)->whereBetween('t.effective_on', [$start, $end])->exists()) {
                     Domain::fail('kind', 'A matching promotion transition is required.');
                 }
@@ -65,15 +105,7 @@ final class FeeService
             if (! $lines) {
                 Domain::fail('charges', 'At least one charge is required.');
             }$gross = array_sum(array_column($lines, 'amount_minor'));
-            $discount = 0;
-            $policies = DB::table('student_discounts as d')->join('discount_policies as p', 'p.id', '=', 'd.discount_policy_id')->where('d.student_id', $student->id)->where('d.academic_session_id', $session->id)->where('d.status', 'approved')->whereNull('d.revoked_at')->where('d.starts_on', '<=', $start)->where('d.ends_on', '>=', $start)->where('p.is_active', true)->get(['d.basis_points', 'p.maximum_basis_points', 'p.applies_to']);
-            // Highest applicable monetary discount wins. Stacking is deliberately not enabled.
-            foreach ($policies as $policy) {
-                if ($policy->basis_points > $policy->maximum_basis_points) {
-                    continue;
-                }$base = $policy->applies_to === 'all' ? $gross : $discountBase;
-                $discount = max($discount, intdiv($base * (int) $policy->basis_points + 5000, 10000));
-            }
+            $discount = $this->discount($student->id, $session->id, $start, $gross, $discountBase);
             $id = Domain::insert('fee_invoices', ['voucher_number' => app(DocumentNumber::class)->next('FV', $v['issued_on']), 'student_id' => $student->id, 'academic_session_id' => $session->id, 'period' => $v['period'], 'kind' => $v['kind'], 'issued_on' => $v['issued_on'], 'due_on' => $v['due_on'], 'gross_minor' => $gross, 'discount_minor' => $discount, 'total_minor' => $gross - $discount, 'request_id' => $v['request_id'], 'payload_hash' => $hash, 'created_by' => $user->id]);
             foreach ($lines as $line) {
                 Domain::insert('invoice_lines', ['fee_invoice_id' => $id, ...$line]);

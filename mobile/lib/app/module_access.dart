@@ -9,7 +9,7 @@ abstract final class ModuleAccess {
             auth.can('students.read.all') ||
             auth.can('students.manage'),
       'attendance' || 'academics' => auth.canAcademics,
-      'finance' => auth.can('finance.read'),
+      'finance' => auth.can('finance.read') || auth.can('payroll.read'),
       'staffModule' => auth.can('staff.manage'),
       'reports' => auth.can('reports.export') || auth.canAcademics,
       'messages' => true,

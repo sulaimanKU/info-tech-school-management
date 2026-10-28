@@ -58,8 +58,10 @@ class DomainForm extends StatefulWidget {
     required this.fields,
     required this.onSubmit,
     this.academicAuth,
+    this.summary,
   });
   final String title;
+  final Widget? summary;
   final AuthController? academicAuth;
   final List<FormFieldSpec> fields;
   final Future<void> Function(Map<String, dynamic>) onSubmit;
@@ -183,6 +185,7 @@ class _DomainFormState extends State<DomainForm> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       SectionHeader(title: s.text(widget.title)),
+                      if (widget.summary != null) widget.summary!,
                       if (widget.academicAuth != null)
                         AcademicSelection(
                           auth: widget.academicAuth!,
@@ -201,7 +204,7 @@ class _DomainFormState extends State<DomainForm> {
                       for (final f in widget.fields)
                         if ((f.visibleWhen == null || f.visibleWhen!(values)) &&
                             (widget.academicAuth == null ||
-                            !['section_id', 'subject_id'].contains(f.name)))
+                                !['section_id', 'subject_id'].contains(f.name)))
                           Padding(
                             key: ValueKey(f.name),
                             padding: const EdgeInsets.only(bottom: AppSpace.lg),
@@ -212,6 +215,17 @@ class _DomainFormState extends State<DomainForm> {
                                   SectionHeader(title: s.text(f.section!)),
                                 field(f, s),
                               ],
+                            ),
+                          ),
+                      for (final key in fieldErrors.keys)
+                        if (!widget.fields.any((f) => f.name == key))
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: AppSpace.sm),
+                            child: Text(
+                              fieldError(key) ?? '',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
                             ),
                           ),
                       if (error != null) ...[

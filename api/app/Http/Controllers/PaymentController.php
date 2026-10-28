@@ -28,7 +28,7 @@ class PaymentController extends Controller
         $v = $filters->values($r, ['status' => 'nullable|in:pending,verified,canceled,refunded']);
         $q = DB::table('payments')->whereNotExists(fn ($q) => $q->selectRaw('1')->from('payment_allocations as restricted_a')->join('fee_invoices as restricted_i', 'restricted_i.id', '=', 'restricted_a.fee_invoice_id')->whereColumn('restricted_a.payment_id', 'payments.id')->whereNotIn('restricted_i.student_id', $this->access->students($r->user())->select('students.id')));
         $students = $filters->students($this->access->students($r->user()), $r, array_diff_key($v, array_flip(['status'])));
-        $invoices = DB::table('fee_invoices')->whereIn('student_id', $students->select('students.id'))->select('id');
+        $invoices = DB::table('fee_invoices')->whereIn('student_id', $students->select('students.id'))->when($v['academic_session_id'] ?? null, fn ($q, $session) => $q->where('academic_session_id', $session))->select('id');
         $q->whereIn('id', DB::table('payment_allocations')->whereIn('fee_invoice_id', $invoices)->select('payment_id'));
         if (! empty($v['status'])) {
             if ($v['status'] === 'refunded') {
@@ -43,7 +43,7 @@ class PaymentController extends Controller
             $q->whereDate('paid_on', '<=', $v['to']);
         }
 
-        return Domain::response($q->orderByDesc('created_at')->paginate(30, ['id', 'receipt_number', 'payment_method_id', 'paid_on', 'amount_minor', 'reference', 'proof_file_id', 'status']));
+        return Domain::response($q->orderByDesc('paid_on')->orderByDesc('created_at')->paginate(30, ['id', 'receipt_number', 'payment_method_id', 'recorded_by', 'paid_on', 'amount_minor', 'reference', 'notes', 'proof_file_id', 'status'])->through(fn ($p) => [...(array) $p, 'method' => DB::table('payment_methods')->where('id', $p->payment_method_id)->value('name'), 'recorded_by_name' => DB::table('users')->where('id', $p->recorded_by)->value('name')]));
     }
 
     public function show(Request $r, string $payment)

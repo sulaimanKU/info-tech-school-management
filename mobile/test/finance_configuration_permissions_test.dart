@@ -11,8 +11,9 @@ import 'support/auth_fixtures.dart';
 void main() {
   for (final permissions in [
     ['finance.read', 'finance.configure'],
-    ['finance.read', 'finance.approve'],
+    ['finance.read', 'finance.approve', 'payroll.approve'],
     ['finance.read'],
+    ['finance.read', 'payroll.approve'],
   ]) {
     testWidgets('fee configuration actions respect $permissions', (
       tester,
@@ -46,16 +47,17 @@ void main() {
       );
       expect(
         find.widgetWithText(OutlinedButton, 'Staff compensation'),
-        permissions.contains('finance.approve') ? findsOneWidget : findsNothing,
+        permissions.contains('payroll.approve') ? findsOneWidget : findsNothing,
       );
       expect(
         find.widgetWithText(OutlinedButton, 'Payroll adjustments'),
-        permissions.contains('finance.approve') ? findsOneWidget : findsNothing,
+        permissions.contains('payroll.approve') ? findsOneWidget : findsNothing,
       );
       expect(
         find.byType(OutlinedButton),
         findsNWidgets(
-          permissions.contains('finance.approve') ? 6 : (canConfigure ? 4 : 0),
+          (canConfigure ? 4 : 0) +
+              (permissions.contains('payroll.approve') ? 2 : 0),
         ),
       );
     });

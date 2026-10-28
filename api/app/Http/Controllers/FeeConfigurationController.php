@@ -18,11 +18,34 @@ class FeeConfigurationController extends Controller
         abort_unless($r->user()->hasPermission('finance.configure') || $r->user()->hasPermission('finance.approve'), 403);
     }
 
+    public function methods(Request $r)
+    {
+        abort_unless($r->user()->hasPermission('finance.read') || $r->user()->hasPermission('finance.write') || $r->user()->hasPermission('payroll.write'), 403);
+
+        return Domain::response(['items' => DB::table('payment_methods')->where('is_active', true)->orderBy('name')->get(['id', 'code', 'name', 'requires_verification'])]);
+    }
+
+    public function updateMethod(Request $r, string $method)
+    {
+        $this->requireConfiguration($r);
+        $v = $r->validate(['name' => 'sometimes|required|string|max:120', 'is_active' => 'sometimes|required|boolean', 'requires_verification' => 'sometimes|required|boolean', 'account_id' => 'prohibited', 'code' => 'prohibited']);
+        DB::transaction(function () use ($r, $method, $v) {
+            $row = DB::table('payment_methods')->where('id', $method)->lockForUpdate()->firstOrFail();
+            if ($row->code === 'cash' && ($v['requires_verification'] ?? false)) {
+                Domain::fail('requires_verification', 'Cash is recorded immediately without bank or management verification.');
+            }
+            DB::table('payment_methods')->where('id', $method)->update([...$v, 'updated_at' => now()]);
+            Audit::record('payment_method_updated', $r->user()->id, 'payment_methods', $method, ['changed_fields' => array_keys($v)]);
+        });
+
+        return Domain::response(['saved' => true]);
+    }
+
     public function show(Request $r)
     {
         $this->access->require($r->user(), 'finance.read');
 
-        return Domain::response(['schedules' => DB::table('fee_schedules as f')->join('classes as c', 'c.id', '=', 'f.class_id')->join('academic_sessions as s', 's.id', '=', 'f.academic_session_id')->select('f.*', 'c.name as class_name', 's.name as session_name')->orderByDesc('f.effective_on')->get(), 'discount_policies' => DB::table('discount_policies')->get(), 'payment_methods' => DB::table('payment_methods')->where('is_active', true)->get(), 'expense_categories' => DB::table('expense_categories')->get(), 'accounts' => DB::table('accounts')->get(), 'discount_stacking' => 'highest_only', 'expense_approval_threshold_minor' => 50000]);
+        return Domain::response(['payment_method_settings' => DB::table('payment_methods')->orderBy('name')->get(), 'schedules' => DB::table('fee_schedules as f')->join('classes as c', 'c.id', '=', 'f.class_id')->join('academic_sessions as s', 's.id', '=', 'f.academic_session_id')->select('f.*', 'c.name as class_name', 's.name as session_name')->orderByDesc('f.effective_on')->get(), 'discount_policies' => DB::table('discount_policies')->get(), 'payment_methods' => DB::table('payment_methods')->where('is_active', true)->get(), 'expense_categories' => DB::table('expense_categories')->get(), 'accounts' => DB::table('accounts')->get(), 'discount_stacking' => 'highest_only', 'expense_approval_threshold_minor' => 50000]);
     }
 
     public function schedule(Request $r)
@@ -54,10 +77,10 @@ class FeeConfigurationController extends Controller
     public function method(Request $r)
     {
         $this->requireConfiguration($r);
-        $v = $r->validate(['code' => 'required|alpha_dash|max:40|unique:payment_methods,code', 'name' => 'required|string|max:120', 'account_id' => 'required|uuid|exists:accounts,id', 'requires_verification' => 'required|boolean']);
+        $v = $r->validate(['code' => 'required|alpha_dash|max:40|unique:payment_methods,code', 'name' => 'required|string|max:120', 'account_id' => 'required|uuid|exists:accounts,id', 'requires_verification' => 'sometimes|boolean']);
         abort_unless(DB::table('accounts')->where('id', $v['account_id'])->where('type', 'asset')->where('is_active', true)->exists(), 422);
 
-        return $this->insert($r, 'payment_methods', $v);
+        return $this->insert($r, 'payment_methods', ['requires_verification' => false, ...$v]);
     }
 
     public function discounts(Request $r)

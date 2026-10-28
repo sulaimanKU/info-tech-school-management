@@ -64,8 +64,9 @@ class FinanceWorkflowTest extends MobileTestCase
         $this->getJson('/api/v1/finance/trial-balance?from=2026-01-01&to=2026-12-31')->assertOk()->assertJsonPath('data.balanced', true);
     }
 
-    public function test_bank_payment_does_not_reduce_balance_before_verification(): void
+    public function test_manually_reviewed_payment_does_not_reduce_balance_before_approval(): void
     {
+        DB::table('payment_methods')->where('code', 'bank_transfer')->update(['requires_verification' => true]);
         $invoice = $this->invoice($this->student());
         $v = $this->payment($invoice, 140000, 'bank_transfer');
         $this->asUser($this->user('accountant_clerk'));
@@ -131,6 +132,7 @@ class FinanceWorkflowTest extends MobileTestCase
                 $this->postJson('/api/v1/finance/payments/'.$id.'/verify')->assertOk();
             }
         }
+        DB::table('payment_methods')->where('code', 'bank_transfer')->update(['requires_verification' => true]);
         $pending = $this->postJson('/api/v1/finance/payments', $this->payment($invoice, 90000, 'bank_transfer'))->assertCreated()->json('data.id');
         $this->postJson('/api/v1/finance/payments', $this->payment($invoice, 90000))->assertCreated();
         $this->postJson('/api/v1/finance/payments/'.$pending.'/verify')->assertConflict();

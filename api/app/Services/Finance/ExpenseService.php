@@ -38,9 +38,7 @@ final class ExpenseService
                 Domain::fail('paid_on', 'Payment date precedes approval.');
             }
             $method = DB::table('payment_methods')->where('id', $v['payment_method_id'])->where('is_active', true)->firstOrFail();
-            if ($method->requires_verification && empty($v['reference'])) {
-                Domain::fail('reference', 'Enter the verified bank reference.');
-            }
+            // References are optional for staff-entered manual disbursements.
             DB::table('expenses')->where('id', $id)->update(['status' => 'paid', 'payment_method_id' => $method->id, 'paid_by' => $user->id, 'paid_on' => $v['paid_on'], 'reference' => $v['reference'] ?? null, 'updated_at' => now()]);
             $journal = app(JournalService::class);
             $journal->post($user, 'expense:'.$id, $v['paid_on'], $e->description, 'expense', $id, [['account_id' => $journal->account('operating_expense'), 'debit_minor' => (int) $e->amount_minor], ['account_id' => $method->account_id, 'credit_minor' => (int) $e->amount_minor]]);

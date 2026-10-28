@@ -10,10 +10,13 @@ use App\Http\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(AuthenticateSession::class)->group(function () {
+    Route::get('finance/summary', [FeeController::class, 'summary']);
+    Route::get('finance/payment-methods', [FeeConfigurationController::class, 'methods']);
     Route::get('finance/configuration', [FeeConfigurationController::class, 'show']);
     Route::post('finance/fee-schedules', [FeeConfigurationController::class, 'schedule']);
     Route::post('finance/fee-assignments', [FeeConfigurationController::class, 'assignment']);
     Route::post('finance/discount-policies', [FeeConfigurationController::class, 'policy']);
+    Route::patch('finance/payment-methods/{method}', [FeeConfigurationController::class, 'updateMethod'])->whereUuid('method');
     Route::post('finance/payment-methods', [FeeConfigurationController::class, 'method']);
     Route::get('finance/discounts', [FeeConfigurationController::class, 'discounts']);
     Route::post('finance/discounts', [FeeConfigurationController::class, 'requestDiscount']);

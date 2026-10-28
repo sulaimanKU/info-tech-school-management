@@ -54,7 +54,7 @@ void main() {
     await auth.login('staff@example.test', 'test-only');
     auth.user = {
       ...testUser,
-      'permissions': ['finance.read'],
+      'permissions': ['finance.read', 'payroll.read', 'accounting.read'],
     };
     await tester.pumpWidget(SchoolApp(auth: auth));
     await tester.ensureVisible(find.text('Fees & Finance').last);

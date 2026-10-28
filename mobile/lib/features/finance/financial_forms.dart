@@ -18,8 +18,13 @@ Future<Map<String, dynamic>?> chooseStudent(
     builder: (_) => StudentListScreen(auth: auth, selection: true),
   ),
 );
-Future<bool?> generateVoucher(BuildContext context, AuthController auth) async {
-  final student = await chooseStudent(context, auth);
+Future<bool?> generateVoucher(
+  BuildContext context,
+  AuthController auth, {
+  Map<String, dynamic>? selectedStudent,
+  String? sessionId,
+}) async {
+  final student = selectedStudent ?? await chooseStudent(context, auth);
   if (student == null) return false;
   final sessions = await auth.call('catalog/sessions');
   if (!context.mounted) return false;
@@ -34,6 +39,7 @@ Future<bool?> generateVoucher(BuildContext context, AuthController auth) async {
           FormFieldSpec(
             'academic_session_id',
             'academicSession',
+            initial: sessionId,
             kind: FieldKind.choice,
             options: {
               for (final v in sessions['items'] as List)
@@ -114,24 +120,77 @@ String? defaultCashMethod(Map<String, dynamic> config) =>
         .firstOrNull;
 
 bool nonCashMethod(Map<String, dynamic> config, Map<String, dynamic> values) =>
-    (config['payment_methods'] as List).any((m) =>
-        m['id'] == values['payment_method_id'] && m['code'] != 'cash');
+    (config['payment_methods'] as List).any(
+      (m) => m['id'] == values['payment_method_id'] && m['code'] != 'cash',
+    );
 
 Future<bool?> recordPayment(
   BuildContext context,
   AuthController auth,
-  List<Map<String, dynamic>> invoices,
-) async {
+  List<Map<String, dynamic>> invoices, {
+  String? studentLabel,
+}) async {
+  final due = invoices.where((i) => (i['balance_minor'] as num) > 0).toList()
+    ..sort(
+      (a, b) => (a['due_on']?.toString() ?? '').compareTo(
+        b['due_on']?.toString() ?? '',
+      ),
+    );
+  if (due.isEmpty) {
+    await showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('No posted dues'),
+        content: const Text(
+          'Generate a fee voucher before recording a payment. Configured fee schedules are not posted charges.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    return false;
+  }
   final config = await auth.call('finance/configuration');
   if (!context.mounted) return false;
+  if ((config['payment_methods'] as List? ?? []).isEmpty) {
+    await showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('No active payment methods'),
+        content: const Text(
+          'Ask the school administrator to configure manual payment methods before recording a payment.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    return false;
+  }
   final requestId = operationId();
-  final due = invoices.where((i) => (i['balance_minor'] as num) > 0).toList();
+  final outstanding = due.fold<int>(
+    0,
+    (sum, i) => sum + (i['balance_minor'] as num).toInt(),
+  );
   String? paymentId;
   final saved = await Navigator.push<bool>(
     context,
     MaterialPageRoute(
       builder: (_) => DomainForm(
         title: 'recordPayment',
+        summary: Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Text(
+            '${studentLabel ?? ''}\nOutstanding before payment: ${Money.format(outstanding)}\nPayments are entered manually and allocated to the oldest due vouchers first.',
+          ),
+        ),
         fields: [
           FormFieldSpec(
             'payment_method_id',
@@ -149,35 +208,46 @@ Future<bool?> recordPayment(
             kind: FieldKind.date,
             initial: DateTime.now().toIso8601String().substring(0, 10),
           ),
-          FormFieldSpec(
-            'reference',
-            'transactionReference',
+          FormFieldSpec('reference', 'transactionReference', required: false),
+          const FormFieldSpec(
+            'notes',
+            'Notes',
             required: false,
-            visibleWhen: (values) => nonCashMethod(config, values),
+            kind: FieldKind.multiline,
+            maxLength: 500,
           ),
-          const FormFieldSpec('notes', 'Notes', required: false, kind: FieldKind.multiline, maxLength: 500),
-          for (final i in due)
-            FormFieldSpec(
-              'amount_${i['id']}',
-              '${i['voucher_number']} · ${Money.format(i['balance_minor'])}',
-              kind: FieldKind.money,
-              required: false,
-              initial: due.length == 1 ? i['balance_minor'] : null,
-            ),
+          FormFieldSpec(
+            'amount_received',
+            'Amount received (PKR)',
+            kind: FieldKind.money,
+            initial: outstanding,
+          ),
         ],
         onSubmit: (v) async {
+          final amount = v.remove('amount_received') as int;
+          if (amount <= 0 || amount > outstanding) {
+            throw const ApiFailure(
+              'validation',
+              fields: {
+                'amount_received': [
+                  'Enter a positive amount no greater than outstanding dues.',
+                ],
+              },
+            );
+          }
+          var remaining = amount;
           final allocations = <Map<String, dynamic>>[];
           for (final i in due) {
-            final amount = v.remove('amount_${i['id']}') as int?;
-            if (amount != null && amount > 0) {
+            final part = remaining < (i['balance_minor'] as num).toInt()
+                ? remaining
+                : (i['balance_minor'] as num).toInt();
+            if (part > 0) {
               allocations.add({
                 'fee_invoice_id': i['id'],
-                'amount_minor': amount,
+                'amount_minor': part,
               });
+              remaining -= part;
             }
-          }
-          if (allocations.isEmpty) {
-            throw const ApiFailure('validation');
           }
           final result = await auth.call(
             'finance/payments',
@@ -197,8 +267,15 @@ Future<bool?> recordPayment(
     ),
   );
   if (saved == true && context.mounted && paymentId != null) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment recorded successfully')));
-    await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => PaymentDetailScreen(auth: auth, id: paymentId!)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Payment recorded successfully')),
+    );
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PaymentDetailScreen(auth: auth, id: paymentId!),
+      ),
+    );
   }
   return saved;
 }
@@ -206,16 +283,43 @@ Future<bool?> recordPayment(
 Future<bool?> disbursementForm(
   BuildContext context,
   AuthController auth,
-  String path,
-) async {
-  final config = await auth.call('finance/configuration');
+  String path, {
+  int? outstanding,
+  String? payrollItemId,
+  String? staffName,
+}) async {
+  final methods = await auth.call('finance/payment-methods');
+  final config = {'payment_methods': methods['items'] ?? []};
   if (!context.mounted) return false;
+  if ((config['payment_methods'] as List? ?? []).isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'No active payment methods. Ask the administrator to configure them.',
+        ),
+      ),
+    );
+    return false;
+  }
+  final requestId = operationId();
   return Navigator.push<bool>(
     context,
     MaterialPageRoute(
       builder: (_) => DomainForm(
         title: 'disburse',
+        summary: outstanding == null
+            ? null
+            : Text(
+                '${staffName ?? 'Payroll'}\nOutstanding: ${Money.format(outstanding)}',
+              ),
         fields: [
+          if (outstanding != null)
+            FormFieldSpec(
+              'amount_minor',
+              'Amount paid (PKR)',
+              kind: FieldKind.money,
+              initial: outstanding,
+            ),
           FormFieldSpec(
             'payment_method_id',
             'paymentMethod',
@@ -232,14 +336,29 @@ Future<bool?> disbursementForm(
             kind: FieldKind.date,
             initial: DateTime.now().toIso8601String().substring(0, 10),
           ),
-          FormFieldSpec(
-            'reference',
-            'transactionReference',
-            required: false,
-            visibleWhen: (values) => nonCashMethod(config, values),
-          ),
+          FormFieldSpec('reference', 'transactionReference', required: false),
+          if (outstanding != null)
+            const FormFieldSpec(
+              'notes',
+              'Notes',
+              required: false,
+              kind: FieldKind.multiline,
+              maxLength: 500,
+            ),
         ],
         onSubmit: (v) async {
+          if (outstanding != null) {
+            final amount = v['amount_minor'] as int;
+            if (amount <= 0 || amount > outstanding) {
+              throw const ApiFailure('validation');
+            }
+            v['request_id'] = requestId;
+            if (payrollItemId != null) {
+              v['allocations'] = [
+                {'payroll_item_id': payrollItemId, 'amount_minor': amount},
+              ];
+            }
+          }
           await auth.call(path, body: v);
         },
       ),

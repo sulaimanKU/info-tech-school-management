@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Finance\FinancialLock;
 use App\Services\Finance\EffectiveConfiguration;
+use App\Services\Finance\FinancialLock;
 use App\Services\Finance\PayrollService;
 use App\Services\SchoolAccess;
 use App\Support\Audit;
@@ -18,24 +18,24 @@ class PayrollController extends Controller
 
     public function index(Request $r)
     {
-        $this->access->require($r->user(), 'finance.read');
+        $this->access->require($r->user(), 'payroll.read');
 
         $v = $r->validate(['period' => 'nullable|date_format:Y-m']);
 
-        return Domain::response(['items' => DB::table('payroll_periods')->when($v['period'] ?? null, fn ($q, $period) => $q->where('period', $period))->orderByDesc('period')->get(), 'compensation' => DB::table('staff_compensation as c')->join('staff_profiles as s', 's.id', '=', 'c.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->orderByDesc('c.effective_on')->get(['c.*', 'u.name', 's.employee_number']), 'staff' => DB::table('staff_profiles as s')->join('users as u', 'u.id', '=', 's.user_id')->where('s.is_active', true)->where('u.is_active', true)->orderBy('u.name')->get(['s.id', 's.employee_number', 'u.name'])]);
+        return Domain::response(['items' => DB::table('payroll_periods')->when($v['period'] ?? null, fn ($q, $period) => $q->where('period', $period))->orderByDesc('period')->get()->map(fn ($p) => $this->service->details($p)), 'compensation' => DB::table('staff_compensation as c')->join('staff_profiles as s', 's.id', '=', 'c.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->orderByDesc('c.effective_on')->get(['c.*', 'u.name', 's.employee_number']), 'staff' => DB::table('staff_profiles as s')->join('users as u', 'u.id', '=', 's.user_id')->where('s.is_active', true)->where('u.is_active', true)->orderBy('u.name')->get(['s.id', 's.employee_number', 'u.name'])]);
     }
 
     public function show(Request $r, string $payroll)
     {
-        $this->access->require($r->user(), 'finance.read');
+        $this->access->require($r->user(), 'payroll.read');
         $p = DB::table('payroll_periods')->where('id', $payroll)->firstOrFail();
 
-        return Domain::response([...(array) $p, 'method' => DB::table('payment_methods')->where('id', $p->payment_method_id)->value('name'), 'paid_minor' => $p->status === 'paid' ? (int) $p->total_minor : 0, 'items' => DB::table('payroll_items as i')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->where('i.payroll_period_id', $payroll)->get(['i.*', 'u.name', 's.employee_number'])]);
+        return Domain::response($this->service->details($p));
     }
 
     public function compensation(Request $r)
     {
-        $this->access->require($r->user(), 'finance.approve');
+        $this->access->require($r->user(), 'payroll.approve');
         $v = $r->validate(['staff_profile_id' => 'required|uuid|exists:staff_profiles,id', 'base_salary_minor' => 'required|integer|min:0|max:1000000000', 'effective_on' => 'required|date']);
         $id = DB::transaction(function () use ($r, $v) {
             DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->where('is_active', true)->lockForUpdate()->firstOrFail();
@@ -50,7 +50,7 @@ class PayrollController extends Controller
 
     public function adjustment(Request $r)
     {
-        $this->access->require($r->user(), 'finance.approve');
+        $this->access->require($r->user(), 'payroll.approve');
         $v = $r->validate(['staff_profile_id' => 'required|uuid|exists:staff_profiles,id', 'period' => 'required|date_format:Y-m', 'amount_minor' => 'required|integer|min:-1000000000|max:1000000000', 'reason' => 'required|string|max:500']);
         $id = DB::transaction(function () use ($r, $v) {
             app(FinancialLock::class)->request('payroll', $v['period']);
@@ -68,7 +68,7 @@ class PayrollController extends Controller
 
     public function store(Request $r)
     {
-        $this->access->require($r->user(), 'finance.write');
+        $this->access->require($r->user(), 'payroll.write');
         $v = $r->validate(['period' => 'required|date_format:Y-m']);
 
         return Domain::response(['id' => $this->service->generate($r->user(), $v['period'])], 201);
@@ -76,7 +76,7 @@ class PayrollController extends Controller
 
     public function approve(Request $r, string $payroll)
     {
-        $this->access->require($r->user(), 'finance.approve');
+        $this->access->require($r->user(), 'payroll.approve');
         $p = DB::table('payroll_periods')->where('id', $payroll)->firstOrFail();
         if (Carbon::parse($p->period.'-01')->endOfMonth()->isFuture()) {
             Domain::fail('period', 'Approve completed payroll periods only.');
@@ -87,8 +87,8 @@ class PayrollController extends Controller
 
     public function pay(Request $r, string $payroll)
     {
-        $this->access->require($r->user(), 'finance.write');
-        $v = $r->validate(['payment_method_id' => 'required|uuid|exists:payment_methods,id', 'paid_on' => 'required|date|before_or_equal:today', 'reference' => 'nullable|string|max:200']);
+        $this->access->require($r->user(), 'payroll.write');
+        $v = $r->validate(['payment_method_id' => 'required|uuid|exists:payment_methods,id', 'paid_on' => 'required|date|before_or_equal:today', 'reference' => 'nullable|string|max:200', 'notes' => 'nullable|string|max:500', 'amount_minor' => 'sometimes|required|integer|min:1|max:1000000000', 'request_id' => 'required_with:amount_minor,allocations|uuid', 'allocations' => 'sometimes|required|array|min:1|max:200', 'allocations.*.payroll_item_id' => 'required|uuid|distinct|exists:payroll_items,id', 'allocations.*.amount_minor' => 'required|integer|min:1|max:1000000000']);
         $this->service->pay($r->user(), $payroll, $v);
 
         return Domain::response(['paid' => true]);

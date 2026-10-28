@@ -24,11 +24,21 @@ class PaymentScreen extends StatelessWidget {
     auth: auth,
     path: 'finance/payments',
     title: 'paymentHistory',
-    onCreate: auth.can('finance.write') ? (context) async {
-      final student = await chooseStudent(context, auth);
-      if (student == null || !context.mounted) return;
-      await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => StudentFeeScreen(auth: auth, studentId: student['id'] as String)));
-    } : null,
+    onCreate: auth.can('finance.write')
+        ? (context) async {
+            final student = await chooseStudent(context, auth);
+            if (student == null || !context.mounted) return;
+            await Navigator.push<void>(
+              context,
+              MaterialPageRoute(
+                builder: (_) => StudentFeeScreen(
+                  auth: auth,
+                  studentId: student['id'] as String,
+                ),
+              ),
+            );
+          }
+        : null,
     recordTitle: (p) =>
         p['receipt_number']?.toString() ??
         Strings.of(context).text('pendingVerification'),
@@ -186,9 +196,12 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       Text(data!['paid_on'] as String),
-                      if (data!['method'] != null) Text(data!['method'] as String),
-                      if (data!['recorded_by_name'] != null) Text('Received by: ${data!['recorded_by_name']}'),
-                      if (data!['notes'] != null) Text(data!['notes'] as String),
+                      if (data!['method'] != null)
+                        Text(data!['method'] as String),
+                      if (data!['recorded_by_name'] != null)
+                        Text('Received by: ${data!['recorded_by_name']}'),
+                      if (data!['notes'] != null)
+                        Text(data!['notes'] as String),
                       if (data!['reference'] != null)
                         Text(data!['reference'] as String),
                       AppBadge(
@@ -200,7 +213,16 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 ),
                 const SizedBox(height: AppSpace.lg),
                 if (data!['status'] == 'verified')
-                  FilledButton.icon(onPressed: () => openSchoolReport(context, widget.auth, 'receipt', {'payment_id': widget.id}), icon: const Icon(Icons.receipt_long), label: const Text('View receipt')),
+                  FilledButton.icon(
+                    onPressed: () => openSchoolReport(
+                      context,
+                      widget.auth,
+                      'receipt',
+                      {'payment_id': widget.id},
+                    ),
+                    icon: const Icon(Icons.receipt_long),
+                    label: const Text('View receipt'),
+                  ),
                 for (final a in data!['allocations'] as List)
                   ListTile(
                     title: Text(a['voucher_number'] as String),

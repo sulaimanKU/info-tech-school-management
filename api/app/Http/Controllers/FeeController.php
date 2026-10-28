@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\AcademicFilters;
 use App\Services\Finance\FeeService;
 use App\Services\Finance\InvoiceBalance;
+use App\Services\Finance\PayrollService;
+use App\Services\Finance\StudentFinance;
 use App\Services\SchoolAccess;
 use App\Support\Domain;
 use Illuminate\Http\Request;
@@ -13,6 +15,37 @@ use Illuminate\Support\Facades\DB;
 class FeeController extends Controller
 {
     public function __construct(private SchoolAccess $access, private InvoiceBalance $balance) {}
+
+    public function summary(Request $r)
+    {
+        $this->access->require($r->user(), 'finance.read');
+        $filters = app(AcademicFilters::class);
+        $v = $filters->values($r, ['period' => 'nullable|date_format:Y-m']);
+        $students = $filters->students($this->access->students($r->user()), $r, array_diff_key($v, ['status' => true]));
+        $invoices = DB::table('fee_invoices')->whereIn('student_id', $students->select('students.id'))
+            ->when($v['academic_session_id'] ?? null, fn ($q, $id) => $q->where('academic_session_id', $id))
+            ->when($v['from'] ?? null, fn ($q, $date) => $q->where('issued_on', '>=', $date))
+            ->when($v['to'] ?? null, fn ($q, $date) => $q->where('issued_on', '<=', $date))->get();
+        $amounts = collect($this->balance->many($invoices));
+        $studentBalances = $invoices->groupBy('student_id')->map(function ($rows, $student) use ($amounts) {
+            $a = $rows->map(fn ($i) => $amounts[$i->id]);
+            $identity = DB::table('students')->find($student);
+
+            return ['student_id' => $student, 'full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, 'total_minor' => (int) $a->sum('net_total_minor'), 'paid_minor' => (int) $a->sum('paid_minor'), 'balance_minor' => (int) $a->sum('balance_minor')];
+        })->values();
+        $period = $v['period'] ?? now()->format('Y-m');
+        $data = ['billing_basis' => 'posted_vouchers', 'period' => $period, 'total_minor' => (int) $amounts->sum('net_total_minor'), 'paid_minor' => (int) $amounts->sum('paid_minor'), 'discount_minor' => (int) $invoices->sum('discount_minor'), 'balance_minor' => (int) $amounts->sum('balance_minor'), 'arrears_minor' => (int) $invoices->filter(fn ($i) => $i->period < $period)->sum(fn ($i) => $amounts[$i->id]['balance_minor']), 'students_unpaid' => $studentBalances->filter(fn ($s) => $s['balance_minor'] > 0 && $s['paid_minor'] === 0)->count(), 'students_partially_paid' => $studentBalances->filter(fn ($s) => $s['balance_minor'] > 0 && $s['paid_minor'] > 0)->count(), 'student_balances' => $studentBalances->sortByDesc('balance_minor')->take(30)->values()];
+        $data['recent_payments'] = DB::table('payments as p')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')->join('users as u', 'u.id', '=', 'p.recorded_by')
+            ->whereIn('p.id', DB::table('payment_allocations')->whereIn('fee_invoice_id', $invoices->pluck('id'))->select('payment_id'))
+            ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('payment_allocations as a')->join('fee_invoices as i', 'i.id', '=', 'a.fee_invoice_id')->whereColumn('a.payment_id', 'p.id')->whereNotIn('i.student_id', $this->access->students($r->user())->select('students.id')))
+            ->orderByDesc('p.paid_on')->orderByDesc('p.created_at')->limit(10)->get(['p.id', 'p.receipt_number', 'p.paid_on', 'p.amount_minor', 'p.status', 'p.reference', 'p.notes', 'm.name as method', 'u.name as recorded_by_name'])->map(fn ($p) => [...(array) $p, 'amount_minor' => (int) DB::table('payment_allocations')->where('payment_id', $p->id)->whereIn('fee_invoice_id', $invoices->pluck('id'))->sum('amount_minor')]);
+        if ($r->user()->hasPermission('payroll.read')) {
+            $payroll = DB::table('payroll_periods')->whereIn('status', ['approved', 'paid'])->when($v['period'] ?? null, fn ($q, $period) => $q->where('period', $period))->get()->map(fn ($p) => app(PayrollService::class)->details($p));
+            $data['payroll'] = ['total_minor' => (int) $payroll->sum('total_minor'), 'paid_minor' => (int) $payroll->sum('paid_minor'), 'balance_minor' => (int) $payroll->sum('balance_minor')];
+        }
+
+        return Domain::response($data);
+    }
 
     public function index(Request $r)
     {
@@ -70,20 +103,26 @@ class FeeController extends Controller
         if (! $this->access->isParent($r->user())) {
             $this->access->require($r->user(), 'finance.read');
         }$identity = $this->access->student($r->user(), $student);
-        $class = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->join('classes as c', 'c.id', '=', 's.class_id')->where('e.student_id', $student)->where('e.status', 'active')->first(['c.name as class_name', 's.name as section_name']);
-        $items = DB::table('fee_invoices')->where('student_id', $student)->orderByDesc('period')->get()->map(fn ($i) => [...$this->safeInvoice($i), ...$this->balance->calculate($i)]);
-        $payments = DB::table('payment_allocations as a')->join('payments as p', 'p.id', '=', 'a.payment_id')->join('fee_invoices as i', 'i.id', '=', 'a.fee_invoice_id')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')->where('i.student_id', $student)->orderByDesc('p.paid_on')->get(['p.id', 'p.receipt_number', 'p.paid_on', 'p.status', 'p.reference', 'a.id as allocation_id', 'a.amount_minor', 'a.fee_invoice_id', 'm.name as method'])->map(function ($p) use ($r) {
+        $v = $r->validate(['academic_session_id' => 'nullable|uuid|exists:academic_sessions,id', 'period' => 'nullable|date_format:Y-m']);
+        $snapshot = app(StudentFinance::class)->snapshot($student, $v['academic_session_id'] ?? null, $v['period'] ?? now()->format('Y-m'));
+        $payments = DB::table('payment_allocations as a')->join('payments as p', 'p.id', '=', 'a.payment_id')->join('fee_invoices as i', 'i.id', '=', 'a.fee_invoice_id')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')->where('i.student_id', $student)->when($snapshot['filter_session_id'], fn ($q, $session) => $q->where('i.academic_session_id', $session))->orderByDesc('p.paid_on')->orderByDesc('p.created_at')->get(['p.id', 'p.receipt_number', 'p.paid_on', 'p.status', 'p.reference', 'p.notes', 'p.recorded_by', 'a.id as allocation_id', 'a.amount_minor', 'a.fee_invoice_id', 'm.name as method'])->map(function ($p) use ($r) {
             $data = (array) $p;
+            $data['recorded_by_name'] = DB::table('users')->where('id', $p->recorded_by)->value('name');
             $data['refunded_minor'] = (int) DB::table('refund_allocations')->where('payment_allocation_id', $p->allocation_id)->sum('amount_minor');
             if ($this->access->isParent($r->user())) {
+                unset($data['notes'], $data['recorded_by'], $data['recorded_by_name']);
                 $data['reference'] = $p->reference ? '****'.substr($p->reference, -4) : null;
             }
 
             return $data;
         });
-        $discounts = DB::table('student_discounts as d')->join('discount_policies as p', 'p.id', '=', 'd.discount_policy_id')->where('d.student_id', $student)->where('d.status', 'approved')->whereNull('d.revoked_at')->get(['p.name', 'd.basis_points', 'd.starts_on', 'd.ends_on']);
+        $discounts = DB::table('student_discounts as d')->join('discount_policies as p', 'p.id', '=', 'd.discount_policy_id')->where('d.student_id', $student)->when($snapshot['academic_session_id'], fn ($q, $session) => $q->where('d.academic_session_id', $session))->where('d.status', 'approved')->whereNull('d.revoked_at')->get(['p.name', 'd.basis_points', 'd.starts_on', 'd.ends_on']);
 
-        return Domain::response(['student' => ['full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, ...(array) $class], 'total_minor' => $items->sum('net_total_minor'), 'paid_minor' => $items->sum('paid_minor'), 'items' => $items, 'balance_minor' => $items->sum('balance_minor'), 'arrears_minor' => $items->filter(fn ($i) => $i['period'] < now()->format('Y-m'))->sum('balance_minor'), 'payments' => $payments, 'discounts' => $discounts, 'fee_schedule' => DB::table('fee_schedules as f')->whereExists(fn ($q) => $q->selectRaw('1')->from('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->where('e.student_id', $student)->where('e.status', 'active')->whereColumn('s.class_id', 'f.class_id')->whereColumn('s.academic_session_id', 'f.academic_session_id'))->get(['f.kind', 'f.amount_minor', 'f.effective_on'])]);
+        $payments = $payments->groupBy('id')->map(fn ($rows) => [...$rows->first(), 'amount_minor' => (int) $rows->sum('amount_minor'), 'refunded_minor' => (int) $rows->sum('refunded_minor')])->values();
+        $class = $snapshot['class'];
+        unset($snapshot['class']);
+
+        return Domain::response([...$snapshot, 'student' => ['id' => $student, 'full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, ...$class], 'payments' => $payments, 'discounts' => $discounts]);
     }
 
     public function store(Request $r, FeeService $service)

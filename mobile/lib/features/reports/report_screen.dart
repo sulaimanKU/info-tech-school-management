@@ -164,7 +164,7 @@ class ReportScreen extends StatelessWidget {
               onTap: () => filteredReport(context, 'registration'),
             ),
           if (auth.can('reports.export') &&
-              auth.can('finance.read') &&
+              auth.can('accounting.read') &&
               auth.can('students.read.all'))
             ListTile(
               leading: const Icon(Icons.account_balance),
