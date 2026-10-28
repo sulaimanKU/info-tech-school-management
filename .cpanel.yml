@@ -1,0 +1,14 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/treadcom/info-tech-school-api/
+    - /bin/cp -R api/app $DEPLOYPATH
+    - /bin/cp -R api/bootstrap $DEPLOYPATH
+    - /bin/cp -R api/config $DEPLOYPATH
+    - /bin/cp -R api/database $DEPLOYPATH
+    - /bin/cp -R api/public $DEPLOYPATH
+    - /bin/cp -R api/resources $DEPLOYPATH
+    - /bin/cp -R api/routes $DEPLOYPATH
+    - /bin/cp api/artisan $DEPLOYPATH
+    - /bin/cp api/composer.json $DEPLOYPATH
+    - /bin/cp api/composer.lock $DEPLOYPATH
