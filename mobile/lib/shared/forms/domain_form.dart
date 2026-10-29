@@ -135,7 +135,11 @@ class _DomainFormState extends State<DomainForm> {
     final data = <String, dynamic>{};
     for (final f in widget.fields) {
       if (f.visibleWhen != null && !f.visibleWhen!(values)) continue;
-      final value = controllers[f.name]?.text.trim() ?? values[f.name];
+      final value =
+          (f.kind == FieldKind.password
+              ? controllers[f.name]?.text
+              : controllers[f.name]?.text.trim()) ??
+          values[f.name];
       if (value == null || value == '') {
         if (f.required) continue;
         data[f.name] = null;
@@ -188,6 +192,7 @@ class _DomainFormState extends State<DomainForm> {
                       if (widget.summary != null) widget.summary!,
                       if (widget.academicAuth != null)
                         AcademicSelection(
+                          preferCurrentSession: true,
                           auth: widget.academicAuth!,
                           initial: {
                             for (final k in ['section_id', 'subject_id'])
@@ -347,25 +352,29 @@ class _DomainFormState extends State<DomainForm> {
     }
     if (f.kind == FieldKind.choice) {
       return DropdownButtonFormField<String>(
-        initialValue: values[f.name] as String?,
+        initialValue: f.options.containsKey(values[f.name])
+            ? values[f.name] as String?
+            : null,
         isExpanded: true,
         decoration: InputDecoration(
           labelText: s.text(f.label),
           errorText: fieldError(f.name),
           errorMaxLines: 3,
         ),
-        items: f.options.entries
-            .map(
-              (e) => DropdownMenuItem(
-                value: e.key,
-                child: Text(e.value, overflow: TextOverflow.ellipsis),
-              ),
-            )
-            .toList(),
+        items: [
+          if (!f.required)
+            DropdownMenuItem(value: '', child: Text(s.text('anyValue'))),
+          ...f.options.entries.map(
+            (e) => DropdownMenuItem(
+              value: e.key,
+              child: Text(e.value, overflow: TextOverflow.ellipsis),
+            ),
+          ),
+        ],
         onChanged: busy
             ? null
             : (v) => setState(() {
-                values[f.name] = v;
+                values[f.name] = v == '' ? null : v;
                 fieldErrors.remove(f.name);
               }),
         validator: (v) =>

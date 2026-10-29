@@ -3,88 +3,33 @@ import 'package:flutter/material.dart';
 import '../../core/api_client.dart';
 import '../../design/app_theme.dart';
 import '../../l10n/strings.dart';
-import '../../shared/forms/domain_form.dart';
+import 'assessment_form.dart';
 import '../../shared/widgets/data_state.dart';
 import '../../shared/widgets/records_screen.dart';
 import '../../shared/widgets/surface_card.dart';
 import '../auth/auth_controller.dart';
-import '../students/student_form.dart';
 
 class AssessmentScreen extends StatelessWidget {
-  const AssessmentScreen({super.key, required this.auth});
+  const AssessmentScreen({super.key, required this.auth, this.initialSection});
   final AuthController auth;
+  final String? initialSection;
   Future<void> create(BuildContext context) async {
-    try {
-      final sections = await sectionOptions(auth);
-      final result = await auth.call('catalog/subjects');
-      if (!context.mounted) return;
-      final s = Strings.of(context);
-      await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DomainForm(
-            academicAuth: auth,
-            title: 'addAssessment',
-            fields: [
-              FormFieldSpec(
-                'section_id',
-                'classSection',
-                kind: FieldKind.choice,
-                options: sections,
-              ),
-              FormFieldSpec(
-                'subject_id',
-                'subject',
-                kind: FieldKind.choice,
-                options: {
-                  for (final v in result['items'] as List)
-                    (v['id'] as String): v['name'] as String,
-                },
-              ),
-              const FormFieldSpec('title', 'title'),
-              FormFieldSpec(
-                'type',
-                'assessmentType',
-                kind: FieldKind.choice,
-                options: {
-                  for (final k in [
-                    'monthly_test',
-                    'unit_test',
-                    'midterm',
-                    'final',
-                    'oral',
-                    'assignment',
-                    'practical',
-                  ])
-                    k: s.text(k),
-                },
-              ),
-              const FormFieldSpec('date', 'date', kind: FieldKind.date),
-              const FormFieldSpec(
-                'maximum_marks',
-                'maximumMarks',
-                kind: FieldKind.integer,
-              ),
-            ],
-            onSubmit: (v) async {
-              await auth.call('assessments', body: v);
-            },
-          ),
-        ),
-      );
-    } on ApiFailure catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(Strings.of(context).text(e.code))),
-        );
-      }
-    }
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            AssessmentForm(auth: auth, initialSection: initialSection),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) => RecordsScreen(
     auth: auth,
-    path: 'assessments',
+    path: Uri(
+      path: 'assessments',
+      queryParameters: {'section_id': ?initialSection},
+    ).toString(),
     title: 'assessments',
     recordTitle: (r) => r['title'] as String,
     recordSubtitle: (r) =>
@@ -229,7 +174,13 @@ class _MarksScreenState extends State<MarksScreen> {
   @override
   Widget build(BuildContext context) {
     final s = Strings.of(context);
-    final editable = data?['status'] == 'draft';
+    final editable =
+        data?['can_edit'] == true ||
+        (data?['can_edit'] == null &&
+            data?['status'] == 'draft' &&
+            widget.auth.can('academics.write') &&
+            (data?['teacher_user_id'] == widget.auth.user?['id'] ||
+                widget.auth.can('academics.review')));
     return Scaffold(
       appBar: AppBar(
         title: Text(data?['title']?.toString() ?? s.text('assessments')),
@@ -300,7 +251,10 @@ class _MarksScreenState extends State<MarksScreen> {
                   Wrap(
                     spacing: AppSpace.sm,
                     children: [
-                      if (data!['status'] == 'submitted')
+                      if (data!['status'] == 'submitted' &&
+                          (data!['can_approve'] ??
+                              data!['teacher_user_id'] !=
+                                  widget.auth.user?['id']))
                         FilledButton(
                           onPressed: busy ? null : () => review('approve'),
                           child: Text(s.text('approve')),

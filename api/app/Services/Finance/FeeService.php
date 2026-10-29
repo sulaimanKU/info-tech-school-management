@@ -13,41 +13,41 @@ final class FeeService
 {
     public function __construct(private JournalService $journal, private InvoiceBalance $balance) {}
 
-    public function configuredAmount(string $student, string $session, string $class, string $kind, string $start, string $end): ?int
+    public function configuredAmount(string $student, string $session, string $class, string $kind, string $start, string $end, ?BillingSnapshot $snapshot = null): ?int
     {
-        $assignment = DB::table('student_fee_assignments')->where('student_id', $student)->where('academic_session_id', $session)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
+        $assignment = $snapshot ? $snapshot->assignments->get($student, collect())->first(fn ($a) => $a->academic_session_id === $session && $a->effective_on <= $start) : DB::table('student_fee_assignments')->where('student_id', $student)->where('academic_session_id', $session)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
         if ($kind === 'tuition' && $assignment?->tuition_override_minor !== null) {
             return (int) $assignment->tuition_override_minor;
         }
-        $schedule = DB::table('fee_schedules')->where('academic_session_id', $session)->where('class_id', $class)->where('kind', $kind)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
+        $schedule = $snapshot ? $snapshot->schedules->first(fn ($a) => $a->academic_session_id === $session && $a->class_id === $class && $a->kind === $kind && $a->effective_on <= $start) : DB::table('fee_schedules')->where('academic_session_id', $session)->where('class_id', $class)->where('kind', $kind)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
 
         return $schedule ? (int) $schedule->amount_minor : null;
     }
 
-    public function tuitionQuote(string $student, string $session, string $period): ?array
+    public function tuitionQuote(string $student, string $session, string $period, ?BillingSnapshot $snapshot = null): ?array
     {
         $start = $period.'-01';
         $end = Carbon::parse($start)->endOfMonth()->toDateString();
-        $enrollment = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->where('e.student_id', $student)->where('e.academic_session_id', $session)->where('e.starts_on', '<=', $end)->where(fn ($q) => $q->whereNull('e.ends_on')->orWhere('e.ends_on', '>=', $start))->orderByDesc('e.starts_on')->first(['s.class_id', 'e.starts_on']);
+        $enrollment = $snapshot ? $snapshot->enrollmentsFor($student)->first(fn ($e) => $e->academic_session_id === $session && $e->starts_on <= $end && ($e->ends_on === null || $e->ends_on >= $start)) : DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->where('e.student_id', $student)->where('e.academic_session_id', $session)->where('e.starts_on', '<=', $end)->where(fn ($q) => $q->whereNull('e.ends_on')->orWhere('e.ends_on', '>=', $start))->orderByDesc('e.starts_on')->first(['s.class_id', 'e.starts_on']);
         if (! $enrollment) {
             return null;
         }
-        $sessionRow = DB::table('academic_sessions')->find($session);
-        $identity = DB::table('students')->find($student);
+        $sessionRow = $snapshot ? $snapshot->sessions->get($session) : DB::table('academic_sessions')->find($session);
+        $identity = $snapshot ? $snapshot->students->get($student) : DB::table('students')->find($student);
         $start = max($start, $enrollment->starts_on, $sessionRow->starts_on, $identity->admitted_on);
-        $gross = $this->configuredAmount($student, $session, $enrollment->class_id, 'tuition', $start, $end);
+        $gross = $this->configuredAmount($student, $session, $enrollment->class_id, 'tuition', $start, $end, $snapshot);
         if ($gross === null) {
             return null;
         }
-        $discount = $this->discount($student, $session, $start, $gross, $gross);
+        $discount = $this->discount($student, $session, $start, $gross, $gross, $snapshot);
 
         return ['gross_minor' => $gross, 'discount_minor' => $discount, 'net_minor' => $gross - $discount];
     }
 
-    private function discount(string $student, string $session, string $start, int $gross, int $discountBase): int
+    private function discount(string $student, string $session, string $start, int $gross, int $discountBase, ?BillingSnapshot $snapshot = null): int
     {
         $discount = 0;
-        $policies = DB::table('student_discounts as d')->join('discount_policies as p', 'p.id', '=', 'd.discount_policy_id')->where('d.student_id', $student)->where('d.academic_session_id', $session)->where(fn ($q) => $q->where('d.status', 'approved')->orWhere(fn ($q) => $q->where('d.status', 'revoked')->whereNotNull('d.approved_by')->whereNotNull('d.approved_at')))->where(fn ($q) => $q->whereNull('d.revoked_at')->orWhereDate('d.revoked_at', '>', $start))->where('d.starts_on', '<=', $start)->where('d.ends_on', '>=', $start)->where('p.is_active', true)->get(['d.basis_points', 'p.maximum_basis_points', 'p.applies_to']);
+        $policies = $snapshot ? $snapshot->discounts->get($student, collect())->filter(fn ($d) => $d->academic_session_id === $session && ($d->revoked_at === null || substr($d->revoked_at, 0, 10) > $start) && $d->starts_on <= $start && $d->ends_on >= $start) : DB::table('student_discounts as d')->join('discount_policies as p', 'p.id', '=', 'd.discount_policy_id')->where('d.student_id', $student)->where('d.academic_session_id', $session)->where(fn ($q) => $q->where('d.status', 'approved')->orWhere(fn ($q) => $q->where('d.status', 'revoked')->whereNotNull('d.approved_by')->whereNotNull('d.approved_at')))->where(fn ($q) => $q->whereNull('d.revoked_at')->orWhereDate('d.revoked_at', '>', $start))->where('d.starts_on', '<=', $start)->where('d.ends_on', '>=', $start)->where('p.is_active', true)->get(['d.basis_points', 'p.maximum_basis_points', 'p.applies_to']);
         // Highest applicable monetary discount wins. Stacking is deliberately not enabled.
         foreach ($policies as $policy) {
             if ($policy->basis_points > $policy->maximum_basis_points) {

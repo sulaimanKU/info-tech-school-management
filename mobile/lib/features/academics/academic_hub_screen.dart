@@ -1,3 +1,6 @@
+import '../administration/teaching_assignments_screen.dart';
+import 'teacher_workspace_screen.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../design/app_theme.dart';
@@ -18,6 +21,14 @@ class AcademicHubScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = Strings.of(context);
     final entries = [
+      if (auth.isTeacher)
+        ('myClasses', Icons.class_outlined, TeacherWorkspaceScreen(auth: auth)),
+      if (auth.can('school.manage') || auth.can('assignments.manage'))
+        (
+          'teachingAssignments',
+          Icons.assignment_ind_outlined,
+          TeachingAssignmentsScreen(auth: auth),
+        ),
       ('examSchedules', Icons.event_note, ExamScheduleScreen(auth: auth)),
       if (auth.can('school.manage'))
         (

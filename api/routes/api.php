@@ -1,11 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SchoolSettingsController;
 use App\Http\Controllers\StaffAccountController;
 use App\Http\Middleware\AuthenticateSession;
-use App\Http\Middleware\RequirePermission;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -19,9 +17,9 @@ Route::prefix('v1')->group(function () {
         Route::get('account/salary-slips/{item}/document', [StaffAccountController::class, 'salaryDocument'])->whereUuid('item');
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/logout', [AuthController::class, 'logout']);
-        Route::get('school-settings', function (Request $r) {
-            return response()->json(['data' => DB::table('school_settings')->get()->mapWithKeys(fn ($s) => [$s->key => json_decode($s->value, true)]), 'error' => null]);
-        })->middleware(RequirePermission::class.':settings.read');
+        Route::get('school-information', [SchoolSettingsController::class, 'information']);
+        Route::get('school-settings', [SchoolSettingsController::class, 'show']);
+        Route::put('school-settings', [SchoolSettingsController::class, 'save']);
     });
 });
 

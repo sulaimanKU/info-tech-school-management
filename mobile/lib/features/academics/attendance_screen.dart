@@ -31,7 +31,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   List<Map<String, dynamic>> students = [];
   final statuses = <String, String>{};
   int version = 0;
-  bool loading = true, busy = false, cached = false;
+  bool loading = true, busy = false, cached = false, schoolDay = true;
   String registerStatus = 'draft', syncState = 'draft';
   Map<String, String> filters = {};
   String rosterSearch = '', rosterStatus = '';
@@ -123,11 +123,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           .map((v) => (v as Map).cast<String, dynamic>())
           .toList();
       statuses.clear();
+      schoolDay = data['is_school_day'] != false;
       for (final row in data['records'] as List) {
         statuses[row['student_id'] as String] = row['status'] as String;
       }
       version = (data['register']?['version'] as num? ?? 0).toInt();
       registerStatus = data['register']?['status'] as String? ?? 'draft';
+      if (!schoolDay && (data['records'] as List).isEmpty) {
+        for (final student in students) {
+          statuses[student['id'] as String] = 'school_holiday';
+        }
+      }
       final local = queue.items
           .where(
             (v) =>
@@ -348,6 +354,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       message: s.text(error!),
                       kind: StatusKind.error,
                     ),
+                  if (!loading)
+                    Text(
+                      '${s.text('students')}: ${students.length} | ${s.text('present')}: ${statuses.values.where((v) => v == 'present').length} | ${s.text('absent')}: ${statuses.values.where((v) => v == 'absent').length} | ${s.text('excused')}: ${statuses.values.where((v) => v == 'excused').length} | ${s.text('late')}: ${statuses.values.where((v) => v == 'late').length}',
+                    ),
+                  if (!loading && !schoolDay)
+                    StatusBanner(message: s.text('school_holiday')),
                   if (!loading && students.isNotEmpty) ...[
                     TextField(
                       decoration: InputDecoration(
@@ -380,11 +392,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           ? null
                           : () => setState(() {
                               for (final student in students) {
-                                statuses[student['id'] as String] = 'present';
+                                statuses[student['id'] as String] = schoolDay
+                                    ? 'present'
+                                    : 'school_holiday';
                               }
                             }),
                       icon: const Icon(Icons.done_all),
-                      label: Text(s.text('markAllPresent')),
+                      label: Text(
+                        s.text(
+                          schoolDay ? 'markAllPresent' : 'markSchoolHoliday',
+                        ),
+                      ),
                     ),
                 ],
               ),

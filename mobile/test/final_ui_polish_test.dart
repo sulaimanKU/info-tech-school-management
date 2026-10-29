@@ -302,6 +302,7 @@ void main() {
     });
     await tester.pumpWidget(host(AttendanceScreen(auth: auth)));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Mark all present'));
     await tester.tap(find.text('Mark all present'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Submit'));

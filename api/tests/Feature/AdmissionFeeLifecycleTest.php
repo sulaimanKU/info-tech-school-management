@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\Finance\BillingSnapshot;
 use App\Services\Finance\MonthlyBilling;
 use App\Support\Domain;
 use Database\Seeders\FinanceConfigurationSeeder;
@@ -303,5 +304,41 @@ class AdmissionFeeLifecycleTest extends MobileTestCase
         $this->postJson('/api/v1/finance/monthly-fees', [...$base, 'class_id' => $second])->assertOk()->assertJsonCount(6, 'data.generated_ids');
         $this->assertDatabaseCount('fee_invoices', 8);
         $this->assertSame(1400000, (int) DB::table('fee_invoices')->sum('total_minor'));
+    }
+
+    public function test_batched_billing_facts_match_live_quotes_vouchers_discounts_and_payments(): void
+    {
+        $student = $this->march();
+        $this->monthly($student, false, ['through' => '2026-04'])->assertOk();
+        $items = collect($this->getJson('/api/v1/students/'.$student.'/finance')->json('data.items'))->sortBy('period')->values()->all();
+        $this->pay($items, 150000)->assertCreated();
+        $this->postJson('/api/v1/finance/fee-assignments', ['student_id' => $student, 'academic_session_id' => $this->session, 'effective_on' => '2026-07-01', 'tuition_override_minor' => 80000])->assertCreated();
+        $discount = $this->postJson('/api/v1/finance/discounts', ['student_id' => $student, 'academic_session_id' => $this->session, 'discount_policy_id' => DB::table('discount_policies')->where('code', 'special')->value('id'), 'basis_points' => 2000, 'starts_on' => '2026-05-01', 'ends_on' => '2026-06-30', 'eligibility_notes' => 'Fictional snapshot concession'])->assertCreated()->json('data.id');
+        $this->postJson('/api/v1/finance/discounts/'.$discount.'/approve', ['eligibility_verified' => true])->assertOk();
+        $service = app(MonthlyBilling::class);
+        $live = $service->plan($student, '2026-10');
+        $snapshot = new BillingSnapshot([$student]);
+        $this->assertSame($live, $service->plan($student, '2026-10', null, false, null, null, $snapshot));
+        $this->assertSame(480000, $service->warnings([$student], '2026-10')['unbilled_minor']);
+        $this->monthly($student, true)->assertJsonPath('data.periods.0.status', 'paid')->assertJsonPath('data.periods.1.status', 'partially_paid')->assertJsonPath('data.unbilled_minor', 480000);
+    }
+
+    public function test_catch_up_warnings_read_in_bounded_batches_instead_of_querying_each_student_month(): void
+    {
+        $students = [];
+        foreach (range(1, 25) as $roll) {
+            $students[] = $this->postJson('/api/v1/students', [...$this->input(), 'roll_number' => $roll])->assertCreated()->json('data.id');
+        }
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        try {
+            $warnings = app(MonthlyBilling::class)->warnings($students, '2026-10');
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+        }
+        $this->assertSame(200, $warnings['missing_months']);
+        $this->assertSame(20000000, $warnings['unbilled_minor']);
+        $this->assertLessThanOrEqual(15, $queries, 'Billing summaries must not issue per-student/per-month queries.');
     }
 }

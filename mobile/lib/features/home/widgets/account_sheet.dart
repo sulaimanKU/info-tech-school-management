@@ -1,3 +1,5 @@
+import '../../administration/school_profile_screen.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../design/app_theme.dart';
@@ -126,6 +128,19 @@ void showAccountSheet(
                       );
                     },
                   ),
+                ListTile(
+                  leading: const Icon(Icons.business_outlined),
+                  title: Text(s.text('schoolProfile')),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => SchoolProfileScreen(auth: auth),
+                      ),
+                    );
+                  },
+                ),
                 ListTile(
                   leading: const Icon(Icons.history),
                   title: Text(s.text('loginHistory')),

@@ -4,6 +4,7 @@ abstract final class ModuleAccess {
   static bool allowed(AuthController auth, String module) {
     if (auth.isParent) return false;
     return switch (module) {
+      'myClasses' => auth.isTeacher && auth.canAcademics,
       'students' =>
         auth.can('students.read') ||
             auth.can('students.read.all') ||

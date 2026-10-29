@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\AcademicFilters;
+use App\Services\Finance\BillingSnapshot;
 use App\Services\Finance\FeeService;
 use App\Services\Finance\InvoiceBalance;
 use App\Services\Finance\MonthlyBilling;
@@ -45,16 +46,21 @@ class FeeController extends Controller
         }
         $billing = app(MonthlyBilling::class);
         $rows = [];
-        foreach ($ids as $id) {
-            $identity = DB::table('students')->find($id);
-            foreach ($billing->plan($id, $v['through'], $v['academic_session_id'] ?? null, $v['current_only'] ?? false, $v['class_id'] ?? null, $v['section_id'] ?? null) as $row) {
-                $rows[] = ['student_id' => $id, 'registration_number' => $identity->registration_number, 'full_name' => $identity->full_name, ...$row];
+        $openingReview = collect();
+        foreach (array_chunk($ids, 100) as $chunk) {
+            $snapshot = new BillingSnapshot($chunk);
+            foreach ($chunk as $id) {
+                $identity = $snapshot->students->get($id);
+                foreach ($billing->plan($id, $v['through'], $v['academic_session_id'] ?? null, $v['current_only'] ?? false, $v['class_id'] ?? null, $v['section_id'] ?? null, $snapshot) as $row) {
+                    $rows[] = ['student_id' => $id, 'registration_number' => $identity->registration_number, 'full_name' => $identity->full_name, ...$row];
+                }
+                $openingReview = $openingReview->merge($billing->unreviewedOpenings($id, $snapshot));
             }
         }
         $generated = ($v['preview'] ?? true) ? [] : $billing->generate($r->user(), $ids, $v['through'], $v['academic_session_id'] ?? null, $v['current_only'] ?? false, $v['class_id'] ?? null, $v['section_id'] ?? null);
         $summary = ['eligible_months' => count($rows), 'already_billed' => collect($rows)->filter(fn ($r) => $r['invoice_id'] !== null && $r['status'] !== 'opening_balance_covered')->count(), 'covered_months' => collect($rows)->where('status', 'opening_balance_covered')->count(), 'ready_to_generate' => collect($rows)->where('status', 'not_billed')->count(), 'needs_configuration' => collect($rows)->where('status', 'needs_configuration')->count()];
 
-        return Domain::response([...$summary, 'student_count' => count($ids), 'missing_months' => collect($rows)->whereNull('invoice_id')->count(), 'unbilled_minor' => (int) collect($rows)->whereNull('invoice_id')->sum('net_minor'), 'opening_balances_needing_review' => collect($ids)->flatMap(fn ($id) => $billing->unreviewedOpenings($id))->values(), 'periods' => $rows, 'generated_ids' => $generated]);
+        return Domain::response([...$summary, 'student_count' => count($ids), 'missing_months' => collect($rows)->whereNull('invoice_id')->count(), 'unbilled_minor' => (int) collect($rows)->whereNull('invoice_id')->sum('net_minor'), 'opening_balances_needing_review' => $openingReview->values(), 'periods' => $rows, 'generated_ids' => $generated]);
     }
 
     public function summary(Request $r, bool $report = false)

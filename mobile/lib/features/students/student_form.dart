@@ -22,8 +22,17 @@ Future<Map<String, String>> sectionOptions(AuthController auth) async {
   final sessions = {
     for (final v in results[2]['items'] as List) (v['id'] as String): v['name'],
   };
+  final sectionRows = List<dynamic>.from(results[0]['items'] as List);
+  final current = results[2]['current_academic_session_id'];
+  if (current != null) {
+    sectionRows.sort(
+      (a, b) => (a['academic_session_id'] == current ? 0 : 1).compareTo(
+        b['academic_session_id'] == current ? 0 : 1,
+      ),
+    );
+  }
   return {
-    for (final v in results[0]['items'] as List)
+    for (final v in sectionRows)
       (v['id'] as String):
           '${classes[v['class_id']]} · ${v['name']} · ${sessions[v['academic_session_id']]}',
   };

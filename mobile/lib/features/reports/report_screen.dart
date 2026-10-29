@@ -85,19 +85,42 @@ class ReportScreen extends StatelessWidget {
   }
 
   Future<void> filteredReport(BuildContext context, String type) async {
-    final spec = type == 'registration'
-        ? const FilterSpec(
-            academic: true,
-            dates: false,
-            statuses: ['active', 'withdrawn', 'transferred'],
-          )
-        : type == 'communication'
-        ? FilterSpec(
-            assignees: !auth.isParent,
-            academic: !auth.isParent,
-            statuses: const ['submitted', 'in_progress', 'resolved', 'closed'],
-          )
-        : const FilterSpec();
+    final spec = switch (type) {
+      'registration' => const FilterSpec(
+        academic: true,
+        dates: false,
+        statuses: ['active', 'withdrawn', 'transferred'],
+      ),
+      'enrollment' => const FilterSpec(
+        academic: true,
+        statuses: ['active', 'completed', 'withdrawn', 'transferred'],
+      ),
+      'teacher_assignments' => const FilterSpec(
+        academic: true,
+        subject: true,
+        statuses: ['active', 'inactive'],
+      ),
+      'class_attendance' => const FilterSpec(
+        academic: true,
+        statuses: ['present', 'absent', 'late', 'excused', 'school_holiday'],
+      ),
+      'class_results' => const FilterSpec(academic: true, subject: true),
+      'payment_register' => const FilterSpec(
+        academic: true,
+        statuses: ['pending', 'verified', 'canceled'],
+      ),
+      'payroll_summary' => const FilterSpec(
+        period: true,
+        search: false,
+        dates: false,
+      ),
+      'communication' => FilterSpec(
+        assignees: !auth.isParent,
+        academic: !auth.isParent,
+        statuses: const ['submitted', 'in_progress', 'resolved', 'closed'],
+      ),
+      _ => const FilterSpec(),
+    };
     final filters = await showFilterSheet(context, auth, spec, {});
     if (filters != null && context.mounted) {
       await openSchoolReport(context, auth, type, {
@@ -157,6 +180,22 @@ class ReportScreen extends StatelessWidget {
                 ),
               ),
             ),
+          if (auth.can('reports.export'))
+            for (final type in [
+              'enrollment',
+              if (auth.canAcademics) ...[
+                'teacher_assignments',
+                'class_attendance',
+                'class_results',
+              ],
+              if (auth.can('finance.read')) 'payment_register',
+              if (auth.can('payroll.read')) 'payroll_summary',
+            ])
+              ListTile(
+                leading: const Icon(Icons.table_chart_outlined),
+                title: Text(s.text('report_$type')),
+                onTap: () => filteredReport(context, type),
+              ),
           if (auth.can('reports.export'))
             ListTile(
               leading: const Icon(Icons.list_alt),

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 final class ReportData
 {
-    public const TYPES = ['fee_balances', 'fee_statement', 'unbilled_fees', 'admission', 'student_id', 'voucher', 'receipt', 'annual_fee', 'attendance', 'academic', 'exam_schedule', 'salary_slip', 'financial', 'registration', 'communication'];
+    public const TYPES = [...OperationalReports::TYPES, 'fee_balances', 'fee_statement', 'unbilled_fees', 'admission', 'student_id', 'voucher', 'receipt', 'annual_fee', 'attendance', 'academic', 'exam_schedule', 'salary_slip', 'financial', 'registration', 'communication'];
 
     public function __construct(private SchoolAccess $access, private AcademicSummary $academic) {}
 
@@ -45,6 +45,14 @@ final class ReportData
             $student = $this->access->student($r->user(), $v['student_id'] ?? '');
             $meta['Student'] = $student->full_name;
             $meta['Registration'] = $student->registration_number;
+        }
+        if (in_array($type, OperationalReports::TYPES, true)) {
+            $rows = app(OperationalReports::class)->rows($r, $type);
+            if (count($rows) > 5000) {
+                Domain::fail('report', 'Narrow the report to at most 5000 rows.');
+            }
+
+            return ['title' => ucwords(str_replace('_', ' ', $type)), 'meta' => $meta, 'rows' => $rows, 'photo_file_id' => null];
         }
         switch ($type) {
             case 'fee_statement':

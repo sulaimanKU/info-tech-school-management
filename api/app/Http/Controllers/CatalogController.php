@@ -6,6 +6,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\AcademicFilters;
 use App\Services\SchoolAccess;
+use App\Services\SchoolSettings;
+use App\Services\TeachingAssignments;
 use App\Support\Audit;
 use App\Support\Domain;
 use Illuminate\Http\Request;
@@ -62,7 +64,7 @@ class CatalogController extends Controller
             $q->join('users as staff_user', 'staff_user.id', '=', 'staff_profiles.user_id')->select('staff_profiles.*', 'staff_user.name', 'staff_user.account_code');
         }
 
-        return Domain::response(['items' => $q->limit(1000)->get()]);
+        return Domain::response(['items' => $q->limit(1000)->get(), ...($catalog === 'sessions' ? ['current_academic_session_id' => app(SchoolSettings::class)->currentSession()] : [])]);
     }
 
     public function filterOptions(Request $r)
@@ -81,7 +83,7 @@ class CatalogController extends Controller
             $subjects->whereIn('subjects.id', DB::table('class_subject_assignments')->when($v['class_id'] ?? null, fn ($q, $id) => $q->where('class_id', $id))->when($v['academic_session_id'] ?? null, fn ($q, $id) => $q->where('academic_session_id', $id))->select('subject_id'));
         }
 
-        return Domain::response(['sessions' => $sessions->orderByDesc('starts_on')->get(['id', 'name']), 'classes' => $classes->orderBy('sort_order')->get(['id', 'name']), 'sections' => $sections->orderBy('name')->get(['id', 'name', 'class_id', 'academic_session_id']), 'subjects' => ($r->user()->hasPermission('academics.read') || $r->user()->hasPermission('academics.write') || $r->user()->hasPermission('academics.review')) ? $subjects->orderBy('name')->get(['id', 'name']) : []]);
+        return Domain::response(['current_academic_session_id' => app(SchoolSettings::class)->currentSession(), 'sessions' => $sessions->orderByDesc('starts_on')->get(['id', 'name']), 'classes' => $classes->orderBy('sort_order')->get(['id', 'name']), 'sections' => $sections->orderBy('name')->get(['id', 'name', 'class_id', 'academic_session_id']), 'subjects' => ($r->user()->hasPermission('academics.read') || $r->user()->hasPermission('academics.write') || $r->user()->hasPermission('academics.review')) ? $subjects->orderBy('name')->get(['id', 'name']) : []]);
     }
 
     private function rules(string $catalog): array
@@ -101,8 +103,18 @@ class CatalogController extends Controller
 
     public function store(Request $r, string $catalog)
     {
-        $this->access->require($r->user(), $catalog === 'staff' ? 'staff.manage' : 'school.manage');
+        if ($catalog === 'teacher-assignments') {
+            app(TeachingAssignments::class)->requireManager($r->user());
+        } else {
+            $this->access->require($r->user(), $catalog === 'staff' ? 'staff.manage' : 'school.manage');
+        }
         $v = $r->validate($this->rules($catalog));
+        if ($catalog === 'teacher-assignments') {
+            app(TeachingAssignments::class)->authorizeSection($r->user(), $v['section_id']);
+        }
+        if ($catalog === 'staff') {
+            abort_unless(User::findOrFail($v['user_id'])->isStaff(), 422);
+        }
         if ($catalog === 'teacher-assignments') {
             $p = DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->where('is_active', true)->firstOrFail();
             abort_unless(User::findOrFail($p->user_id)->roles()->where('code', 'teacher')->exists(), 422);
@@ -116,6 +128,9 @@ class CatalogController extends Controller
             }
         }
         $id = DB::transaction(function () use ($r, $catalog, $v) {
+            if ($catalog === 'teacher-assignments') {
+                app(TeachingAssignments::class)->authorizeSection($r->user(), $v['section_id']);
+            }
             if (in_array($catalog, ['teacher-assignments', 'coordinator-assignments'])) {
                 $this->assignment($catalog, $v);
             }
@@ -130,11 +145,18 @@ class CatalogController extends Controller
 
     public function update(Request $r, string $catalog, string $id)
     {
-        $this->access->require($r->user(), $catalog === 'staff' ? 'staff.manage' : 'school.manage');
+        if ($catalog === 'teacher-assignments') {
+            app(TeachingAssignments::class)->requireManager($r->user());
+        } else {
+            $this->access->require($r->user(), $catalog === 'staff' ? 'staff.manage' : 'school.manage');
+        }
         abort_unless(in_array($catalog, ['sessions', 'classes', 'sections', 'subjects', 'staff', 'fee-categories', 'teacher-assignments', 'coordinator-assignments']), 405);
         $table = self::TABLES[$catalog];
         DB::transaction(function () use ($r, $catalog, $id, $table) {
             $old = DB::table($table)->where('id', $id)->lockForUpdate()->firstOrFail();
+            if ($catalog === 'teacher-assignments') {
+                app(TeachingAssignments::class)->authorizeSection($r->user(), $old->section_id);
+            }
             $allowed = array_keys($this->rules($catalog));
             $input = $r->only($allowed);
             if ($catalog === 'staff' && array_key_exists('user_id', $input) && $input['user_id'] !== $old->user_id) {
@@ -142,13 +164,16 @@ class CatalogController extends Controller
             }
             $v = validator([...(array) $old, ...$input], $this->rules($catalog))->validate();
             if (in_array($catalog, ['teacher-assignments', 'coordinator-assignments'])) {
+                if ($catalog === 'teacher-assignments') {
+                    app(TeachingAssignments::class)->authorizeSection($r->user(), $v['section_id']);
+                }
                 $this->assignment($catalog, $v, $id);
             }
             $v = array_intersect_key($v, $input);
-            if ($catalog === 'sessions' && (isset($v['starts_on']) || isset($v['ends_on'])) && DB::table('enrollments')->where('academic_session_id', $id)->exists()) {
+            if ($catalog === 'sessions' && ((isset($v['starts_on']) && $v['starts_on'] !== $old->starts_on) || (isset($v['ends_on']) && $v['ends_on'] !== $old->ends_on)) && DB::table('enrollments')->where('academic_session_id', $id)->exists()) {
                 Domain::fail('dates', 'Session dates cannot change after enrollment. Create the next session explicitly.');
             }
-            if ($catalog === 'sections' && (isset($v['class_id']) || isset($v['academic_session_id'])) && DB::table('enrollments')->where('section_id', $id)->exists()) {
+            if ($catalog === 'sections' && ((isset($v['class_id']) && $v['class_id'] !== $old->class_id) || (isset($v['academic_session_id']) && $v['academic_session_id'] !== $old->academic_session_id)) && DB::table('enrollments')->where('section_id', $id)->exists()) {
                 Domain::fail('section', 'Enrolled sections cannot be moved to a different class or session.');
             }
             if ($catalog === 'staff' && isset($v['joined_on']) && $v['joined_on'] !== $old->joined_on && DB::table('payroll_items')->where('staff_profile_id', $id)->exists()) {
@@ -163,11 +188,18 @@ class CatalogController extends Controller
 
     public function deactivate(Request $r, string $catalog, string $id)
     {
-        $this->access->require($r->user(), $catalog === 'staff' ? 'staff.manage' : 'school.manage');
+        if ($catalog === 'teacher-assignments') {
+            app(TeachingAssignments::class)->requireManager($r->user());
+        } else {
+            $this->access->require($r->user(), $catalog === 'staff' ? 'staff.manage' : 'school.manage');
+        }
         abort_unless(in_array($catalog, ['staff', 'teacher-assignments', 'coordinator-assignments']), 405);
         DB::transaction(function () use ($r, $catalog, $id) {
             $q = DB::table(self::TABLES[$catalog])->where('id', $id);
-            $q->firstOrFail();
+            $old = $q->lockForUpdate()->firstOrFail();
+            if ($catalog === 'teacher-assignments') {
+                app(TeachingAssignments::class)->authorizeSection($r->user(), $old->section_id);
+            }
             $q->update(['is_active' => false, 'updated_at' => now()]);
             Audit::record('catalog_deactivated', $r->user()->id, self::TABLES[$catalog], $id);
         });
@@ -177,9 +209,11 @@ class CatalogController extends Controller
 
     private function assignment(string $catalog, array $v, ?string $id = null): void
     {
-        $profile = DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->where('is_active', true)->firstOrFail();
+        $profile = DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->firstOrFail();
         $u = User::findOrFail($profile->user_id);
-        abort_unless($u->is_active && $u->roles()->where('code', $catalog === 'teacher-assignments' ? 'teacher' : 'coordinator')->exists(), 422);
+        if ($v['is_active'] ?? true) {
+            abort_unless($profile->is_active && $u->is_active && $u->roles()->where('code', $catalog === 'teacher-assignments' ? 'teacher' : 'coordinator')->exists(), 422);
+        }
         $section = DB::table('sections')->where('id', $v['section_id'])->lockForUpdate()->firstOrFail();
         if ($catalog === 'teacher-assignments') {
             if (empty($v['subject_id']) && empty($v['is_class_teacher'])) {
@@ -189,8 +223,14 @@ class CatalogController extends Controller
                 Domain::fail('subject_id', 'Subject must belong to the selected class/session.');
             }
         }
+        $session = DB::table('academic_sessions')->find($section->academic_session_id);
+        $from = $v['starts_on'] ?? $session->starts_on;
+        $through = $v['ends_on'] ?? $session->ends_on;
+        if ($from < $session->starts_on || $through > $session->ends_on || $from > $through) {
+            Domain::fail('starts_on', 'Assignment dates must fall inside the section academic session.');
+        }
         if (($v['is_active'] ?? true)) {
-            $q = DB::table(self::TABLES[$catalog])->where('is_active', true)->where('section_id', $section->id)->when($id, fn ($q) => $q->where('id', '!=', $id));
+            $q = DB::table(self::TABLES[$catalog])->where('is_active', true)->where('section_id', $section->id)->where(fn ($q) => $q->whereNull('starts_on')->orWhere('starts_on', '<=', $through))->where(fn ($q) => $q->whereNull('ends_on')->orWhere('ends_on', '>=', $from))->when($id, fn ($q) => $q->where('id', '!=', $id));
             if ($catalog === 'coordinator-assignments') {
                 $q->where('staff_profile_id', $profile->id);
             } else {

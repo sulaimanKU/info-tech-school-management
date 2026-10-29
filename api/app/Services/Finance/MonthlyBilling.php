@@ -39,24 +39,24 @@ final class MonthlyBilling
         });
     }
 
-    public function plan(string $student, string $through, ?string $session = null, bool $currentOnly = false, ?string $class = null, ?string $section = null): array
+    public function plan(string $student, string $through, ?string $session = null, bool $currentOnly = false, ?string $class = null, ?string $section = null, ?BillingSnapshot $snapshot = null): array
     {
-        $identity = DB::table('students')->find($student);
+        $identity = $snapshot ? $snapshot->students->get($student) : DB::table('students')->find($student);
         abort_unless($identity, 404);
         $cutoff = min($through, now()->format('Y-m'));
         if ($currentOnly && $through !== $cutoff) {
             return [];
         }
-        $enrollments = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->join('academic_sessions as a', 'a.id', '=', 'e.academic_session_id')
+        $enrollments = $snapshot ? $snapshot->enrollmentsFor($student) : DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->join('academic_sessions as a', 'a.id', '=', 'e.academic_session_id')
             ->where('e.student_id', $student)->orderByDesc('e.starts_on')->get(['e.*', 's.class_id', 'a.starts_on as session_start', 'a.ends_on as session_end', 'a.name as session_name']);
         if ($enrollments->isEmpty()) {
             return [];
         }
         $first = max($identity->admitted_on, $enrollments->min('starts_on'));
         $month = Carbon::parse($currentOnly ? $cutoff.'-01' : substr($first, 0, 7).'-01');
-        $posted = DB::table('fee_invoices')->where('student_id', $student)->where('kind', 'tuition')->orderBy('created_at')->get()->keyBy('period');
-        $balances = app(InvoiceBalance::class)->many($posted);
-        $coverage = DB::table('opening_balance_coverage as c')->join('fee_invoices as i', 'i.id', '=', 'c.fee_invoice_id')->where('i.student_id', $student)->get(['c.*', 'i.voucher_number']);
+        $posted = $snapshot ? $snapshot->invoicesFor($student)->where('kind', 'tuition')->keyBy('period') : DB::table('fee_invoices')->where('student_id', $student)->where('kind', 'tuition')->orderBy('created_at')->get()->keyBy('period');
+        $balances = $snapshot ? $snapshot->balances : app(InvoiceBalance::class)->many($posted);
+        $coverage = $snapshot ? $snapshot->coverageFor($student) : DB::table('opening_balance_coverage as c')->join('fee_invoices as i', 'i.id', '=', 'c.fee_invoice_id')->where('i.student_id', $student)->get(['c.*', 'i.voucher_number']);
         $rows = [];
         for (; $month->format('Y-m') <= $cutoff; $month->addMonth()) {
             $period = $month->format('Y-m');
@@ -74,9 +74,9 @@ final class MonthlyBilling
 
                 continue;
             }
-            $quote = $invoice ? null : app(FeeService::class)->tuitionQuote($student, $enrollment->academic_session_id, $period);
+            $quote = $invoice ? null : app(FeeService::class)->tuitionQuote($student, $enrollment->academic_session_id, $period, $snapshot);
             $amount = $invoice ? $balances[$invoice->id] : null;
-            $rows[] = ['period' => $period, 'academic_session_id' => $invoice?->academic_session_id ?? $enrollment->academic_session_id, 'session_name' => $invoice ? DB::table('academic_sessions')->where('id', $invoice->academic_session_id)->value('name') : $enrollment->session_name,
+            $rows[] = ['period' => $period, 'academic_session_id' => $invoice?->academic_session_id ?? $enrollment->academic_session_id, 'session_name' => $invoice ? ($snapshot ? $snapshot->sessions->get($invoice->academic_session_id)?->name : DB::table('academic_sessions')->where('id', $invoice->academic_session_id)->value('name')) : $enrollment->session_name,
                 'invoice_id' => $invoice?->id, 'voucher_number' => $invoice?->voucher_number,
                 'gross_minor' => $invoice ? (int) $invoice->gross_minor : ($quote['gross_minor'] ?? null),
                 'discount_minor' => $invoice ? (int) $invoice->discount_minor : ($quote['discount_minor'] ?? null),
@@ -118,24 +118,31 @@ final class MonthlyBilling
     {
         $affected = [];
         $amount = $missing = $unknown = 0;
-        foreach ($students as $id) {
-            $rows = collect($this->plan($id, $through, $session, false, $class))->whereNull('invoice_id');
-            if ($rows->isEmpty()) {
-                continue;
+        foreach (array_chunk($students, 100) as $chunk) {
+            $snapshot = new BillingSnapshot($chunk);
+            foreach ($chunk as $id) {
+                $rows = collect($this->plan($id, $through, $session, false, $class, null, $snapshot))->whereNull('invoice_id');
+                if ($rows->isEmpty()) {
+                    continue;
+                }
+                $identity = $snapshot->students->get($id);
+                $total = (int) $rows->sum('net_minor');
+                $amount += $total;
+                $missing += $rows->count();
+                $unknown += $rows->where('status', 'needs_configuration')->count();
+                $affected[] = ['student_id' => $id, 'full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, 'missing_months' => $rows->count(), 'unbilled_minor' => $total];
             }
-            $identity = DB::table('students')->find($id);
-            $total = (int) $rows->sum('net_minor');
-            $amount += $total;
-            $missing += $rows->count();
-            $unknown += $rows->where('status', 'needs_configuration')->count();
-            $affected[] = ['student_id' => $id, 'full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, 'missing_months' => $rows->count(), 'unbilled_minor' => $total];
         }
 
         return ['unbilled_minor' => $amount, 'missing_months' => $missing, 'months_needing_configuration' => $unknown, 'students_with_missing_months' => count($affected), 'unbilled_students' => array_slice($affected, 0, $limit ?? count($affected))];
     }
 
-    public function unreviewedOpenings(string $student)
+    public function unreviewedOpenings(string $student, ?BillingSnapshot $snapshot = null)
     {
+        if ($snapshot) {
+            return $snapshot->invoicesFor($student)->where('kind', 'opening_balance')->where('total_minor', '>', 0)->whereNotIn('id', $snapshot->coverageFor($student)->pluck('fee_invoice_id'))->map(fn ($i) => (object) ['id' => $i->id, 'voucher_number' => $i->voucher_number, 'period' => $i->period])->values();
+        }
+
         return DB::table('fee_invoices')->where('student_id', $student)->where('kind', 'opening_balance')->where('total_minor', '>', 0)->whereNotIn('id', DB::table('opening_balance_coverage')->select('fee_invoice_id'))->get(['id', 'voucher_number', 'period']);
     }
 }

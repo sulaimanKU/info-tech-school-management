@@ -19,10 +19,12 @@ class DiaryEditor extends StatefulWidget {
     this.existing,
     this.clientId,
     this.draft,
+    this.initialSection,
+    this.initialSubject,
   });
   final AuthController auth;
   final Map<String, dynamic>? existing;
-  final String? clientId;
+  final String? clientId, initialSection, initialSubject;
   final Map<String, dynamic>? draft;
   @override
   State<DiaryEditor> createState() => _DiaryEditorState();
@@ -74,8 +76,11 @@ class _DiaryEditorState extends State<DiaryEditor> {
       queueId = widget.draft?['id'] as String?;
       baseVersion = (old?['version'] as num? ?? 0).toInt();
       state = widget.draft?['state'] as String? ?? 'draft';
-      section = old?['section_id'] as String? ?? sections.keys.firstOrNull;
-      subject = old?['subject_id'] as String?;
+      section =
+          old?['section_id'] as String? ??
+          widget.initialSection ??
+          sections.keys.firstOrNull;
+      subject = old?['subject_id'] as String? ?? widget.initialSubject;
       if (old != null) {
         topic.text = old['topic'] as String;
         homework.text = old['homework'] as String;
@@ -107,7 +112,7 @@ class _DiaryEditorState extends State<DiaryEditor> {
       subject = selectDefault ? subjects.keys.firstOrNull : null;
     }
     final data = await widget.auth.call(
-      'attendance/register?section_id=$section&date=$date',
+      'academic-roster?section_id=$section&date=$date',
     );
     roster = (data['students'] as List)
         .map((v) => (v as Map).cast<String, dynamic>())
@@ -115,10 +120,9 @@ class _DiaryEditorState extends State<DiaryEditor> {
   }
 
   Future<void> save(bool publish, {bool local = false}) async {
-    if (!form.currentState!.validate() ||
-        busy ||
-        section == null ||
-        subject == null) {
+    if (busy || !form.currentState!.validate()) return;
+    if (section == null || subject == null) {
+      setState(() => error = 'fieldRequired');
       return;
     }
     setState(() => busy = true);
@@ -387,6 +391,19 @@ class _DiaryEditorState extends State<DiaryEditor> {
                           '${s.text('attachments')} (${attachments.length})',
                         ),
                       ),
+                      for (var index = 0; index < attachments.length; index++)
+                        ListTile(
+                          title: Text('${s.text('attachments')} ${index + 1}'),
+                          trailing: IconButton(
+                            tooltip: s.text('remove'),
+                            icon: const Icon(Icons.close),
+                            onPressed: busy
+                                ? null
+                                : () => setState(
+                                    () => attachments.removeAt(index),
+                                  ),
+                          ),
+                        ),
                       const SizedBox(height: AppSpace.lg),
                       AppBadge(label: s.text(state), status: state),
                       if (state == 'syncConflict')

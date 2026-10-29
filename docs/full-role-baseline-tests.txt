@@ -1,0 +1,14 @@
+PHPUnit 11.5.57 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.2.12
+Configuration: E:\info-tech-school-management\api\phpunit.xml
+
+.........................................................S.....  63 / 224 ( 28%)
+............................................................... 126 / 224 ( 56%)
+............................................................... 189 / 224 ( 84%)
+..S................................                             224 / 224 (100%)
+
+Time: 00:32.866, Memory: 92.00 MB
+
+OK, but some tests were skipped!
+Tests: 224, Assertions: 2247, Skipped: 2.

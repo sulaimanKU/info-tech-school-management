@@ -19,7 +19,11 @@ class _AcademicSettingsScreenState extends State<AcademicSettingsScreen> {
   Map<String, String> sessions = {};
   String? session, error;
   List<int> weekdays = [];
-  bool positions = false, loading = true, busy = false;
+  bool positions = false,
+      loading = true,
+      busy = false,
+      loaded = false,
+      gradingConfigured = false;
   final bands =
       <({TextEditingController minimum, TextEditingController grade})>[];
   List<dynamic> days = [];
@@ -50,7 +54,10 @@ class _AcademicSettingsScreenState extends State<AcademicSettingsScreen> {
         for (final v in data['items'] as List)
           (v['id'] as String): v['name'] as String,
       };
-      session = sessions.keys.firstOrNull;
+      final current = data['current_academic_session_id'] as String?;
+      session = sessions.containsKey(current)
+          ? current
+          : sessions.keys.firstOrNull;
       await load();
     } on ApiFailure catch (e) {
       error = e.code;
@@ -66,6 +73,9 @@ class _AcademicSettingsScreenState extends State<AcademicSettingsScreen> {
     clearBands();
     weekdays = (data['weekdays'] as List).cast<int>();
     positions = data['class_position_enabled'] == true;
+    loaded = true;
+    gradingConfigured = (data['bands'] as List).isNotEmpty;
+    error = null;
     days = data['school_days'] as List;
     for (final v in data['bands'] as List) {
       bands.add((
@@ -77,18 +87,19 @@ class _AcademicSettingsScreenState extends State<AcademicSettingsScreen> {
   }
 
   Future<void> save() async {
-    setState(() => busy = true);
+    if (busy) return;
+    setState(() {
+      busy = true;
+      error = null;
+    });
     try {
       await widget.auth.call(
         'academic-settings',
         method: 'PUT',
-        body: {'weekdays': weekdays, 'class_position_enabled': positions},
-      );
-      if (session != null) {
-        await widget.auth.call(
-          'grading-rules',
-          method: 'PUT',
-          body: {
+        body: {
+          'weekdays': weekdays,
+          'class_position_enabled': positions,
+          if (session != null && (bands.isNotEmpty || gradingConfigured)) ...{
             'academic_session_id': session,
             'bands': [
               for (final b in bands)
@@ -98,15 +109,22 @@ class _AcademicSettingsScreenState extends State<AcademicSettingsScreen> {
                 },
             ],
           },
-        );
-      }
+        },
+      );
+      await load();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(Strings.of(context).text('saved'))),
         );
       }
     } on ApiFailure catch (e) {
-      error = e.code;
+      error =
+          e.fields.values
+              .whereType<List>()
+              .firstOrNull
+              ?.firstOrNull
+              ?.toString() ??
+          e.code;
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -148,6 +166,8 @@ class _AcademicSettingsScreenState extends State<AcademicSettingsScreen> {
       appBar: AppBar(title: Text(s.text('academicSettings'))),
       body: loading
           ? const DataState()
+          : !loaded
+          ? DataState(error: error, onRetry: initialize)
           : ListView(
               padding: const EdgeInsets.all(AppSpace.lg),
               children: [
@@ -172,6 +192,7 @@ class _AcademicSettingsScreenState extends State<AcademicSettingsScreen> {
                       ),
                   ],
                 ),
+                Text(s.text('calendarPolicyHelp')),
                 SwitchListTile(
                   title: Text(s.text('showClassPosition')),
                   value: positions,

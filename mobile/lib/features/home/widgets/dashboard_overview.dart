@@ -1,3 +1,4 @@
+import '../../finance/payroll_screen.dart';
 import '../../finance/finance_summary_screen.dart';
 
 import 'package:flutter/material.dart';
@@ -106,6 +107,9 @@ class DashboardOverviewState extends State<DashboardOverview> {
     final finance = widget.auth.can('finance.read')
         ? value['finance'] as Map?
         : null;
+    final payroll = widget.auth.can('payroll.read')
+        ? value['payroll'] as Map?
+        : null;
     final school =
         (widget.auth.canAcademics || widget.auth.can('school.manage'))
         ? value['school'] as Map?
@@ -148,6 +152,31 @@ class DashboardOverviewState extends State<DashboardOverview> {
           icon: Icons.account_balance_wallet_outlined,
           tone: StatusTone.warning,
           onTap: () => open(InvoiceScreen(auth: widget.auth)),
+        ),
+      if (finance != null && finance.containsKey('billed_month_minor'))
+        SummaryCard(
+          label: s.text('billedThisMonth'),
+          value: Money.format(finance['billed_month_minor']),
+          icon: Icons.receipt_long_outlined,
+          onTap: () => open(InvoiceScreen(auth: widget.auth)),
+        ),
+      if (payroll != null)
+        SummaryCard(
+          label: s.text('payrollBalance'),
+          value: Money.format(payroll['balance_minor']),
+          contextLabel:
+              '${s.text('paid')}: ${Money.format(payroll['paid_minor'])}',
+          icon: Icons.account_balance_outlined,
+          onTap: () => open(PayrollScreen(auth: widget.auth)),
+        ),
+      if (widget.auth.can('students.manage') &&
+          students != null &&
+          students.containsKey('admissions_month'))
+        SummaryCard(
+          label: s.text('admissionsThisMonth'),
+          value: '${students['admissions_month']}',
+          icon: Icons.person_add_alt,
+          onTap: () => open(StudentListScreen(auth: widget.auth)),
         ),
       if (widget.auth.can('communication.manage') &&
           value.containsKey('open_requests'))

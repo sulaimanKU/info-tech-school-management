@@ -109,7 +109,7 @@ final class SchoolAccess
     }
 
     /** Lists must honor the same current and record-date assignments as object reads. */
-    public function academicRecords($query, User $u, string $section, string $subject, string $date)
+    public function academicRecords($query, User $u, string $section, ?string $subject, string $date)
     {
         if ($this->isParent($u) || $u->hasPermission('students.read.all')) {
             return $query;
@@ -123,7 +123,7 @@ final class SchoolAccess
                 }
                 $scope->orWhereExists(function ($q) use ($u, $section, $subject, $date, $table, $role) {
                     $q->selectRaw('1')->from($table.' as dated_a')->join('staff_profiles as dated_p', 'dated_p.id', '=', 'dated_a.staff_profile_id')->where('dated_p.user_id', $u->id)->where('dated_p.is_active', true)->where('dated_a.is_active', true)->whereColumn('dated_a.section_id', $section)->whereColumn('dated_p.joined_on', '<=', $date);
-                    if ($role === 'teacher') {
+                    if ($role === 'teacher' && $subject !== null) {
                         $q->whereColumn('dated_a.subject_id', $subject);
                     }
                     $q->where(fn ($q) => $q->whereNull('dated_a.starts_on')->orWhereColumn('dated_a.starts_on', '<=', $date))->where(fn ($q) => $q->whereNull('dated_a.ends_on')->orWhereColumn('dated_a.ends_on', '>=', $date))->where(fn ($q) => $q->whereNull('dated_a.starts_on')->orWhere('dated_a.starts_on', '<=', now()->toDateString()))->where(fn ($q) => $q->whereNull('dated_a.ends_on')->orWhere('dated_a.ends_on', '>=', now()->toDateString()));

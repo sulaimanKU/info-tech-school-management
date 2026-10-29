@@ -28,7 +28,7 @@ final class DashboardController extends Controller
         $data = ['as_of' => now()->toIso8601String(), 'scope' => $u->hasPermission('students.read.all') ? 'school' : 'assigned', 'unread_notifications' => DB::table('school_notifications')->where('user_id', $u->id)->whereNull('read_at')->where(fn ($q) => $q->whereNull('student_id')->orWhereIn('student_id', (clone $students)->select('students.id')))->count()];
         if ($canStudents) {
             $counts = (clone $students)->selectRaw("count(*) as total, coalesce(sum(case when status='active' then 1 else 0 end),0) as active")->first();
-            $data['students'] = ['total' => (int) $counts->total, 'active' => (int) $counts->active];
+            $data['students'] = ['total' => (int) $counts->total, 'active' => (int) $counts->active, 'admissions_month' => (clone $students)->whereBetween('admitted_on', [now()->startOfMonth()->toDateString(), $today])->count()];
         }
         if ($u->hasPermission('staff.manage')) {
             $data['staff'] = ['active' => User::where('is_active', true)->whereHas('roles', fn ($q) => $q->where('code', '!=', 'parent_guardian'))->count(), 'teachers' => User::where('is_active', true)->whereHas('roles', fn ($q) => $q->where('code', 'teacher'))->count()];
@@ -51,6 +51,11 @@ final class DashboardController extends Controller
         }
         if ($u->hasPermission('finance.read') && $canStudents) {
             $data['finance'] = $this->finance($students, $today);
+        }
+        if ($u->hasPermission('payroll.read')) {
+            $paid = DB::table('payroll_payments')->groupBy('payroll_period_id')->selectRaw('payroll_period_id,sum(amount_minor) as amount');
+            $periods = DB::table('payroll_periods as p')->leftJoinSub($paid, 'paid', fn ($j) => $j->on('paid.payroll_period_id', '=', 'p.id'))->whereIn('p.status', ['approved', 'paid'])->selectRaw("p.total_minor, case when p.status='paid' and paid.amount is null then p.total_minor else coalesce(paid.amount,0) end as paid_minor")->get();
+            $data['payroll'] = ['period' => 'all_approved_periods', 'total_minor' => (int) $periods->sum('total_minor'), 'paid_minor' => (int) $periods->sum('paid_minor'), 'balance_minor' => (int) $periods->sum('total_minor') - (int) $periods->sum('paid_minor')];
         }
         if ($canStudents && $u->hasPermission('communication.manage')) {
             $data['open_requests'] = app(TicketAccess::class)->query($u)->whereNotIn('t.status', ['resolved', 'closed'])->count();
@@ -89,6 +94,8 @@ final class DashboardController extends Controller
         $totals = DB::query()->fromSub($balances, 'balances')->selectRaw('coalesce(sum(balance_minor),0) as outstanding,coalesce(sum(case when due_on < ? then balance_minor else 0 end),0) as overdue,count(distinct case when balance_minor > 0 then student_id end) as debtors', [$today])->first();
         $receipts = DB::table('payment_allocations as a')->join('payments as p', 'p.id', '=', 'a.payment_id')->join('fee_invoices as i', 'i.id', '=', 'a.fee_invoice_id')->where('p.status', 'verified')->whereBetween('p.paid_on', [now()->startOfMonth()->toDateString(), $today])->whereIn('i.student_id', (clone $students)->select('students.id'))->sum('a.amount_minor');
 
-        return app(MonthlyBilling::class)->warnings((clone $students)->pluck('students.id')->all(), now()->format('Y-m')) + ['outstanding_minor' => (int) $totals->outstanding, 'overdue_minor' => (int) $totals->overdue, 'students_with_balance' => (int) $totals->debtors, 'receipts_month_minor' => (int) $receipts, 'period' => now()->format('Y-m')];
+        $billed = DB::table('fee_invoices as i')->leftJoinSub($adjustments, 'adjustments', fn ($j) => $j->on('adjustments.fee_invoice_id', '=', 'i.id'))->whereIn('i.student_id', (clone $students)->select('students.id'))->whereBetween('i.issued_on', [now()->startOfMonth()->toDateString(), $today])->selectRaw('coalesce(sum(i.total_minor+coalesce(adjustments.amount,0)),0) as amount')->first();
+
+        return app(MonthlyBilling::class)->warnings((clone $students)->pluck('students.id')->all(), now()->format('Y-m')) + ['billed_month_minor' => (int) $billed->amount, 'outstanding_minor' => (int) $totals->outstanding, 'overdue_minor' => (int) $totals->overdue, 'students_with_balance' => (int) $totals->debtors, 'receipts_month_minor' => (int) $receipts, 'period' => now()->format('Y-m')];
     }
 }

@@ -6,7 +6,8 @@ import '../../../shared/widgets/polished_components.dart';
 import '../../reports/report_screen.dart';
 import '../../auth/auth_controller.dart';
 import '../../students/student_list_screen.dart';
-import '../../administration/catalog_screen.dart';
+import '../../administration/settings_hub_screen.dart';
+import '../../academics/teacher_workspace_screen.dart';
 import '../../academics/attendance_screen.dart';
 import '../../academics/academic_hub_screen.dart';
 import '../../finance/finance_hub_screen.dart';
@@ -22,6 +23,7 @@ class ModuleDefinition {
   final String key;
   final IconData icon;
   static const futureModules = [
+    ModuleDefinition('myClasses', Icons.class_outlined),
     ModuleDefinition('students', Icons.school_outlined),
     ModuleDefinition('attendance', Icons.fact_check_outlined),
     ModuleDefinition('academics', Icons.auto_stories_outlined),
@@ -103,6 +105,7 @@ class FutureModuleGrid extends StatelessWidget {
   VoidCallback? _action(BuildContext context, ModuleDefinition m) {
     if (auth == null || !ModuleAccess.allowed(auth!, m.key)) return null;
     Widget? target;
+    if (m.key == 'myClasses') target = TeacherWorkspaceScreen(auth: auth!);
     if (m.key == 'students') target = StudentListScreen(auth: auth!);
     if (m.key == 'attendance' && auth!.canAcademics) {
       target = AttendanceScreen(auth: auth!);
@@ -110,7 +113,8 @@ class FutureModuleGrid extends StatelessWidget {
     if (m.key == 'academics' && auth!.canAcademics) {
       target = AcademicHubScreen(auth: auth!);
     }
-    if (m.key == 'finance' && auth!.can('finance.read')) {
+    if (m.key == 'finance' &&
+        (auth!.can('finance.read') || auth!.can('payroll.read'))) {
       target = FinanceHubScreen(auth: auth!);
     }
     if (m.key == 'staffModule' && auth!.can('staff.manage')) {
@@ -122,7 +126,7 @@ class FutureModuleGrid extends StatelessWidget {
       target = ReportScreen(auth: auth!);
     }
     if (m.key == 'settingsModule' && auth!.can('school.manage')) {
-      target = CatalogScreen(auth: auth!);
+      target = SettingsHubScreen(auth: auth!);
     }
     if (m.key == 'accessControl') target = RbacScreen(auth: auth!);
     return target == null

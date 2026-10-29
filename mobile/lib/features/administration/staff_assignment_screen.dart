@@ -47,6 +47,7 @@ class _StaffAssignmentScreenState extends State<StaffAssignmentScreen> {
   }
 
   Future<void> save() async {
+    if (busy) return;
     if (selection['section_id'] == null ||
         (!widget.coordinator &&
             !classTeacher &&
@@ -77,7 +78,17 @@ class _StaffAssignmentScreenState extends State<StaffAssignmentScreen> {
       );
       if (mounted) Navigator.pop(context, true);
     } on ApiFailure catch (e) {
-      if (mounted) setState(() => error = e.code);
+      if (mounted) {
+        setState(
+          () => error =
+              e.fields.values
+                  .whereType<List>()
+                  .firstOrNull
+                  ?.firstOrNull
+                  ?.toString() ??
+              e.code,
+        );
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -103,6 +114,7 @@ class _StaffAssignmentScreenState extends State<StaffAssignmentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   AcademicSelection(
+                    preferCurrentSession: true,
                     auth: widget.auth,
                     initial: selection,
                     subject: !widget.coordinator,

@@ -102,6 +102,10 @@ class DiaryController extends Controller
         $this->access->require($r->user(), 'academics.write');
         $v = $r->validate(['section_id' => 'required|uuid|exists:sections,id', 'subject_id' => 'required|uuid|exists:subjects,id', 'date' => 'required|date', 'topic' => 'required|string|max:300', 'homework' => 'required|string|max:10000', 'whole_class' => 'required|boolean', 'status' => 'required|in:draft,published', 'version' => 'required|integer|min:0', 'client_id' => 'required|uuid', 'students' => 'present|array|max:200', 'students.*' => 'uuid|distinct|exists:students,id', 'attachments' => 'present|array|max:10', 'attachments.*' => 'uuid|distinct|exists:private_files,id']);
         $this->access->section($r->user(), $v['section_id'], $v['subject_id'], $v['date']);
+        $session = DB::table('sections as s')->join('academic_sessions as y', 'y.id', '=', 's.academic_session_id')->where('s.id', $v['section_id'])->first(['y.starts_on', 'y.ends_on']);
+        if ($v['date'] < $session->starts_on || $v['date'] > $session->ends_on) {
+            Domain::fail('date', 'Diary date must fall inside the academic session.');
+        }
         $id = DB::transaction(function () use ($r, $v, $diary) {
             $old = $diary ? DB::table('diary_entries')->where('id', $diary)->lockForUpdate()->firstOrFail() : DB::table('diary_entries')->where('client_id', $v['client_id'])->lockForUpdate()->first();
             $payloadHash = hash('sha256', json_encode(array_intersect_key($v, array_flip(['section_id', 'subject_id', 'date', 'topic', 'homework', 'whole_class', 'status', 'students', 'attachments']))));

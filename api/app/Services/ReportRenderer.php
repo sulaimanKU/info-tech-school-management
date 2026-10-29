@@ -46,6 +46,9 @@ final class ReportRenderer
 
     public function render(array $data, string $format): array
     {
+        $profile = app(SchoolSettings::class)->information();
+        $schoolName = $profile['school_name'];
+        $schoolLocation = $profile['campus'].' | '.$profile['location'];
         $cols = $this->columns($data['rows']);
         $rows = [];
         foreach ($data['rows'] as $row) {
@@ -56,7 +59,7 @@ final class ReportRenderer
         if ($format === 'csv') {
             $h = fopen('php://temp', 'w+');
             fwrite($h, "\xEF\xBB\xBF");
-            foreach ([['INFO-TECH High School & Educational Campus'], ['Sangao Campus · Mardan'], [$data['title']], ...array_map(fn ($k, $v) => [$k, (string) $v], array_keys($data['meta']), array_values($data['meta'])), $headers, ...$rows] as $row) {
+            foreach ([[$schoolName], [$schoolLocation], [$data['title']], ...array_map(fn ($k, $v) => [$k, (string) $v], array_keys($data['meta']), array_values($data['meta'])), $headers, ...$rows] as $row) {
                 fputcsv($h, array_map(fn ($v) => preg_match('/^[\s]*[=+@-]/u', (string) $v) ? "'".$v : $v, $row), ',', '"', '');
             }rewind($h);
             $out = stream_get_contents($h);
@@ -67,7 +70,7 @@ final class ReportRenderer
         if ($format === 'xlsx') {
             $book = new Spreadsheet;
             $sheet = $book->getActiveSheet();
-            $all = [['INFO-TECH High School & Educational Campus'], ['Sangao Campus · Mardan'], [$data['title']], ...array_map(fn ($k, $v) => [$k, (string) $v], array_keys($data['meta']), array_values($data['meta'])), $headers, ...$rows];
+            $all = [[$schoolName], [$schoolLocation], [$data['title']], ...array_map(fn ($k, $v) => [$k, (string) $v], array_keys($data['meta']), array_values($data['meta'])), $headers, ...$rows];
             foreach ($all as $ri => $row) {
                 foreach ($row as $ci => $value) {
                     $sheet->setCellValueExplicit([$ci + 1, $ri + 1], $value, DataType::TYPE_STRING);
@@ -105,8 +108,8 @@ final class ReportRenderer
                     }
                 }
             }
-            $html = '<style>body{font-size:7pt;color:#142b49}table{width:100%;border-collapse:collapse}td{vertical-align:top}h1{font-size:10pt;margin:0}h2{font-size:11pt;margin:3mm 0 1mm}small{font-size:6pt;color:#526577}</style><table><tr><td style="width:13mm">'.($logo ? '<img src="'.$this->e($logo).'" style="width:11mm">' : '').'</td><td><h1>INFO-TECH</h1>High School &amp; Educational Campus<br><small>Sangao Campus · Mardan</small></td></tr></table><hr style="color:#087f8c"><table><tr><td><small>STUDENT IDENTITY CARD</small><h2>'.$this->e($row['full_name'] ?? '').'</h2><b>'.$this->e($row['registration_number'] ?? '').'</b><br>'.$this->e($row['class'] ?? '').' · '.$this->e($row['section'] ?? '').'<br>Roll: '.$this->e($row['roll_number'] ?? '').'</td><td style="width:20mm;text-align:right">'.$photoHtml.'</td></tr></table><p><small>Issued '.date('Y-m-d').' · School record, verify with office</small></p>';
-            $pdf->SetTitle('INFO-TECH Student ID');
+            $html = '<style>body{font-size:7pt;color:#142b49}table{width:100%;border-collapse:collapse}td{vertical-align:top}h1{font-size:10pt;margin:0}h2{font-size:11pt;margin:3mm 0 1mm}small{font-size:6pt;color:#526577}</style><table><tr><td style="width:13mm">'.($logo ? '<img src="'.$this->e($logo).'" style="width:11mm">' : '').'</td><td><h1>'.$this->e($schoolName).'</h1><small>'.$this->e($schoolLocation).'</small></td></tr></table><hr style="color:#087f8c"><table><tr><td><small>STUDENT IDENTITY CARD</small><h2>'.$this->e($row['full_name'] ?? '').'</h2><b>'.$this->e($row['registration_number'] ?? '').'</b><br>'.$this->e($row['class'] ?? '').' · '.$this->e($row['section'] ?? '').'<br>Roll: '.$this->e($row['roll_number'] ?? '').'</td><td style="width:20mm;text-align:right">'.$photoHtml.'</td></tr></table><p><small>Issued '.date('Y-m-d').' · School record, verify with office</small></p>';
+            $pdf->SetTitle($schoolName.' Student ID');
             $pdf->WriteHTML($html);
 
             return [$pdf->Output('', 'S'), 'application/pdf'];
@@ -115,7 +118,7 @@ final class ReportRenderer
         if ($logo) {
             $html .= '<img src="'.$this->e($logo).'" style="width:70px;float:left;margin-right:15px">';
         }
-        $html .= '<h1>INFO-TECH High School &amp; Educational Campus</h1><p>Sangao Campus · Mardan</p><h2>'.$this->e($data['title']).'</h2>';
+        $html .= '<h1>'.$this->e($schoolName).'</h1><p>'.$this->e($schoolLocation).'</p><h2>'.$this->e($data['title']).'</h2>';
         foreach ($data['meta'] as $k => $v) {
             $html .= '<p><b>'.$this->e($k).':</b> '.$this->e($v).'</p>';
         }

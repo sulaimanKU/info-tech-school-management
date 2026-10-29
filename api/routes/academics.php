@@ -6,10 +6,17 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\DiaryController;
+use App\Http\Controllers\TeacherWorkspaceController;
+use App\Http\Controllers\TeachingAssignmentController;
 use App\Http\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(AuthenticateSession::class)->group(function () {
+    Route::get('my-teaching', [TeacherWorkspaceController::class, 'show']);
+    Route::get('my-teaching/sections/{section}/students', [TeacherWorkspaceController::class, 'students'])->whereUuid('section');
+    Route::get('academic-roster', [TeacherWorkspaceController::class, 'roster']);
+    Route::get('teaching-assignments', [TeachingAssignmentController::class, 'index']);
+    Route::get('teaching-assignments/teachers', [TeachingAssignmentController::class, 'teachers']);
     Route::get('academic-settings', [AcademicSettingsController::class, 'show']);
     Route::put('academic-settings', [AcademicSettingsController::class, 'save']);
     Route::get('attendance/register', [AttendanceController::class, 'register']);

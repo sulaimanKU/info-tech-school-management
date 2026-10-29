@@ -20,9 +20,13 @@ class AttendanceController extends Controller
         $this->access->academic($r->user());
         $v = app(AcademicFilters::class)->values($r, ['section_id' => 'required|uuid|exists:sections,id', 'date' => 'required|date|before_or_equal:today']);
         $this->access->section($r->user(), $v['section_id'], null, $v['date']);
+        $session = DB::table('sections as s')->join('academic_sessions as y', 'y.id', '=', 's.academic_session_id')->where('s.id', $v['section_id'])->first(['s.academic_session_id', 'y.starts_on', 'y.ends_on']);
+        if ($v['date'] < $session->starts_on || $v['date'] > $session->ends_on) {
+            Domain::fail('date', 'Attendance date must fall inside the academic session.');
+        }
         $register = DB::table('attendance_registers')->where('section_id', $v['section_id'])->where('date', $v['date'])->first();
 
-        return Domain::response(['register' => $register, 'students' => $this->calendar->roster($v['section_id'], $v['date']), 'records' => $register ? DB::table('attendance_records')->where('attendance_register_id', $register->id)->get(['student_id', 'status']) : []]);
+        return Domain::response(['is_school_day' => $this->calendar->isSchoolDay($session->academic_session_id, $v['date']), 'register' => $register, 'students' => $this->calendar->roster($v['section_id'], $v['date']), 'records' => $register ? DB::table('attendance_records')->where('attendance_register_id', $register->id)->get(['student_id', 'status']) : []]);
     }
 
     public function save(Request $r)
@@ -32,7 +36,7 @@ class AttendanceController extends Controller
         $this->access->section($r->user(), $v['section_id'], null, $v['date']);
         $result = DB::transaction(function () use ($r, $v) {
             $section = DB::table('sections')->where('id', $v['section_id'])->lockForUpdate()->firstOrFail();
-            $session = DB::table('academic_sessions')->where('id', $section->academic_session_id)->firstOrFail();
+            $session = DB::table('academic_sessions')->where('id', $section->academic_session_id)->lockForUpdate()->firstOrFail();
             if ($v['date'] < $session->starts_on || $v['date'] > $session->ends_on) {
                 Domain::fail('date', 'Date is outside the session.');
             }
@@ -101,6 +105,14 @@ class AttendanceController extends Controller
         $this->access->require($r->user(), 'school.manage');
         $v = $r->validate(['academic_session_id' => 'required|uuid|exists:academic_sessions,id', 'date' => 'required|date', 'is_school_day' => 'required|boolean', 'label' => 'nullable|string|max:200']);
         $id = DB::transaction(function () use ($r, $v) {
+            $session = DB::table('academic_sessions')->where('id', $v['academic_session_id'])->lockForUpdate()->firstOrFail();
+            if ($v['date'] < $session->starts_on || $v['date'] > $session->ends_on) {
+                Domain::fail('date', 'Calendar date must fall inside the academic session.');
+            }
+            $hasSubmitted = DB::table('attendance_registers as r')->join('sections as s', 's.id', '=', 'r.section_id')->where('s.academic_session_id', $session->id)->where('r.date', $v['date'])->where('r.status', 'submitted')->exists();
+            if ($hasSubmitted && $this->calendar->isSchoolDay($session->id, $v['date']) !== (bool) $v['is_school_day']) {
+                Domain::fail('is_school_day', 'The school-day status is locked after attendance submission.');
+            }
             $old = DB::table('school_days')->where('academic_session_id', $v['academic_session_id'])->where('date', $v['date'])->first();
             if ($old) {
                 DB::table('school_days')->where('id', $old->id)->update([...$v, 'updated_at' => now()]);

@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Services\AcademicCalendar;
 use App\Services\AcademicFilters;
+use App\Services\GradingRules;
 use App\Services\NotificationService;
 use App\Services\ParentAcademics;
 use App\Services\SchoolAccess;
+use App\Services\TeachingAssignments;
 use App\Support\Audit;
 use App\Support\Domain;
 use Illuminate\Http\Request;
@@ -55,6 +57,8 @@ class AssessmentController extends Controller
         $data = (array) $a;
         $data['results'] = DB::table('assessment_results')->where('assessment_id', $assessment)->get();
         $data['students'] = $this->calendar->roster($a->section_id, $a->date);
+        $data['can_edit'] = $a->status === 'draft' && $r->user()->hasPermission('academics.write') && ($a->teacher_user_id === $r->user()->id || $r->user()->hasPermission('academics.review'));
+        $data['can_approve'] = $a->status === 'submitted' && $r->user()->hasPermission('academics.review') && $a->teacher_user_id !== $r->user()->id;
 
         return Domain::response($data);
     }
@@ -62,14 +66,23 @@ class AssessmentController extends Controller
     public function store(Request $r)
     {
         $this->access->require($r->user(), 'academics.write');
-        $v = $r->validate(['section_id' => 'required|uuid|exists:sections,id', 'subject_id' => 'required|uuid|exists:subjects,id', 'type' => 'required|in:monthly_test,unit_test,midterm,final,oral,assignment,practical', 'title' => 'required|string|max:200', 'date' => 'required|date', 'maximum_marks' => 'required|numeric|gt:0|max:100000']);
+        $v = $r->validate(['section_id' => 'required|uuid|exists:sections,id', 'subject_id' => 'required|uuid|exists:subjects,id', 'type' => 'required|in:monthly_test,unit_test,midterm,final,oral,assignment,practical', 'title' => 'required|string|max:200', 'date' => 'required|date', 'maximum_marks' => 'required|numeric|gt:0|max:100000', 'teacher_user_id' => 'sometimes|required|uuid|exists:users,id']);
         $this->access->section($r->user(), $v['section_id'], $v['subject_id'], $v['date']);
         $section = DB::table('sections')->where('id', $v['section_id'])->firstOrFail();
+        $session = DB::table('academic_sessions')->find($section->academic_session_id);
+        if ($v['date'] < $session->starts_on || $v['date'] > $session->ends_on) {
+            Domain::fail('date', 'Assessment date must fall inside the academic session.');
+        }
+        $teacher = $v['teacher_user_id'] ?? $r->user()->id;
+        if ($teacher !== $r->user()->id) {
+            $this->access->require($r->user(), 'academics.review');
+            app(TeachingAssignments::class)->requireAssignedTeacher($teacher, $v['section_id'], $v['subject_id'], $v['date']);
+        }
         if (! DB::table('grading_rules')->where('academic_session_id', $section->academic_session_id)->where('minimum_percent', 0)->exists()) {
             Domain::fail('grading_rules', 'Configure session grading criteria including a zero-percent band.');
         }
-        $id = DB::transaction(function () use ($r, $v, $section) {
-            $id = Domain::insert('assessments', [...$v, 'academic_session_id' => $section->academic_session_id, 'teacher_user_id' => $r->user()->id]);
+        $id = DB::transaction(function () use ($r, $v, $section, $teacher) {
+            $id = Domain::insert('assessments', [...$v, 'academic_session_id' => $section->academic_session_id, 'teacher_user_id' => $teacher]);
             Audit::record('assessment_created', $r->user()->id, 'assessments', $id);
 
             return $id;
@@ -196,14 +209,10 @@ class AssessmentController extends Controller
     {
         $this->access->require($r->user(), 'school.manage');
         $v = $r->validate(['academic_session_id' => 'required|uuid|exists:academic_sessions,id', 'bands' => 'required|array|min:1|max:20', 'bands.*.minimum_percent' => 'required|numeric|min:0|max:100|distinct', 'bands.*.grade' => 'required|string|max:20']);
-        if (! collect($v['bands'])->contains(fn ($b) => (float) $b['minimum_percent'] === 0.0)) {
-            Domain::fail('bands', 'Include a zero-percent band.');
-        }DB::transaction(function () use ($r, $v) {
-            DB::table('academic_sessions')->where('id', $v['academic_session_id'])->lockForUpdate()->firstOrFail();
-            DB::table('grading_rules')->where('academic_session_id', $v['academic_session_id'])->delete();
-            foreach ($v['bands'] as $b) {
-                Domain::insert('grading_rules', ['academic_session_id' => $v['academic_session_id'], ...$b]);
-            }Audit::record('grading_rules_updated', $r->user()->id, 'academic_sessions', $v['academic_session_id']);
+        app(GradingRules::class)->validate($v['bands']);
+        DB::transaction(function () use ($r, $v) {
+            app(GradingRules::class)->replace($v['academic_session_id'], $v['bands']);
+            Audit::record('grading_rules_updated', $r->user()->id, 'academic_sessions', $v['academic_session_id']);
         });
 
         return Domain::response(['saved' => true]);

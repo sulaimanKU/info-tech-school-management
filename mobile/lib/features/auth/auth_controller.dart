@@ -97,6 +97,8 @@ class AuthController extends ChangeNotifier {
       !(user?['roles'] as List? ?? []).any(
         (r) => r['code'] != 'parent_guardian',
       );
+  bool get isTeacher =>
+      (user?['roles'] as List? ?? []).any((r) => r['code'] == 'teacher');
   bool get isSuperAdmin =>
       (user?['roles'] as List? ?? []).any((r) => r['code'] == 'super_admin');
   bool get canAcademics =>

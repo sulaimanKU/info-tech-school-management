@@ -128,11 +128,12 @@ class AcademicSelection extends StatefulWidget {
     required this.initial,
     required this.onChanged,
     this.subject = false,
+    this.preferCurrentSession = false,
   });
   final AuthController auth;
   final Map<String, String> initial;
   final ValueChanged<Map<String, String>> onChanged;
-  final bool subject;
+  final bool subject, preferCurrentSession;
   @override
   State<AcademicSelection> createState() => _AcademicSelectionState();
 }
@@ -142,6 +143,7 @@ class _AcademicSelectionState extends State<AcademicSelection> {
   Map<String, dynamic>? data;
   String? error;
   int generation = 0;
+  bool appliedDefault = false;
   @override
   void initState() {
     super.initState();
@@ -158,6 +160,19 @@ class _AcademicSelectionState extends State<AcademicSelection> {
           queryParameters: values,
         ).toString(),
       );
+      if (mounted && version == generation && !appliedDefault) {
+        appliedDefault = true;
+        final current = result['current_academic_session_id'] as String?;
+        if (widget.preferCurrentSession &&
+            values.isEmpty &&
+            current != null &&
+            (result['sessions'] as List).any((row) => row['id'] == current)) {
+          values['academic_session_id'] = current;
+          widget.onChanged(Map.of(values));
+          await load();
+          return;
+        }
+      }
       if (mounted && version == generation) {
         setState(() {
           data = result;
@@ -246,6 +261,19 @@ class FilterSpec {
   final Map<String, List<String>> extra;
   static FilterSpec? forPath(String path, bool parent) =>
       switch (Uri.parse(path).path) {
+        'teaching-assignments' => const FilterSpec(
+          statuses: ['active', 'inactive'],
+          search: true,
+          academic: true,
+          subject: true,
+          dates: false,
+        ),
+        'teaching-assignments/teachers' => const FilterSpec(
+          search: true,
+          dates: false,
+        ),
+        final String p when p.startsWith('my-teaching/sections/') =>
+          const FilterSpec(search: true, dates: false),
         'students' => const FilterSpec(
           academic: true,
           dates: false,

@@ -154,7 +154,8 @@ void main() {
     final auth = createAuth(store);
     await auth.login('staff@example.test', 'test-password');
     await tester.pumpWidget(SchoolApp(auth: auth));
-    expect(find.byType(ModuleCard), findsNWidgets(5));
+    // Teachers also have the assignment-scoped My classes workspace.
+    expect(find.byType(ModuleCard), findsNWidgets(6));
     expect(find.text('Coming later'), findsNothing);
     expect(find.text('Fees & Finance'), findsNothing);
     await tester.tap(find.byKey(const Key('account-menu')));
@@ -215,7 +216,7 @@ void main() {
         tester.view.resetViewInsets();
         await auth.login('staff@example.test', 'test-password');
         await tester.pumpAndSettle();
-        expect(find.byType(ModuleCard), findsNWidgets(5));
+        expect(find.byType(ModuleCard), findsNWidgets(6));
         expect(tester.takeException(), isNull);
       },
     );

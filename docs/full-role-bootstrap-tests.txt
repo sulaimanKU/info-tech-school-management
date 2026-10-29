@@ -1,0 +1,3 @@
+Isolated validation database verified.
+migrate:fresh --seed: PASS (minimal base references; no default password).
+Empty database bootstrap, hashed 4-character credential, roles/defaults, safe repeat: PASS.

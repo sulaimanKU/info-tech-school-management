@@ -1,3 +1,5 @@
+import '../../academics/teacher_workspace_screen.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../design/app_theme.dart';
@@ -32,6 +34,12 @@ class QuickActions extends StatelessWidget {
 
     final actions =
         <({String key, IconData icon, Future<void> Function() run})>[
+          if (auth.isTeacher && auth.canAcademics)
+            (
+              key: 'myClasses',
+              icon: Icons.class_outlined,
+              run: () => open(TeacherWorkspaceScreen(auth: auth)),
+            ),
           if (auth.can('students.manage'))
             (
               key: 'addStudent',

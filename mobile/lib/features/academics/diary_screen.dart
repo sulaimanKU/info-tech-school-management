@@ -12,9 +12,14 @@ import 'diary_editor.dart';
 import '../files/private_file_screen.dart';
 
 class DiaryScreen extends StatefulWidget {
-  const DiaryScreen({super.key, required this.auth, this.studentId});
+  const DiaryScreen({
+    super.key,
+    required this.auth,
+    this.studentId,
+    this.initialSection,
+  });
   final AuthController auth;
-  final String? studentId;
+  final String? studentId, initialSection;
   @override
   State<DiaryScreen> createState() => _DiaryScreenState();
 }
@@ -69,6 +74,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialSection != null) {
+      filters['section_id'] = widget.initialSection!;
+    }
     load();
   }
 
