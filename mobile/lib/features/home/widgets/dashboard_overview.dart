@@ -1,3 +1,5 @@
+import '../../finance/finance_summary_screen.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/api_client.dart';
@@ -323,6 +325,18 @@ class DashboardOverviewState extends State<DashboardOverview> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const Divider(height: AppSpace.xl),
+                ValueRow(
+                  label: 'Unbilled configured tuition',
+                  value: Money.format(finance['unbilled_minor']),
+                ),
+                Text(
+                  '${finance['students_with_missing_months'] ?? 0} students have missing monthly fees. Posted outstanding excludes these unbilled amounts.',
+                ),
+                TextButton(
+                  onPressed: () =>
+                      open(FinanceSummaryScreen(auth: widget.auth)),
+                  child: const Text('Review missing monthly fees'),
+                ),
                 ValueRow(
                   label: s.text('overdueFees'),
                   value: Money.format(finance['overdue_minor']),

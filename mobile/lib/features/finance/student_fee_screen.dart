@@ -95,10 +95,19 @@ class _StudentFeeScreenState extends State<StudentFeeScreen> {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Text(
-                    '${student['registration_number'] ?? ''} ? ${student['class_name'] ?? ''} ${student['section_name'] ?? ''}',
+                    '${student['registration_number'] ?? ''} | ${student['class_name'] ?? ''} ${student['section_name'] ?? ''}',
                   ),
                   Text('Period: ${d['period'] ?? ''}'),
+                  Text(
+                    'Admission: ${student['admitted_on'] ?? '-'} | Enrollment: ${student['starts_on'] ?? '-'}',
+                  ),
+                  Text('Session: ${student['session_name'] ?? '-'}'),
                   value('Configured monthly tuition', 'configured_fee_minor'),
+                  value(
+                    'Admission / one-time / opening charges',
+                    'admission_charges_minor',
+                  ),
+                  value('Missing unbilled tuition', 'unbilled_minor'),
                   value('Configured concession', 'configured_discount_minor'),
                   value('Posted fees (before concessions)', 'gross_minor'),
                   value('Posted concessions', 'discount_minor'),
@@ -121,12 +130,48 @@ class _StudentFeeScreenState extends State<StudentFeeScreen> {
             if (d['voucher_required'] == true) ...[
               StatusBanner(
                 message:
-                    'Tuition of ${Money.format(d['unbilled_minor'])} is configured but not billed for this period. Generate a voucher to post the due; it is not included again in the balance above.',
+                    'Tuition of ${Money.format(d['configured_net_minor'] ?? d['unbilled_minor'])} is configured but not billed for this period. Generate a voucher to post the due; it is not included again in the balance above.',
               ),
             ] else if (items.isEmpty)
               const StatusBanner(
                 message: 'No posted fee vouchers. Configure the class/session fees, then generate a voucher before recording payment.',
               ),
+            if ((d['opening_balances_needing_review'] as List? ?? [])
+                .isNotEmpty)
+              const StatusBanner(
+                message: 'Opening balances need review before catch-up billing. Ask management to open each opening voucher and approve the tuition months it already includes; do not bill those months again.',
+              ),
+            if ((d['missing_months'] as num? ?? 0) > 0)
+              StatusBanner(
+                message:
+                    '${d['missing_months']} applicable months are not billed. Unbilled configured tuition: ${Money.format(d['unbilled_minor'])}. ${d['months_needing_configuration'] ?? 0} months need fee configuration. This is separate from posted outstanding.',
+              ),
+            if (writable)
+              FilledButton.icon(
+                onPressed: busy
+                    ? null
+                    : () => action(() async {
+                        await generateMonthlyFees(
+                          context,
+                          widget.auth,
+                          studentId: widget.studentId,
+                          studentLabel: student['registration_number']
+                              ?.toString(),
+                        );
+                      }),
+                icon: const Icon(Icons.calendar_month),
+                label: const Text('Generate missing fees'),
+              ),
+            TextButton.icon(
+              onPressed: () => openSchoolReport(
+                context,
+                widget.auth,
+                'fee_statement',
+                {'student_id': widget.studentId},
+              ),
+              icon: const Icon(Icons.description_outlined),
+              label: const Text('Fee statement / monthly history'),
+            ),
             if (writable)
               FilledButton.icon(
                 onPressed: busy
@@ -165,6 +210,36 @@ class _StudentFeeScreenState extends State<StudentFeeScreen> {
                 label: Text(s.text('recordPayment')),
               ),
             const SizedBox(height: AppSpace.lg),
+            const SectionHeader(title: 'Monthly tuition history'),
+            for (final month in d['monthly_periods'] as List? ?? [])
+              ListTile(
+                title: Text('${month['period']} | ${month['session_name']}'),
+                subtitle: Text(
+                  'Gross: ${month['gross_minor'] == null ? (month['status'] == 'opening_balance_covered' ? 'Consolidated opening balance' : 'Not configured') : Money.format(month['gross_minor'])} | Concession: ${month['discount_minor'] == null ? '-' : Money.format(month['discount_minor'])}\nNet: ${month['net_minor'] == null ? '-' : Money.format(month['net_minor'])} | Paid: ${month['paid_minor'] == null ? '-' : Money.format(month['paid_minor'])}\n${month['status'] == 'opening_balance_covered'
+                      ? 'See opening voucher for the aggregate balance'
+                      : month['invoice_id'] == null
+                      ? 'Not billed'
+                      : 'Outstanding: ${Money.format(month['balance_minor'])}'} | ${month['status'] == 'not_billed'
+                      ? 'Not billed'
+                      : month['status'] == 'opening_balance_covered'
+                      ? 'Included in opening balance (aggregate)'
+                      : month['status'] == 'needs_configuration'
+                      ? 'Fee setup required'
+                      : s.text(month['status'] as String)}',
+                ),
+                isThreeLine: true,
+                onTap: month['invoice_id'] == null
+                    ? null
+                    : () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => InvoiceDetailScreen(
+                            auth: widget.auth,
+                            id: month['invoice_id'] as String,
+                          ),
+                        ),
+                      ).then((_) => load()),
+              ),
             SectionHeader(title: s.text('feeSchedules')),
             for (final f in d['fee_schedule'] as List? ?? [])
               ValueRow(

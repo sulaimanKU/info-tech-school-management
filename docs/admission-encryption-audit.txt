@@ -1,0 +1,347 @@
+﻿mobile/lib\shared\widgets\polished_components.dart:4:import '../../design/semantic_tokens.dart';
+mobile/lib\shared\widgets\conversation_message.dart:4:import '../../design/semantic_tokens.dart';
+mobile/lib\shared\widgets\summary_card.dart:4:import '../../design/semantic_tokens.dart';
+mobile/lib\shared\widgets\import_review.dart:4:import '../../design/semantic_tokens.dart';
+mobile/lib\shared\widgets\data_state.dart:4:import '../../design/semantic_tokens.dart';
+mobile/lib\shared\widgets\surface_card.dart:4:import '../../design/semantic_tokens.dart';
+api/routes\api.php:16:        Route::post('account/password', [StaffAccountController::class, 'password'])->middleware('throttle:6,1');
+api/routes\console.php:24:    $password = $this->secret('Password (minimum 12 characters)');
+api/routes\console.php:25:    if (! filter_var($email, FILTER_VALIDATE_EMAIL) || ! str_ends_with($email, '@example.test') || strlen($password) < 12) {
+api/routes\console.php:26:        $this->error('Invalid development email or short password.');
+api/routes\console.php:30:    DB::transaction(function () use ($email, $password) {
+api/routes\console.php:32:        $user = User::create(['name' => 'Development Administrator', 'email' => $email, 'password' => $password]);
+api/config\auth.php:12:    | This option defines the default authentication "guard" and password
+api/config\auth.php:20:        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+api/config\auth.php:78:    | Resetting Passwords
+api/config\auth.php:81:    | These configuration options specify the behavior of Laravel's password
+api/config\auth.php:82:    | reset functionality, including the table utilized for token storage
+api/config\auth.php:85:    | The expiry time is the number of minutes that each reset token will be
+api/config\auth.php:86:    | considered valid. This security feature keeps tokens short-lived so
+api/config\auth.php:90:    | generating more password reset tokens. This prevents the user from
+api/config\auth.php:91:    | quickly generating a very large amount of password reset tokens.
+api/config\auth.php:95:    'passwords' => [
+api/config\auth.php:98:            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+api/config\auth.php:106:    | Password Confirmation Timeout
+api/config\auth.php:109:    | Here you may define the amount of seconds before a password confirmation
+api/config\auth.php:110:    | window expires and users are asked to re-enter their password via the
+api/config\auth.php:115:    'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+api/config\app.php:89:    | Encryption Key
+api/config\app.php:92:    | This key is utilized by Laravel's encryption services and should be set
+api/config\app.php:93:    | to a random, 32 character string to ensure that all encrypted values
+api/config\app.php:98:    'cipher' => 'AES-256-CBC',
+mobile/lib\l10n\strings.dart:31:    'accountPasswordMismatch': 'The new passwords do not match.',
+mobile/lib\l10n\strings.dart:32:    'accountPasswordDifferent':
+mobile/lib\l10n\strings.dart:33:        'Choose a password different from your current password.',
+mobile/lib\l10n\strings.dart:34:    'accountPasswordLength': 'Use at least 12 characters.',
+mobile/lib\l10n\strings.dart:35:    'accountWrongPassword': 'The current password is incorrect.',
+mobile/lib\l10n\strings.dart:36:    'accountPasswordChanged': 'Password changed. Please sign in again.',
+mobile/lib\l10n\strings.dart:37:    'accountConfirmPassword': 'Confirm new password',
+mobile/lib\l10n\strings.dart:38:    'accountNewPassword': 'New password',
+mobile/lib\l10n\strings.dart:39:    'accountCurrentPassword': 'Current password',
+mobile/lib\l10n\strings.dart:55:    'accountPasswordPolicy': 'Use 12–1024 characters. Changing your password signs out all sessions; sign in again.',
+mobile/lib\l10n\strings.dart:56:    'accountChangePassword': 'Change password',
+mobile/lib\l10n\strings.dart:156:    'confirmPassword': 'Confirm password',
+mobile/lib\l10n\strings.dart:225:    "staff_password": "Staff password sign-in",
+mobile/lib\l10n\strings.dart:246:    "accountSupportBody": "For account access, mobile-number corrections, guardian verification, or child-link corrections, visit the INFO-TECH school office at Sangao Campus, Mardan. The app cannot change verified identities. Never share a password or one-time code with another person.",
+mobile/lib\l10n\strings.dart:247:    "privacyPolicyBody": "The school uses authorized student, guardian, academic and financial records to administer education and school services. Access is restricted by role, teaching assignment and verified guardian links. Guardian identity numbers are stored in readable school records and shown masked in the app. Private files require sign-in. Secure device storage holds saved sessions and locally saved drafts; passwords are never saved. Optional notifications use Firebase and contain no child details. Documents opened in another app are subject to that app’s privacy practices. Contact the school office for access, correction, retention or deletion requests. The school must confirm its retention schedule and publish its approved policy before production deployment.",
+mobile/lib\l10n\strings.dart:278:    "importPrivacy": "Private staging expires after 24 hours. Only your account can review this upload. Passwords and fingerprint templates must never be imported.",
+mobile/lib\l10n\strings.dart:477:    "draftSafety": "Drafts are encrypted on this device. Server storage is confirmed only after synchronization.",
+mobile/lib\l10n\strings.dart:611:    "temporaryPassword": "Initial password (12+ characters)",
+mobile/lib\l10n\strings.dart:700:    "passwordRequired": "Enter your password (up to 1024 characters).",
+mobile/lib\l10n\strings.dart:701:    "showPassword": "Show password",
+mobile/lib\l10n\strings.dart:702:    "hidePassword": "Hide password",
+mobile/lib\l10n\strings.dart:705:    "forgotPassword": "Forgot password?",
+mobile/lib\l10n\strings.dart:706:    "resetHelp": "Contact your school administrator for help accessing your account. Password reset is not available in the app yet.",
+mobile/lib\l10n\strings.dart:749:    'password': 'Password',
+mobile/lib\l10n\strings.dart:752:    'required': 'Enter a valid email and password.',
+mobile/lib\l10n\strings.dart:797:    'accountPasswordMismatch': 'نئے پاس ورڈ یکساں نہیں ہیں۔',
+mobile/lib\l10n\strings.dart:798:    'accountPasswordDifferent': 'موجودہ پاس ورڈ سے مختلف پاس ورڈ منتخب کریں۔',
+mobile/lib\l10n\strings.dart:799:    'accountPasswordLength': 'کم از کم ۱۲ حروف استعمال کریں۔',
+mobile/lib\l10n\strings.dart:800:    'accountWrongPassword': 'موجودہ پاس ورڈ درست نہیں۔',
+mobile/lib\l10n\strings.dart:801:    'accountPasswordChanged': 'پاس ورڈ تبدیل ہو گیا۔ دوبارہ لاگ ان کریں۔',
+mobile/lib\l10n\strings.dart:802:    'accountConfirmPassword': 'نئے پاس ورڈ کی تصدیق',
+mobile/lib\l10n\strings.dart:803:    'accountNewPassword': 'نیا پاس ورڈ',
+mobile/lib\l10n\strings.dart:804:    'accountCurrentPassword': 'موجودہ پاس ورڈ',
+mobile/lib\l10n\strings.dart:821:    'accountPasswordPolicy': '۱۲ سے ۱۰۲۴ حروف استعمال کریں۔ پاس ورڈ تبدیل کرنے پر تمام سیشن ختم ہوں گے؛ دوبارہ لاگ ان کریں۔',
+mobile/lib\l10n\strings.dart:822:    'accountChangePassword': 'پاس ورڈ تبدیل کریں',
+mobile/lib\l10n\strings.dart:921:    'confirmPassword': 'پاس ورڈ کی تصدیق',
+mobile/lib\l10n\strings.dart:991:    "staff_password": "عملے کا پاس ورڈ سائن ان",
+mobile/lib\l10n\strings.dart:1373:    "temporaryPassword": "ابتدائی پاس ورڈ (کم از کم ۱۲ حروف)",
+mobile/lib\l10n\strings.dart:1460:    "passwordRequired": "پاس ورڈ درج کریں (زیادہ سے زیادہ ۱۰۲۴ حروف)۔",
+mobile/lib\l10n\strings.dart:1461:    "showPassword": "پاس ورڈ دکھائیں",
+mobile/lib\l10n\strings.dart:1462:    "hidePassword": "پاس ورڈ چھپائیں",
+mobile/lib\l10n\strings.dart:1465:    "forgotPassword": "پاس ورڈ بھول گئے؟",
+mobile/lib\l10n\strings.dart:1508:    'password': 'پاس ورڈ',
+api/database/migrations\2026_10_28_000018_add_admission_requests.php:16:            $t->char('payload_hash', 64);
+api/database/migrations\0001_01_01_000000_create_users_table.php:15:            $t->string('password');
+api/database/migrations\2026_10_21_000004_create_academic_workflows.php:28:            $t->char('payload_hash', 64);
+api/database/migrations\2026_10_21_000004_create_academic_workflows.php:64:            $t->char('payload_hash', 64);
+api/config\cache.php:60:                env('MEMCACHED_PASSWORD'),
+api/config\cache.php:83:            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+api/database/migrations\2026_10_21_000007_create_school_communication.php:35:            $t->char('payload_hash', 64);
+api/database/migrations\2026_10_21_000001_create_foundation.php:69:            $t->char('token_hash', 64)->unique();
+api/database/migrations\2026_10_21_000001_create_foundation.php:70:            $t->string('method', 32)->default('staff_password');
+api/database/migrations\2026_10_28_000017_add_payroll_payment_history.php:18:            $t->char('payload_hash', 64);
+api/config\filesystems.php:53:            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+api/database/migrations\2026_10_21_000002_create_student_management.php:114:            $t->text('cnic_ciphertext');
+api/database/migrations\2026_10_21_000002_create_student_management.php:117:            $t->text('mobile_ciphertext');
+api/database/migrations\2026_10_21_000002_create_student_management.php:209:            $t->char('lookup_hash', 64)->index();
+api/database/migrations\2026_10_21_000002_create_student_management.php:210:            $t->string('otp_hash');
+api/config\queue.php:58:            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+api/database/migrations\2026_10_28_000016_add_readable_profile_storage.php:14:            $t->text('cnic_ciphertext')->nullable()->change();
+api/database/migrations\2026_10_28_000016_add_readable_profile_storage.php:17:            $t->text('mobile_ciphertext')->nullable()->change();
+api/config\mail.php:47:            'password' => env('MAIL_PASSWORD'),
+api/config\database.php:52:            'password' => env('DB_PASSWORD', ''),
+api/config\database.php:76:            'password' => env('DB_PASSWORD', ''),
+api/config\database.php:100:            'password' => env('DB_PASSWORD', ''),
+api/config\database.php:115:            'password' => env('DB_PASSWORD', ''),
+api/config\database.php:119:            // 'encrypt' => env('DB_ENCRYPT', 'yes'),
+api/config\database.php:166:            'password' => env('REDIS_PASSWORD'),
+api/config\database.php:175:            'password' => env('REDIS_PASSWORD'),
+mobile/lib\shared\forms\domain_form.dart:23:  password,
+mobile/lib\shared\forms\domain_form.dart:393:      obscureText: f.kind == FieldKind.password,
+api/config\services.php:18:        'token' => env('POSTMARK_TOKEN'),
+api/config\services.php:23:        'secret' => env('AWS_SECRET_ACCESS_KEY'),
+api/config\services.php:33:            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
+api/database/migrations\2026_10_21_000008_create_import_pipeline.php:16:            $t->text('encrypted_rows')->nullable();
+api/database/migrations\2026_10_21_000005_create_financial_ledger.php:28:            $t->char('payload_hash', 64);
+api/database/migrations\2026_10_21_000005_create_financial_ledger.php:109:            $t->char('payload_hash', 64);
+api/database/migrations\2026_10_21_000005_create_financial_ledger.php:150:            $t->char('payload_hash', 64);
+api/database/migrations\2026_10_21_000005_create_financial_ledger.php:173:            $t->char('payload_hash', 64);
+api/database/migrations\2026_10_21_000010_create_push_delivery.php:15:            $t->char('token_hash', 64)->unique();
+api/database/migrations\2026_10_21_000010_create_push_delivery.php:16:            $t->text('token_ciphertext');
+api/database/migrations\2026_10_27_000014_add_mysql_integrity.php:106: OR NOT (NEW.request_id <=> OLD.request_id) OR NOT (NEW.payload_hash <=> OLD.payload_hash)
+api/config\session.php:41:    | Session Encryption
+api/config\session.php:45:    | should be encrypted before it's stored. All encryption is performed
+api/config\session.php:50:    'encrypt' => env('SESSION_ENCRYPT', false),
+api/app\Contracts\PushProvider.php:7:    /** Returns sent, invalid_token, retry, or disabled. Never returns simulated success. */
+api/app\Contracts\PushProvider.php:8:    public function send(string $token, string $notificationId): string;
+api/app\Providers\AppServiceProvider.php:42:            Limit::perMinute(5)->by('account:'.hash('sha256', strtolower((string) $r->input('email'))).'|'.$r->ip()),
+api/app\Models\User.php:18:    protected $fillable = ['name', 'email', 'password', 'is_active'];
+api/app\Models\User.php:20:    protected $hidden = ['password'];
+api/app\Models\User.php:24:        return ['password' => 'hashed', 'is_active' => 'boolean'];
+api/app\Http\Middleware\AuthenticateSession.php:15:        $token = $request->bearerToken();
+api/app\Http\Middleware\AuthenticateSession.php:16:        abort_unless($token && strlen($token) === 64, 401);
+api/app\Http\Middleware\AuthenticateSession.php:17:        $session = DB::table('authentication_sessions')->where('token_hash', hash('sha256', $token))
+api/app\Services\GuardianIdentity.php:26:        $key = config('school.cnic_lookup_key') ?: hash_hkdf('sha256', (string) config('app.key'), 32, 'infotech-cnic-lookup-v1');
+api/app\Services\GuardianIdentity.php:28:        return hash_hmac('sha256', $this->normalize($cnic), $key);
+mobile/lib\core\api_client.dart:33:  Map<String, String> _headers(String? token) => {
+mobile/lib\core\api_client.dart:35:    if (token != null) 'Authorization': 'Bearer $token',
+mobile/lib\core\api_client.dart:70:    String? token,
+mobile/lib\core\api_client.dart:75:    final headers = {..._headers(token), 'Content-Type': 'application/json'};
+mobile/lib\core\api_client.dart:108:  Future<Uint8List> download(String path, {required String token}) async {
+mobile/lib\core\api_client.dart:114:          return await _client.get(_uri(path), headers: _headers(token));
+mobile/lib\core\api_client.dart:129:    required String token,
+mobile/lib\core\api_client.dart:134:      ..headers.addAll(_headers(token))
+api/app\Console\Commands\CreateSuperAdmin.php:24:            $this->error('An interactive terminal is required. Passwords cannot be supplied as command arguments.');
+api/app\Console\Commands\CreateSuperAdmin.php:31:        $this->info('Use a password of 12 to 1024 characters, matching the existing staff password policy.');
+api/app\Console\Commands\CreateSuperAdmin.php:34:            // Never fall back to visible input when the terminal cannot hide passwords.
+api/app\Console\Commands\CreateSuperAdmin.php:35:            $password = $this->secret('Password', false);
+api/app\Console\Commands\CreateSuperAdmin.php:36:            $confirmation = $this->secret('Password confirmation', false);
+api/app\Console\Commands\CreateSuperAdmin.php:38:            $this->error('Hidden password input is unavailable. Use an interactive terminal.');
+api/app\Console\Commands\CreateSuperAdmin.php:46:            'password' => $password,
+api/app\Console\Commands\CreateSuperAdmin.php:47:            'password_confirmation' => $confirmation,
+api/app\Console\Commands\CreateSuperAdmin.php:51:            'password' => 'required|string|min:12|max:1024|confirmed',
+api/app\Console\Commands\CreateSuperAdmin.php:52:            'password_confirmation' => 'required|string|max:1024',
+api/app\Console\Commands\CreateSuperAdmin.php:64:            DB::transaction(function () use ($name, $email, $password) {
+api/app\Console\Commands\CreateSuperAdmin.php:66:                // User's existing hashed cast owns password hashing and UUID generation.
+api/app\Console\Commands\CreateSuperAdmin.php:67:                $user = User::create(['name' => $name, 'email' => $email, 'password' => $password]);
+mobile/lib\features\administration\staff_screen.dart:44:              'password',
+mobile/lib\features\administration\staff_screen.dart:45:              'temporaryPassword',
+mobile/lib\features\administration\staff_screen.dart:46:              kind: FieldKind.password,
+mobile/lib\features\administration\staff_screen.dart:50:              'password_confirmation',
+mobile/lib\features\administration\staff_screen.dart:51:              'confirmPassword',
+mobile/lib\features\administration\staff_screen.dart:52:              kind: FieldKind.password,
+mobile/lib\features\account\staff_account_screen.dart:6:import '../../design/semantic_tokens.dart';
+mobile/lib\features\account\staff_account_screen.dart:16:import 'change_password_screen.dart';
+mobile/lib\features\account\staff_account_screen.dart:331:                        key: const Key('change-own-password'),
+mobile/lib\features\account\staff_account_screen.dart:333:                        title: Text(s.text('accountChangePassword')),
+mobile/lib\features\account\staff_account_screen.dart:334:                        subtitle: Text(s.text('accountPasswordPolicy')),
+mobile/lib\features\account\staff_account_screen.dart:339:                                ChangePasswordScreen(auth: widget.auth),
+api/app\Services\Finance\FeeService.php:66:            $hash = hash('sha256', json_encode($v));
+api/app\Services\Finance\FeeService.php:69:                abort_unless(hash_equals($old->payload_hash, $hash), 409);
+api/app\Services\Finance\FeeService.php:123:            $id = Domain::insert('fee_invoices', ['voucher_number' => app(DocumentNumber::class)->next('FV', $v['issued_on']), 'student_id' => $student->id, 'academic_session_id' => $session->id, 'period' => $v['period'], 'kind' => $v['kind'], 'issued_on' => $v['issued_on'], 'due_on' => $v['due_on'], 'gross_minor' => $gross, 'discount_minor' => $discount, 'total_minor' => $gross - $discount, 'request_id' => $v['request_id'], 'payload_hash' => $hash, 'created_by' => $user->id]);
+mobile/lib\features\administration\catalog_screen.dart:190:            'password',
+mobile/lib\features\administration\catalog_screen.dart:191:            'temporaryPassword',
+mobile/lib\features\administration\catalog_screen.dart:192:            kind: FieldKind.password,
+api/app\Services\ProfilePhotoService.php:74:                $fileId = Domain::insert('private_files', ['uploaded_by' => $user->id, 'student_id' => ($guardian || $staff) ? null : $id, 'parent_guardian_id' => $guardian ? $id : null, 'owner_user_id' => $staff ? $id : null, 'path' => $path, 'mime' => 'image/jpeg', 'purpose' => 'photo', 'size' => strlen($bytes), 'sha256' => hash('sha256', $bytes)]);
+mobile/lib\features\communication\push_service.dart:34:      refresh = FirebaseMessaging.instance.onRegistered.listen((token) {
+mobile/lib\features\communication\push_service.dart:35:        if (enabled && auth.status == AuthStatus.signedIn) register(token);
+mobile/lib\features\communication\push_service.dart:77:  Future<void> register(String token) async {
+mobile/lib\features\communication\push_service.dart:83:        body: {'token': token, 'platform': 'android'},
+api/app\Services\Finance\JournalService.php:34:            $hash = hash('sha256', json_encode([$date, $type, $reference, $lines, $reversal]));
+api/app\Services\Finance\JournalService.php:38:                abort_unless(hash_equals($old->payload_hash, $hash), 409);
+api/app\Services\Finance\JournalService.php:42:            $id = Domain::insert('journal_entries', ['number' => app(DocumentNumber::class)->next('JE', $date), 'posting_key' => $key, 'payload_hash' => $hash, 'date' => $date, 'description' => $description, 'reference_type' => $type, 'reference_id' => $reference, 'reversal_of' => $reversal, 'posted_by' => $user->id]);
+api/app\Services\Finance\PayrollService.php:81:            $hash = hash('sha256', json_encode([$id, $v]));
+api/app\Services\Finance\PayrollService.php:86:                    abort_unless(hash_equals($old->payload_hash, $hash), 409);
+api/app\Services\Finance\PayrollService.php:95:                    abort_unless(hash_equals($legacy->payload_hash, $hash), 409);
+api/app\Services\Finance\PayrollService.php:136:            $payment = Domain::insert('payroll_payments', ['payroll_period_id' => $id, 'payment_method_id' => $method->id, 'recorded_by' => $user->id, 'request_id' => $request, 'payload_hash' => $hash, 'amount_minor' => $amount, 'paid_on' => $v['paid_on'], 'reference' => $v['reference'] ?? null, 'notes' => $v['notes'] ?? null]);
+mobile/lib\features\account\change_password_screen.dart:9:class ChangePasswordScreen extends StatefulWidget {
+mobile/lib\features\account\change_password_screen.dart:10:  const ChangePasswordScreen({super.key, required this.auth});
+mobile/lib\features\account\change_password_screen.dart:13:  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+mobile/lib\features\account\change_password_screen.dart:16:class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+mobile/lib\features\account\change_password_screen.dart:19:      password = TextEditingController(),
+mobile/lib\features\account\change_password_screen.dart:28:    password.dispose();
+mobile/lib\features\account\change_password_screen.dart:42:        'account/password',
+mobile/lib\features\account\change_password_screen.dart:44:          'current_password': current.text,
+mobile/lib\features\account\change_password_screen.dart:45:          'password': password.text,
+mobile/lib\features\account\change_password_screen.dart:46:          'password_confirmation': confirmation.text,
+mobile/lib\features\account\change_password_screen.dart:50:      password.clear();
+mobile/lib\features\account\change_password_screen.dart:55:        final message = Strings.of(context).text('accountPasswordChanged');
+mobile/lib\features\account\change_password_screen.dart:63:          wrongCurrent = e.fields.containsKey('current_password');
+mobile/lib\features\account\change_password_screen.dart:74:    final controllers = [current, password, confirmation];
+mobile/lib\features\account\change_password_screen.dart:76:      'accountCurrentPassword',
+mobile/lib\features\account\change_password_screen.dart:77:      'accountNewPassword',
+mobile/lib\features\account\change_password_screen.dart:78:      'accountConfirmPassword',
+mobile/lib\features\account\change_password_screen.dart:81:      appBar: AppBar(title: Text(s.text('accountChangePassword'))),
+mobile/lib\features\account\change_password_screen.dart:90:                StatusBanner(message: s.text('accountPasswordPolicy')),
+mobile/lib\features\account\change_password_screen.dart:108:                            visible[i] ? 'hidePassword' : 'showPassword',
+mobile/lib\features\account\change_password_screen.dart:124:                          return s.text('accountPasswordLength');
+mobile/lib\features\account\change_password_screen.dart:127:                          return s.text('accountPasswordDifferent');
+mobile/lib\features\account\change_password_screen.dart:129:                        if (i == 2 && v != password.text) {
+mobile/lib\features\account\change_password_screen.dart:130:                          return s.text('accountPasswordMismatch');
+mobile/lib\features\account\change_password_screen.dart:139:                      wrongCurrent ? 'accountWrongPassword' : error!,
+mobile/lib\features\account\change_password_screen.dart:144:                  key: const Key('save-own-password'),
+mobile/lib\features\account\change_password_screen.dart:153:                  label: Text(s.text('accountChangePassword')),
+mobile/lib\features\auth\auth_controller.dart:18:  String? _token;
+mobile/lib\features\auth\auth_controller.dart:26:      _token = await store.read();
+mobile/lib\features\auth\auth_controller.dart:27:      if (_token == null) {
+mobile/lib\features\auth\auth_controller.dart:30:        user = await api.request('auth/me', token: _token);
+mobile/lib\features\auth\auth_controller.dart:54:    String password, {
+mobile/lib\features\auth\auth_controller.dart:64:        body: {'email': email.trim().toLowerCase(), 'password': password},
+mobile/lib\features\auth\auth_controller.dart:66:      final token = result['token'] as String;
+mobile/lib\features\auth\auth_controller.dart:69:          await store.write(token);
+mobile/lib\features\auth\auth_controller.dart:76:          await api.request('auth/logout', token: token, body: {});
+mobile/lib\features\auth\auth_controller.dart:80:      _token = token;
+mobile/lib\features\auth\auth_controller.dart:125:      return await api.request(path, token: _token, body: body, method: method);
+mobile/lib\features\auth\auth_controller.dart:137:      return await api.download(path, token: _token ?? '');
+mobile/lib\features\auth\auth_controller.dart:155:        token: _token ?? '',
+mobile/lib\features\auth\auth_controller.dart:184:      final token = data['token'] as String;
+mobile/lib\features\auth\auth_controller.dart:187:          await store.write(token);
+mobile/lib\features\auth\auth_controller.dart:193:          await api.request('auth/logout', token: token, body: {});
+mobile/lib\features\auth\auth_controller.dart:197:      _token = token;
+mobile/lib\features\auth\auth_controller.dart:217:        await api.request('auth/logout', token: _token, body: {});
+mobile/lib\features\auth\auth_controller.dart:234:    _token = null;
+mobile/lib\features\auth\widgets\staff_login_form.dart:4:import '../../../design/semantic_tokens.dart';
+mobile/lib\features\auth\widgets\staff_login_form.dart:20:  final password = TextEditingController();
+mobile/lib\features\auth\widgets\staff_login_form.dart:27:    password.dispose();
+mobile/lib\features\auth\widgets\staff_login_form.dart:34:    await widget.auth.login(email.text, password.text, rememberMe: rememberMe);
+mobile/lib\features\auth\widgets\staff_login_form.dart:36:      password.clear();
+mobile/lib\features\auth\widgets\staff_login_form.dart:41:  void forgotPassword() {
+mobile/lib\features\auth\widgets\staff_login_form.dart:47:        title: Text(s.text('forgotPassword')),
+mobile/lib\features\auth\widgets\staff_login_form.dart:120:              key: const Key('password-field'),
+mobile/lib\features\auth\widgets\staff_login_form.dart:121:              controller: password,
+mobile/lib\features\auth\widgets\staff_login_form.dart:129:                labelText: s.text('password'),
+mobile/lib\features\auth\widgets\staff_login_form.dart:132:                  key: const Key('password-visibility'),
+mobile/lib\features\auth\widgets\staff_login_form.dart:133:                  tooltip: s.text(hidden ? 'showPassword' : 'hidePassword'),
+mobile/lib\features\auth\widgets\staff_login_form.dart:146:                  : s.text('passwordRequired'),
+mobile/lib\features\auth\widgets\staff_login_form.dart:179:                  key: const Key('forgot-password'),
+mobile/lib\features\auth\widgets\staff_login_form.dart:180:                  onPressed: auth.busy ? null : forgotPassword,
+mobile/lib\features\auth\widgets\staff_login_form.dart:181:                  child: Text(s.text('forgotPassword')),
+api/app\Services\Sms\SpextSmsProvider.php:32:            // Do not chain or report the transport exception: it may contain secrets.
+api/app\Http\Controllers\TicketController.php:77:                abort_unless(hash_equals($old->payload_hash, hash('sha256', json_encode([$v['message'], false, $v['attachments']]))), 409);
+api/app\Http\Controllers\TicketController.php:98:        $hash = hash('sha256', json_encode([$body, $internal, $files]));
+api/app\Http\Controllers\TicketController.php:101:            abort_unless($old->support_ticket_id === $ticket && $old->sender_user_id === $r->user()->id && hash_equals($old->payload_hash, $hash), 409);
+api/app\Http\Controllers\TicketController.php:109:        $id = Domain::insert('support_messages', ['support_ticket_id' => $ticket, 'sender_user_id' => $r->user()->id, 'body' => $body, 'is_internal' => $internal, 'client_id' => $client, 'payload_hash' => $hash]);
+api/app\Console\Commands\ConvertReadableData.php:34:                $legacy = Schema::hasColumn('parent_guardians', 'cnic_ciphertext');
+api/app\Console\Commands\ConvertReadableData.php:36:                    $cnic = $identity->normalize($legacy && $g->cnic_ciphertext !== null ? Crypt::decryptString($g->cnic_ciphertext) : ($g->cnic ?? ''));
+api/app\Console\Commands\ConvertReadableData.php:37:                    $mobile = Schema::hasColumn('parent_guardians', 'mobile_ciphertext') && $g->mobile_ciphertext !== null ? Crypt::decryptString($g->mobile_ciphertext) : ($g->mobile ?? '');
+api/app\Console\Commands\ConvertReadableData.php:45:                    if (Schema::hasColumn('parent_guardians', 'cnic_lookup') && $g->cnic_lookup !== null && ! hash_equals($identity->lookup($cnic), $g->cnic_lookup)) {
+api/app\Console\Commands\ConvertReadableData.php:59:                $legacyImports = Schema::hasColumn('import_batches', 'encrypted_rows');
+api/app\Console\Commands\ConvertReadableData.php:61:                    $rows = $legacyImports && $b->encrypted_rows !== null ? Crypt::decryptString($b->encrypted_rows) : $b->source_rows;
+api/app\Console\Commands\ConvertReadableData.php:86:                foreach (['cnic_ciphertext', 'mobile_ciphertext', 'cnic_lookup', 'cnic_last4'] as $column) {
+api/app\Console\Commands\ConvertReadableData.php:96:                if (Schema::hasColumn('import_batches', 'encrypted_rows')) {
+api/app\Console\Commands\ConvertReadableData.php:97:                    Schema::table('import_batches', fn (Blueprint $t) => $t->dropColumn('encrypted_rows'));
+api/app\Console\Commands\ConvertReadableData.php:101:            // Never print decrypted identities, payloads, keys or SQL bindings.
+mobile/lib\features\auth\session_store.dart:5:  Future<void> write(String token);
+mobile/lib\features\auth\session_store.dart:15:  Future<void> write(String token) => _storage.write(key: _key, value: token);
+api/app\Http\Controllers\StudentController.php:58:            $hash = hash('sha256', json_encode([$v, $photo ? hash_file('sha256', $photo->getRealPath()) : null]));
+api/app\Http\Controllers\StudentController.php:63:                    abort_unless($old->user_id === $r->user()->id && hash_equals($old->payload_hash, $hash), 409);
+api/app\Http\Controllers\StudentController.php:71:                DB::table('admission_requests')->insert(['id' => $v['request_id'], 'user_id' => $r->user()->id, 'student_id' => $id, 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]);
+mobile/lib\features\home\widgets\dashboard_overview.dart:8:import '../../../design/semantic_tokens.dart';
+api/app\Services\ParentAcademics.php:16:            $row->exam_key = hash('sha256', json_encode([$row->academic_session_id, $row->section_id, $row->type, $row->title, $row->date]));
+api/app\Services\Finance\PaymentService.php:26:            $hash = hash('sha256', json_encode($v));
+api/app\Services\Finance\PaymentService.php:29:                abort_unless(hash_equals($old->payload_hash, $hash), 409);
+api/app\Services\Finance\PaymentService.php:63:            $id = Domain::insert('payments', ['payment_method_id' => $method->id, 'paid_on' => $v['paid_on'], 'amount_minor' => $v['amount_minor'], 'reference' => $v['reference'] ?? null, 'notes' => $v['notes'] ?? null, 'proof_file_id' => $v['proof_file_id'] ?? null, 'status' => 'pending', 'request_id' => $v['request_id'], 'payload_hash' => $hash, 'recorded_by' => $user->id]);
+api/app\Services\Finance\PaymentService.php:105:            $hash = hash('sha256', json_encode([$payment, $v]));
+api/app\Services\Finance\PaymentService.php:108:                abort_unless(hash_equals($old->payload_hash, $hash), 409);
+api/app\Services\Finance\PaymentService.php:128:            $id = Domain::insert('payment_refunds', ['payment_id' => $payment, 'number' => app(DocumentNumber::class)->next('RF', $v['refunded_on']), 'refunded_on' => $v['refunded_on'], 'amount_minor' => $sum, 'reason' => $v['reason'], 'request_id' => $v['request_id'], 'payload_hash' => $hash, 'approved_by' => $user->id]);
+api/app\Services\Finance\FinancialLock.php:15:            DB::select('SELECT pg_advisory_xact_lock(?)', [hexdec(substr(hash('sha256', $kind.':'.$id), 0, 14))]);
+api/app\Services\Finance\FinancialLock.php:18:            $key = hash('sha256', $kind.':'.$id);
+mobile/lib\features\auth\widgets\parent_login_form.dart:8:import '../../../design/semantic_tokens.dart';
+mobile/lib\features\auth\widgets\parent_login_form.dart:157:                  prefixIcon: const Icon(Icons.password_rounded),
+api/app\Services\SessionIssuer.php:13:        $token = bin2hex(random_bytes(32));
+api/app\Services\SessionIssuer.php:15:        Domain::insert('authentication_sessions', ['user_id' => $user->id, 'token_hash' => hash('sha256', $token), 'method' => $method, 'expires_at' => $expires]);
+api/app\Services\SessionIssuer.php:17:        return ['token' => $token, 'token_type' => 'Bearer', 'expires_at' => $expires->toIso8601String(), 'user' => $user->profile()];
+mobile/lib\features\home\widgets\welcome_panel.dart:4:import '../../../design/semantic_tokens.dart';
+mobile/lib\features\home\widgets\quick_actions.dart:4:import '../../../design/semantic_tokens.dart';
+mobile/lib\features\parents\child_profile_card.dart:4:import '../../design/semantic_tokens.dart';
+mobile/lib\features\parents\parent_attendance_screen.dart:4:import '../../design/semantic_tokens.dart';
+mobile/lib\features\parents\parent_academics_screen.dart:4:import '../../design/semantic_tokens.dart';
+mobile/lib\features\parents\parent_overview.dart:5:import '../../design/semantic_tokens.dart';
+api/app\Services\Sms\LocalSmsProvider.php:14:        // Private local-only encrypted simulator, no logs/API response/real outbound SMS.
+api/app\Services\Sms\LocalSmsProvider.php:15:        abort_unless(Cache::put('local-otp:'.$challengeId, Crypt::encryptString($otp), now()->addSeconds(config('school.otp_lifetime_seconds'))), 503);
+api/app\Services\Sms\LocalSmsProvider.php:23:        return $value ? Crypt::decryptString($value) : null;
+api/app\Http\Controllers\ParentAuthController.php:15:use Illuminate\Support\Facades\Hash;
+api/app\Http\Controllers\ParentAuthController.php:28:            $last = DB::table('otp_challenges')->where('lookup_hash', $lookup)->orderByDesc('created_at')->first();
+api/app\Http\Controllers\ParentAuthController.php:32:            DB::table('otp_challenges')->where('lookup_hash', $lookup)->whereNull('consumed_at')->update(['consumed_at' => now()]);
+api/app\Http\Controllers\ParentAuthController.php:35:            $id = Domain::insert('otp_challenges', ['parent_guardian_id' => $guardian?->id, 'lookup_hash' => $lookup, 'otp_hash' => Hash::make($otp), 'expires_at' => now()->addSeconds(config('school.otp_lifetime_seconds'))]);
+api/app\Http\Controllers\ParentAuthController.php:57:            if (! Hash::check($v['otp'], $challenge->otp_hash) || ! $challenge->parent_guardian_id) {
+api/app\Http\Controllers\StaffAccountController.php:14:use Illuminate\Support\Facades\Hash;
+api/app\Http\Controllers\StaffAccountController.php:54:    public function password(Request $r)
+api/app\Http\Controllers\StaffAccountController.php:56:        $this->input($r, ['current_password', 'password', 'password_confirmation']);
+api/app\Http\Controllers\StaffAccountController.php:57:        $v = $r->validate(['current_password' => 'required|string|max:1024', 'password' => 'required|string|min:12|max:1024|confirmed|different:current_password', 'password_confirmation' => 'required|string|max:1024']);
+api/app\Http\Controllers\StaffAccountController.php:60:            if (! Hash::check($v['current_password'], $u->password)) {
+api/app\Http\Controllers\StaffAccountController.php:61:                Domain::fail('current_password', 'The current password is incorrect.');
+api/app\Http\Controllers\StaffAccountController.php:63:            $u->password = $v['password'];
+api/app\Http\Controllers\StaffAccountController.php:67:            Audit::record('staff_password_changed', $u->id, 'users', $u->id);
+api/app\Http\Controllers\CatalogController.php:205:        $v = $r->validate(['name' => 'required|string|max:200', 'email' => 'required|email|max:254|unique:users,email', 'password' => 'required|string|min:12|max:1024', 'role' => 'required|in:super_admin,school_administrator,coordinator,accountant_clerk,teacher', 'is_active' => 'sometimes|boolean', 'password_confirmation' => 'sometimes|required|same:password']);
+api/app\Http\Controllers\CatalogController.php:210:            $u = User::create(['name' => $v['name'], 'email' => strtolower($v['email']), 'password' => $v['password'], 'is_active' => $v['is_active'] ?? true]);
+api/app\Http\Controllers\PushDeviceController.php:15:        $v = $r->validate(['token' => 'required|string|min:20|max:4096|regex:/^[A-Za-z0-9_:\-]+$/', 'platform' => 'required|in:android']);
+api/app\Http\Controllers\PushDeviceController.php:16:        $hash = hash('sha256', $v['token']);
+api/app\Http\Controllers\PushDeviceController.php:17:        $id = DB::transaction(function () use ($r, $v, $hash) {
+api/app\Http\Controllers\PushDeviceController.php:18:            app(\App\Services\Finance\FinancialLock::class)->request('push', $hash);
+api/app\Http\Controllers\PushDeviceController.php:19:            $old = DB::table('push_devices')->where('token_hash', $hash)->lockForUpdate()->first();
+api/app\Http\Controllers\PushDeviceController.php:20:            $values = ['user_id' => $r->user()->id, 'authentication_session_id' => $r->attributes->get('session_id'), 'token_ciphertext' => Crypt::encryptString($v['token']), 'platform' => 'android', 'revoked_at' => null];
+api/app\Http\Controllers\PushDeviceController.php:25:                $id = Domain::insert('push_devices', [...$values, 'token_hash' => $hash]);
+mobile/lib\features\home\widgets\module_card.dart:4:import '../../../design/semantic_tokens.dart';
+api/app\Services\Push\DisabledPushProvider.php:9:    public function send(string $token, string $notificationId): string
+api/app\Services\Push\FcmPushProvider.php:14:        return rtrim(strtr(base64_encode($v), '+/', '-_'), '=');
+api/app\Services\Push\FcmPushProvider.php:17:    public function send(string $token, string $notificationId): string
+api/app\Services\Push\FcmPushProvider.php:28:            $key = 'fcm-oauth:'.hash('sha256', $c['project_id'].$c['client_email'].hash('sha256', $c['private_key']));
+api/app\Services\Push\FcmPushProvider.php:30:            $access = $cached ? Crypt::decryptString($cached) : null;
+api/app\Services\Push\FcmPushProvider.php:33:                $jwt = $this->b64(json_encode(['alg' => 'RS256', 'typ' => 'JWT'])).'.'.$this->b64(json_encode(['iss' => $c['client_email'], 'scope' => 'https://www.googleapis.com/auth/firebase.messaging', 'aud' => 'https://oauth2.googleapis.com/token', 'iat' => $now, 'exp' => $now + 3600]));
+api/app\Services\Push\FcmPushProvider.php:34:                if (! openssl_sign($jwt, $sig, $c['private_key'], OPENSSL_ALGO_SHA256)) {
+api/app\Services\Push\FcmPushProvider.php:37:                $response = Http::asForm()->timeout(15)->post('https://oauth2.googleapis.com/token', ['grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer', 'assertion' => $assertion]);
+api/app\Services\Push\FcmPushProvider.php:40:                }$access = $response->json('access_token');
+api/app\Services\Push\FcmPushProvider.php:43:                }Cache::put($key, Crypt::encryptString($access), max(1, min(3300, (int) $response->json('expires_in', 3600) - 60)));
+api/app\Services\Push\FcmPushProvider.php:45:            $response = Http::withToken($access)->timeout(15)->post('https://fcm.googleapis.com/v1/projects/'.$c['project_id'].'/messages:send', ['message' => ['token' => $token, 'notification' => ['title' => 'INFO-TECH School', 'body' => 'A school update is available. Sign in to view it.'], 'data' => ['notification_id' => $notificationId], 'android' => ['priority' => 'normal', 'ttl' => '3600s', 'notification' => ['tag' => $notificationId]]]]);
+api/app\Services\Push\FcmPushProvider.php:51:                    return 'invalid_token';
+api/app\Http\Controllers\GuardianController.php:129:            $user = User::create(['name' => $v['full_name'], 'email' => 'guardian-'.Str::uuid().'@internal.invalid', 'password' => bin2hex(random_bytes(32))]);
+mobile/lib\features\home\home_screen.dart:4:import '../../design/semantic_tokens.dart';
+api/app\Http\Controllers\DiaryController.php:76:                unset($d->client_id, $d->payload_hash, $d->reviewed_by);
+api/app\Http\Controllers\DiaryController.php:94:            unset($data['client_id'],$data['payload_hash'],$data['reviewed_by']);
+api/app\Http\Controllers\DiaryController.php:107:            $payloadHash = hash('sha256', json_encode(array_intersect_key($v, array_flip(['section_id', 'subject_id', 'date', 'topic', 'homework', 'whole_class', 'status', 'students', 'attachments']))));
+api/app\Http\Controllers\DiaryController.php:109:                abort_unless(hash_equals($old->payload_hash, $payloadHash), 409);
+api/app\Http\Controllers\DiaryController.php:134:            $data['payload_hash'] = $payloadHash;
+api/app\Http\Controllers\PrivateFileController.php:62:                $id = Domain::insert('private_files', ['uploaded_by' => $r->user()->id, 'student_id' => $v['student_id'] ?? null, 'section_id' => $v['section_id'] ?? null, 'path' => $path, 'mime' => $mime, 'purpose' => $v['purpose'], 'size' => $file->getSize(), 'sha256' => hash_file('sha256', $file->getRealPath())]);
+api/app\Http\Controllers\AuthController.php:9:use Illuminate\Support\Facades\Hash;
+api/app\Http\Controllers\AuthController.php:17:        $input = $r->validate(['email' => ['required', 'email', 'max:254'], 'password' => ['required', 'string', 'max:1024']]);
+api/app\Http\Controllers\AuthController.php:19:        // A fixed dummy hash makes unknown-user requests perform the same expensive hash check.
+api/app\Http\Controllers\AuthController.php:20:        $valid = Hash::check($input['password'], $user?->password ?? '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.');
+api/app\Http\Controllers\AuthController.php:29:            $token = bin2hex(random_bytes(32));
+api/app\Http\Controllers\AuthController.php:31:            DB::table('authentication_sessions')->insert(['id' => (string) Str::uuid(), 'user_id' => $user->id, 'token_hash' => hash('sha256', $token), 'method' => 'staff_password', 'expires_at' => $expires, 'created_at' => now(), 'updated_at' => now()]);
+api/app\Http\Controllers\AuthController.php:34:            return response()->json(['data' => ['token' => $token, 'token_type' => 'Bearer', 'expires_at' => $expires->toIso8601String(), 'user' => $user->profile()], 'error' => null]);
+api/app\Services\Push\PushDispatcher.php:21:        $counts = ['sent' => 0, 'retry' => 0, 'disabled' => 0, 'invalid_token' => 0, 'cancelled' => 0];
+api/app\Services\Push\PushDispatcher.php:51:                $status = $this->provider->send(Crypt::decryptString($device->token_ciphertext), $note->id);
+api/app\Services\Push\PushDispatcher.php:53:            if ($status === 'invalid_token') {
+api/app\Http\Controllers\ImportController.php:49:        }$hash = hash('sha256', json_encode($rows));
+api/app\Http\Controllers\ImportController.php:50:        $id = DB::transaction(function () use ($r, $v, $rows, $hash) {
+api/app\Http\Controllers\ImportController.php:51:            $old = DB::table('import_batches')->when(! $r->user()->isSuperAdmin(), fn ($q) => $q->where('created_by', $r->user()->id))->where('kind', $v['kind'])->where('fingerprint', $hash)->first();
+api/app\Http\Controllers\ImportController.php:58:            }$id = Domain::insert('import_batches', ['created_by' => $r->user()->id, 'kind' => $v['kind'], 'fingerprint' => $hash, 'source_rows' => json_encode($rows, JSON_THROW_ON_ERROR), 'expires_at' => now()->addDay()]);
+api/app\Http\Controllers\ImportController.php:84:            }$hash = hash('sha256', json_encode($v));
+api/app\Http\Controllers\ImportController.php:85:            if (isset($seen[$hash])) {
+api/app\Http\Controllers\ImportController.php:87:            }$seen[$hash] = true;
+api/app\Http\Controllers\AttendanceController.php:51:            $hash = hash('sha256', json_encode([$v['status'], $v['records']]));
+api/app\Http\Controllers\AttendanceController.php:53:                abort_unless(hash_equals($old->payload_hash, $hash), 409);
+api/app\Http\Controllers\AttendanceController.php:66:            $data = ['section_id' => $section->id, 'date' => $v['date'], 'status' => $v['status'], 'version' => ($old?->version ?? 0) + 1, 'last_request_id' => $v['request_id'], 'payload_hash' => $hash, 'updated_by' => $r->user()->id];

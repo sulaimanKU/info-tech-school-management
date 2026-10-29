@@ -73,6 +73,39 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     }
   }
 
+  Future<void> coverage() async {
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DomainForm(
+          title: 'Review opening balance coverage',
+          summary: const Text(
+            'Record which historical tuition months this consolidated balance already includes. This prevents duplicate monthly charges. It does not change the voucher or invent monthly payment allocations. Coverage cannot overlap existing tuition vouchers and cannot be edited after approval.',
+          ),
+          fields: const [
+            FormFieldSpec(
+              'covered_from',
+              'First covered month (YYYY-MM)',
+              maxLength: 7,
+            ),
+            FormFieldSpec(
+              'covered_through',
+              'Last covered month (YYYY-MM)',
+              maxLength: 7,
+            ),
+          ],
+          onSubmit: (v) async {
+            await widget.auth.call(
+              'finance/invoices/${widget.id}/opening-coverage',
+              body: v,
+            );
+          },
+        ),
+      ),
+    );
+    await load();
+  }
+
   Future<void> adjust() async {
     final key = operationId();
     await Navigator.push<bool>(
@@ -188,6 +221,18 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                       icon: const Icon(Icons.payments_outlined),
                       label: Text(s.text('recordPayment')),
                     ),
+                  if (data!['kind'] == 'opening_balance') ...[
+                    if (data!['opening_coverage'] != null)
+                      Text(
+                        'Included tuition months: ${data!['opening_coverage']['from_period']} to ${data!['opening_coverage']['through_period']}',
+                      ),
+                    if (data!['opening_coverage'] == null &&
+                        widget.auth.can('finance.approve'))
+                      OutlinedButton(
+                        onPressed: coverage,
+                        child: const Text('Approve covered historical months'),
+                      ),
+                  ],
                   if (widget.auth.can('finance.approve'))
                     const SizedBox(height: AppSpace.sm),
                   if (widget.auth.can('finance.approve'))

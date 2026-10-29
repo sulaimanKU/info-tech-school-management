@@ -10,6 +10,8 @@ use App\Http\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(AuthenticateSession::class)->group(function () {
+    Route::post('finance/invoices/{invoice}/opening-coverage', [FeeController::class, 'openingCoverage'])->whereUuid('invoice');
+    Route::post('finance/monthly-fees', [FeeController::class, 'monthly']);
     Route::get('finance/summary', [FeeController::class, 'summary']);
     Route::get('finance/payment-methods', [FeeConfigurationController::class, 'methods']);
     Route::get('finance/configuration', [FeeConfigurationController::class, 'show']);

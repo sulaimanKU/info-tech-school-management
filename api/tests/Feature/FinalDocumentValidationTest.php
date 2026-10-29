@@ -38,7 +38,12 @@ class FinalDocumentValidationTest extends MobileTestCase
         foreach ([$one, $two] as $student) {
             $invoices[] = app(FeeService::class)->generate($this->admin, ['student_id' => $student, 'academic_session_id' => $this->session, 'period' => '2026-10', 'kind' => 'tuition', 'issued_on' => now()->toDateString(), 'due_on' => now()->addDays(5)->toDateString(), 'request_id' => (string) Str::uuid()]);
         }
-        $payment = app(PaymentService::class)->record($this->admin, ['payment_method_id' => DB::table('payment_methods')->where('code', 'cash')->value('id'), 'paid_on' => now()->toDateString(), 'amount_minor' => 280000, 'request_id' => (string) Str::uuid(), 'allocations' => array_map(fn ($id) => ['fee_invoice_id' => $id, 'amount_minor' => 140000], $invoices)]);
+        // Legacy shared receipts must remain readable and scoped; new mixed-student receipts are rejected.
+        $payment = Domain::insert('payments', ['payment_method_id' => DB::table('payment_methods')->where('code', 'cash')->value('id'), 'paid_on' => now()->toDateString(), 'amount_minor' => 280000, 'status' => 'pending', 'request_id' => (string) Str::uuid(), 'payload_hash' => hash('sha256', 'fictional-legacy-shared-receipt'), 'recorded_by' => $this->admin->id]);
+        foreach ($invoices as $invoice) {
+            Domain::insert('payment_allocations', ['payment_id' => $payment, 'fee_invoice_id' => $invoice, 'amount_minor' => 140000]);
+        }
+        app(PaymentService::class)->verify($this->admin, $payment);
         $this->asUser($parent);
         $this->get('/api/v1/reports/voucher?invoice_id='.$invoices[0])->assertOk()->assertHeader('Content-Type', 'application/pdf');
         $this->get('/api/v1/reports/voucher?invoice_id='.$invoices[1])->assertNotFound();

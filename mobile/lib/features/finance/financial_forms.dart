@@ -365,3 +365,135 @@ Future<bool?> disbursementForm(
     ),
   );
 }
+
+Future<bool?> generateMonthlyFees(
+  BuildContext context,
+  AuthController auth, {
+  String? studentId,
+  String? studentLabel,
+}) async {
+  final sessions = await auth.call('catalog/sessions');
+  final classes = studentId == null
+      ? await auth.call('catalog/classes')
+      : {'items': []};
+  if (!context.mounted) return false;
+  return Navigator.push<bool>(
+    context,
+    MaterialPageRoute(
+      builder: (_) => DomainForm(
+        title: 'Generate monthly fees',
+        summary: Text(
+          '${studentLabel ?? 'Select a class/session or all authorized students.'}\nPreview missing months before posting. Existing vouchers and payments will not be changed.',
+        ),
+        fields: [
+          FormFieldSpec(
+            'through',
+            'Through month (YYYY-MM)',
+            initial: DateTime.now().toIso8601String().substring(0, 7),
+            maxLength: 7,
+          ),
+          const FormFieldSpec(
+            'current_only',
+            'Only the selected month',
+            kind: FieldKind.boolean,
+            initial: false,
+          ),
+          FormFieldSpec(
+            'academic_session_id',
+            'academicSession',
+            kind: FieldKind.choice,
+            required: false,
+            options: {
+              for (final row in sessions['items'] as List)
+                row['id'] as String: row['name'] as String,
+            },
+          ),
+          if (studentId == null)
+            FormFieldSpec(
+              'class_id',
+              'class',
+              kind: FieldKind.choice,
+              required: false,
+              options: {
+                for (final row in classes['items'] as List)
+                  row['id'] as String: row['name'] as String,
+              },
+            ),
+        ],
+        onSubmit: (v) async {
+          final body = {...v};
+          if (studentId != null) {
+            body['student_id'] = studentId;
+          }
+          final preview = await auth.call(
+            'finance/monthly-fees',
+            body: {...body, 'preview': true},
+          );
+          if (!context.mounted) return;
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (c) => AlertDialog(
+              title: const Text('Review missing tuition'),
+              content: SizedBox(
+                width: 500,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if ((preview['opening_balances_needing_review']
+                                  as List? ??
+                              [])
+                          .isNotEmpty)
+                        const Text(
+                          'Opening balances need approved month coverage before generation. Review each opening voucher first.',
+                        ),
+                      Text(
+                        'Students: ${preview['student_count']}\nMissing months: ${preview['missing_months']}\nUnbilled configured tuition: ${Money.format(preview['unbilled_minor'])}',
+                      ),
+                      for (final row
+                          in (preview['periods'] as List)
+                              .where((r) => r['invoice_id'] == null)
+                              .take(50))
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            '${row['registration_number']} | ${row['period']}',
+                          ),
+                          subtitle: Text(
+                            row['status'] == 'needs_configuration'
+                                ? 'Historical fee configuration required'
+                                : 'Not billed | ${Money.format(row['net_minor'])}',
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(c, false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed:
+                      (preview['opening_balances_needing_review'] as List? ??
+                              [])
+                          .isNotEmpty
+                      ? null
+                      : () => Navigator.pop(c, true),
+                  child: const Text('Generate missing fees'),
+                ),
+              ],
+            ),
+          );
+          if (confirmed != true) throw const ApiFailure('cancelled');
+          await auth.call(
+            'finance/monthly-fees',
+            body: {...body, 'preview': false},
+          );
+        },
+      ),
+    ),
+  );
+}

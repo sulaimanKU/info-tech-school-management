@@ -1,3 +1,6 @@
+import 'financial_forms.dart';
+import '../reports/report_screen.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../core/api_client.dart';
@@ -174,6 +177,68 @@ class _FinanceSummaryScreenState extends State<FinanceSummaryScreen> {
                         value: Money.format(d['payroll'][row.$2]),
                       ),
                   ],
+                  const SectionHeader(title: 'Missing monthly fees'),
+                  ValueRow(
+                    label: 'Students with unbilled months',
+                    value: '${d['students_with_missing_months'] ?? 0}',
+                  ),
+                  ValueRow(
+                    label: 'Unbilled configured tuition',
+                    value: Money.format(d['unbilled_minor']),
+                  ),
+                  Text(
+                    'Months needing fee setup: ${d['months_needing_configuration'] ?? 0}. Unbilled amounts are not included in posted outstanding.',
+                  ),
+                  if (widget.auth.can('finance.write'))
+                    FilledButton(
+                      onPressed: () async {
+                        try {
+                          await generateMonthlyFees(context, widget.auth);
+                          await load();
+                        } on ApiFailure catch (e) {
+                          if (mounted) setState(() => error = e.code);
+                        }
+                      },
+                      child: const Text('Preview / generate monthly fees'),
+                    ),
+                  if (widget.auth.can('reports.export'))
+                    TextButton(
+                      onPressed: () => openSchoolReport(
+                        context,
+                        widget.auth,
+                        'unbilled_fees',
+                        filters.map((k, v) => MapEntry(k, '$v')),
+                      ),
+                      child: const Text('Unbilled tuition report'),
+                    ),
+                  for (final student in d['unbilled_students'] as List? ?? [])
+                    ListTile(
+                      title: Text(
+                        '${student['full_name']} ? ${student['registration_number']}',
+                      ),
+                      subtitle: Text(
+                        '${student['missing_months']} missing months ? ${Money.format(student['unbilled_minor'])}',
+                      ),
+                      onTap: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => StudentFeeScreen(
+                            auth: widget.auth,
+                            studentId: student['student_id'] as String,
+                          ),
+                        ),
+                      ).then((_) => load()),
+                    ),
+                  if (widget.auth.can('reports.export'))
+                    TextButton(
+                      onPressed: () => openSchoolReport(
+                        context,
+                        widget.auth,
+                        'fee_balances',
+                        filters.map((k, v) => MapEntry(k, '$v')),
+                      ),
+                      child: const Text('Student balances / arrears report'),
+                    ),
                   const SectionHeader(title: 'Student balances'),
                   if ((d['student_balances'] as List).isEmpty)
                     const ListTile(

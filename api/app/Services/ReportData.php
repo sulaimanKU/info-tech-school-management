@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 final class ReportData
 {
-    public const TYPES = ['admission', 'student_id', 'voucher', 'receipt', 'annual_fee', 'attendance', 'academic', 'exam_schedule', 'salary_slip', 'financial', 'registration', 'communication'];
+    public const TYPES = ['fee_balances', 'fee_statement', 'unbilled_fees', 'admission', 'student_id', 'voucher', 'receipt', 'annual_fee', 'attendance', 'academic', 'exam_schedule', 'salary_slip', 'financial', 'registration', 'communication'];
 
     public function __construct(private SchoolAccess $access, private AcademicSummary $academic) {}
 
@@ -31,7 +31,7 @@ final class ReportData
             $this->access->academic($r->user());
         }
         $required = match ($type) {
-            'admission','student_id','annual_fee','attendance','academic' => 'student_id', 'voucher' => 'invoice_id', 'receipt' => 'payment_id', 'salary_slip' => 'payroll_item_id', default => null
+            'fee_statement','admission','student_id','annual_fee','attendance','academic' => 'student_id', 'voucher' => 'invoice_id', 'receipt' => 'payment_id', 'salary_slip' => 'payroll_item_id', default => null
         };
         if ($required && empty($v[$required])) {
             Domain::fail($required, 'Select the required authorized record.');
@@ -47,6 +47,40 @@ final class ReportData
             $meta['Registration'] = $student->registration_number;
         }
         switch ($type) {
+            case 'fee_statement':
+                $this->access->student($r->user(), $v['student_id'] ?? '');
+                $response = app(FeeController::class)->student($r, $v['student_id'] ?? '')->getData(true)['data'];
+                $money = fn ($value) => 'PKR '.number_format($value / 100, 2, '.', ',');
+                $meta += ['Student' => $response['student']['full_name'], 'Admission number' => $response['student']['registration_number'], 'Total billed' => $money($response['total_minor']), 'Net paid' => $money($response['paid_minor']), 'Posted outstanding' => $money($response['balance_minor']), 'Previous dues' => $money($response['arrears_minor']), 'Current due' => $money($response['current_period_due_minor']), 'Unbilled tuition' => $money($response['unbilled_minor'])];
+                $label = fn ($status) => match ($status) {
+                    'not_billed' => 'Not billed', 'needs_configuration' => 'Fee setup required', 'opening_balance_covered' => 'Included in opening balance (aggregate)', 'verified' => 'Recorded manually', 'pending' => 'Pending management review', default => ucwords(str_replace('_', ' ', $status))
+                };
+                $rows = array_map(fn ($row) => ['record' => 'Monthly tuition', 'period' => $row['period'], 'reference' => $row['voucher_number'], 'description' => $row['session_name'], ...array_intersect_key($row, array_flip(['gross_minor', 'discount_minor', 'net_minor', 'paid_minor', 'balance_minor'])), 'status' => $label($row['status'])], $response['monthly_periods']);
+                foreach ($response['items'] as $i) {
+                    if ($i['kind'] === 'tuition') {
+                        continue;
+                    }
+                    $rows[] = ['record' => ucwords(str_replace('_', ' ', $i['kind'])), 'period' => $i['period'], 'reference' => $i['voucher_number'], 'description' => 'One-time or opening charge', 'gross_minor' => $i['gross_minor'], 'discount_minor' => $i['discount_minor'], 'net_minor' => $i['net_total_minor'], 'paid_minor' => $i['paid_minor'], 'balance_minor' => $i['balance_minor'], 'status' => $label($i['status'])];
+                }
+                foreach ($response['payments'] as $p) {
+                    $rows[] = ['record' => 'Manual payment', 'period' => $p['paid_on'], 'reference' => $p['receipt_number'], 'description' => $p['method'].'; amount received PKR '.number_format($p['amount_minor'] / 100, 2, '.', '').($p['reference'] ? '; reference '.$p['reference'] : ''), 'paid_minor' => $p['status'] === 'verified' ? $p['amount_minor'] - $p['refunded_minor'] : 0, 'status' => $label($p['status'])];
+                }
+                break;
+            case 'fee_balances':
+                $this->access->require($r->user(), 'finance.read');
+                $this->access->require($r->user(), 'reports.export');
+                $summary = app(FeeController::class)->summary($r, true)->getData(true)['data'];
+                $rows = array_map(fn ($row) => array_diff_key($row, ['student_id' => true]), $summary['student_balances']);
+                $meta += ['Report' => 'Student fee balances; unbilled months are separate', 'Unbilled tuition' => 'PKR '.number_format($summary['unbilled_minor'] / 100, 2, '.', ',')];
+                break;
+            case 'unbilled_fees':
+                $this->access->require($r->user(), 'finance.read');
+                $this->access->require($r->user(), 'reports.export');
+                $summary = app(FeeController::class)->summary($r, true)->getData(true)['data'];
+                $rows = array_map(fn ($row) => array_diff_key($row, ['student_id' => true]), $summary['unbilled_students']);
+                $meta += ['Posted outstanding' => 'PKR '.number_format($summary['balance_minor'] / 100, 2, '.', ','), 'Unbilled configured tuition' => 'PKR '.number_format($summary['unbilled_minor'] / 100, 2, '.', ','), 'Missing months' => $summary['missing_months']];
+                break;
+
             case 'admission':
                 abort_unless($this->access->isParent($r->user()) || $r->user()->hasPermission('students.manage'), 403);
                 $rows = [array_intersect_key((array) $student, array_flip(['registration_number', 'full_name', 'admitted_on', 'gender', 'date_of_birth', 'father_name', 'address', 'previous_school', 'emergency_contact', 'status']))];

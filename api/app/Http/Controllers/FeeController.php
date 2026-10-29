@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\AcademicFilters;
 use App\Services\Finance\FeeService;
 use App\Services\Finance\InvoiceBalance;
+use App\Services\Finance\MonthlyBilling;
 use App\Services\Finance\PayrollService;
 use App\Services\Finance\StudentFinance;
 use App\Services\SchoolAccess;
@@ -16,7 +17,46 @@ class FeeController extends Controller
 {
     public function __construct(private SchoolAccess $access, private InvoiceBalance $balance) {}
 
-    public function summary(Request $r)
+    public function openingCoverage(Request $r, string $invoice)
+    {
+        $this->access->require($r->user(), 'finance.approve');
+        $i = DB::table('fee_invoices')->where('id', $invoice)->firstOrFail();
+        $this->access->student($r->user(), $i->student_id);
+        $v = $r->validate(['covered_from' => 'required|date_format:Y-m', 'covered_through' => 'required|date_format:Y-m|after_or_equal:covered_from']);
+
+        return Domain::response(['id' => app(MonthlyBilling::class)->coverOpening($r->user(), $invoice, $v['covered_from'], $v['covered_through'])]);
+    }
+
+    public function monthly(Request $r)
+    {
+        $this->access->require($r->user(), 'finance.write');
+        $filters = app(AcademicFilters::class);
+        $v = $filters->values($r, ['through' => 'required|date_format:Y-m', 'preview' => 'sometimes|boolean', 'current_only' => 'sometimes|boolean']);
+        if ($v['through'] > now()->format('Y-m')) {
+            Domain::fail('through', 'Future months cannot be generated.');
+        }
+        $students = $filters->students($this->access->students($r->user()), $r, array_diff_key($v, ['status' => true]));
+        if (! empty($v['student_id'])) {
+            $students->where('students.id', $v['student_id']);
+        }
+        $ids = $students->orderBy('students.id')->pluck('students.id')->all();
+        if (count($ids) > 500) {
+            Domain::fail('class_id', 'Choose a class or student; batches are limited to 500 students.');
+        }
+        $billing = app(MonthlyBilling::class);
+        $rows = [];
+        foreach ($ids as $id) {
+            $identity = DB::table('students')->find($id);
+            foreach ($billing->plan($id, $v['through'], $v['academic_session_id'] ?? null, $v['current_only'] ?? false, $v['class_id'] ?? null) as $row) {
+                $rows[] = ['student_id' => $id, 'registration_number' => $identity->registration_number, ...$row];
+            }
+        }
+        $generated = ($v['preview'] ?? true) ? [] : $billing->generate($r->user(), $ids, $v['through'], $v['academic_session_id'] ?? null, $v['current_only'] ?? false, $v['class_id'] ?? null);
+
+        return Domain::response(['student_count' => count($ids), 'missing_months' => collect($rows)->whereNull('invoice_id')->count(), 'unbilled_minor' => (int) collect($rows)->whereNull('invoice_id')->sum('net_minor'), 'opening_balances_needing_review' => collect($ids)->flatMap(fn ($id) => $billing->unreviewedOpenings($id))->values(), 'periods' => $rows, 'generated_ids' => $generated]);
+    }
+
+    public function summary(Request $r, bool $report = false)
     {
         $this->access->require($r->user(), 'finance.read');
         $filters = app(AcademicFilters::class);
@@ -27,14 +67,16 @@ class FeeController extends Controller
             ->when($v['from'] ?? null, fn ($q, $date) => $q->where('issued_on', '>=', $date))
             ->when($v['to'] ?? null, fn ($q, $date) => $q->where('issued_on', '<=', $date))->get();
         $amounts = collect($this->balance->many($invoices));
-        $studentBalances = $invoices->groupBy('student_id')->map(function ($rows, $student) use ($amounts) {
+        $period = $v['period'] ?? now()->format('Y-m');
+        $studentBalances = $invoices->groupBy('student_id')->map(function ($rows, $student) use ($amounts, $period) {
             $a = $rows->map(fn ($i) => $amounts[$i->id]);
             $identity = DB::table('students')->find($student);
 
-            return ['student_id' => $student, 'full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, 'total_minor' => (int) $a->sum('net_total_minor'), 'paid_minor' => (int) $a->sum('paid_minor'), 'balance_minor' => (int) $a->sum('balance_minor')];
+            return ['student_id' => $student, 'full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, 'total_minor' => (int) $a->sum('net_total_minor'), 'paid_minor' => (int) $a->sum('paid_minor'), 'balance_minor' => (int) $a->sum('balance_minor'), 'arrears_minor' => (int) $rows->filter(fn ($i) => $i->period < $period)->sum(fn ($i) => $amounts[$i->id]['balance_minor']), 'current_period_due_minor' => (int) $rows->filter(fn ($i) => $i->period === $period)->sum(fn ($i) => $amounts[$i->id]['balance_minor'])];
         })->values();
         $period = $v['period'] ?? now()->format('Y-m');
-        $data = ['billing_basis' => 'posted_vouchers', 'period' => $period, 'total_minor' => (int) $amounts->sum('net_total_minor'), 'paid_minor' => (int) $amounts->sum('paid_minor'), 'discount_minor' => (int) $invoices->sum('discount_minor'), 'balance_minor' => (int) $amounts->sum('balance_minor'), 'arrears_minor' => (int) $invoices->filter(fn ($i) => $i->period < $period)->sum(fn ($i) => $amounts[$i->id]['balance_minor']), 'students_unpaid' => $studentBalances->filter(fn ($s) => $s['balance_minor'] > 0 && $s['paid_minor'] === 0)->count(), 'students_partially_paid' => $studentBalances->filter(fn ($s) => $s['balance_minor'] > 0 && $s['paid_minor'] > 0)->count(), 'student_balances' => $studentBalances->sortByDesc('balance_minor')->take(30)->values()];
+        $data = ['billing_basis' => 'posted_vouchers', 'period' => $period, 'total_minor' => (int) $amounts->sum('net_total_minor'), 'paid_minor' => (int) $amounts->sum('paid_minor'), 'discount_minor' => (int) $invoices->sum('discount_minor'), 'balance_minor' => (int) $amounts->sum('balance_minor'), 'arrears_minor' => (int) $invoices->filter(fn ($i) => $i->period < $period)->sum(fn ($i) => $amounts[$i->id]['balance_minor']), 'students_unpaid' => $studentBalances->filter(fn ($s) => $s['balance_minor'] > 0 && $s['paid_minor'] === 0)->count(), 'students_partially_paid' => $studentBalances->filter(fn ($s) => $s['balance_minor'] > 0 && $s['paid_minor'] > 0)->count(), 'student_balances' => $studentBalances->sortByDesc('balance_minor')->when(! $report, fn ($rows) => $rows->take(30))->values()];
+        $data += app(MonthlyBilling::class)->warnings((clone $students)->pluck('students.id')->all(), $period, $v['academic_session_id'] ?? null, $v['class_id'] ?? null, $report ? null : 30);
         $data['recent_payments'] = DB::table('payments as p')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')->join('users as u', 'u.id', '=', 'p.recorded_by')
             ->whereIn('p.id', DB::table('payment_allocations')->whereIn('fee_invoice_id', $invoices->pluck('id'))->select('payment_id'))
             ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('payment_allocations as a')->join('fee_invoices as i', 'i.id', '=', 'a.fee_invoice_id')->whereColumn('a.payment_id', 'p.id')->whereNotIn('i.student_id', $this->access->students($r->user())->select('students.id')))
@@ -95,7 +137,7 @@ class FeeController extends Controller
         $i = DB::table('fee_invoices')->where('id', $invoice)->firstOrFail();
         $this->authorizeInvoice($r, $i);
 
-        return Domain::response([...$this->safeInvoice($i), ...$this->balance->calculate($i), 'lines' => DB::table('invoice_lines')->where('fee_invoice_id', $invoice)->get(['id', 'description', 'amount_minor', 'kind']), 'adjustments' => DB::table('invoice_adjustments')->where('fee_invoice_id', $invoice)->get(['id', 'amount_minor', 'reason', 'created_at'])]);
+        return Domain::response([...$this->safeInvoice($i), ...$this->balance->calculate($i), 'opening_coverage' => DB::table('opening_balance_coverage')->where('fee_invoice_id', $invoice)->first(['from_period', 'through_period']), 'lines' => DB::table('invoice_lines')->where('fee_invoice_id', $invoice)->get(['id', 'description', 'amount_minor', 'kind']), 'adjustments' => DB::table('invoice_adjustments')->where('fee_invoice_id', $invoice)->get(['id', 'amount_minor', 'reason', 'created_at'])]);
     }
 
     public function student(Request $r, string $student)
@@ -122,7 +164,7 @@ class FeeController extends Controller
         $class = $snapshot['class'];
         unset($snapshot['class']);
 
-        return Domain::response([...$snapshot, 'student' => ['id' => $student, 'full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, ...$class], 'payments' => $payments, 'discounts' => $discounts]);
+        return Domain::response([...$snapshot, 'student' => ['id' => $student, 'full_name' => $identity->full_name, 'registration_number' => $identity->registration_number, 'admitted_on' => $identity->admitted_on, ...$class], 'payments' => $payments, 'discounts' => $discounts]);
     }
 
     public function store(Request $r, FeeService $service)
@@ -130,6 +172,9 @@ class FeeController extends Controller
         $this->access->require($r->user(), 'finance.write');
         $v = $r->validate(['student_id' => 'required|uuid|exists:students,id', 'academic_session_id' => 'required|uuid|exists:academic_sessions,id', 'period' => 'required|date_format:Y-m', 'kind' => 'required|in:tuition,admission,promotion,additional,opening_balance', 'issued_on' => 'required|date|before_or_equal:today', 'due_on' => 'required|date|after_or_equal:issued_on', 'request_id' => 'required|uuid', 'charges' => 'sometimes|array|max:20', 'charges.*.description' => 'required|string|max:200', 'charges.*.amount_minor' => 'required|integer|min:1|max:1000000000']);
         $this->access->student($r->user(), $v['student_id']);
+        if ($v['kind'] === 'opening_balance' && $v['period'] < substr(DB::table('students')->find($v['student_id'])->admitted_on, 0, 7)) {
+            $this->access->require($r->user(), 'finance.approve');
+        }
         $id = $service->generate($r->user(), $v);
 
         return Domain::response(['id' => $id], 201);

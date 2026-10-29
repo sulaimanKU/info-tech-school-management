@@ -1,0 +1,3729 @@
+{
+    "academic_sessions": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "starts_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "ends_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "accounts": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "type",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "is_active",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "admission_requests": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "announcements": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "title",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "body",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "kind",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "audience",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "target_user_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "publish_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "expires_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "published_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "class_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "target_role_code",
+            "type": "varchar",
+            "nullable": true
+        }
+    ],
+    "announcement_reads": [
+        {
+            "column": "announcement_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "read_at",
+            "type": "timestamp",
+            "nullable": false
+        }
+    ],
+    "assessments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "subject_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "teacher_user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "type",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "title",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "maximum_marks",
+            "type": "decimal",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "published_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "assessment_results": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "assessment_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "maximum_marks",
+            "type": "decimal",
+            "nullable": false
+        },
+        {
+            "column": "obtained_marks",
+            "type": "decimal",
+            "nullable": false
+        },
+        {
+            "column": "percentage",
+            "type": "decimal",
+            "nullable": false
+        },
+        {
+            "column": "grade",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "remarks",
+            "type": "text",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "assessment_revisions": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "assessment_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "snapshot",
+            "type": "longtext",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "attendance_records": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "attendance_register_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "attendance_registers": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "last_request_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "updated_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "attendance_revisions": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "attendance_register_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "snapshot",
+            "type": "longtext",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "audit_logs": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "event",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": false
+        },
+        {
+            "column": "subject_type",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "subject_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "context",
+            "type": "longtext",
+            "nullable": true
+        }
+    ],
+    "authentication_sessions": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "token_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "method",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "expires_at",
+            "type": "timestamp",
+            "nullable": false
+        },
+        {
+            "column": "revoked_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "behavior_observations": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "area",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "category",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "observation",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "parent_visible",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "published_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "biometric_mappings": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "device_code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "external_id",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "biometric_punches": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "import_batch_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "device_code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "punched_at",
+            "type": "timestamp",
+            "nullable": false
+        },
+        {
+            "column": "direction",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "cache": [
+        {
+            "column": "key",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "value",
+            "type": "mediumtext",
+            "nullable": false
+        },
+        {
+            "column": "expiration",
+            "type": "int",
+            "nullable": false
+        }
+    ],
+    "cache_locks": [
+        {
+            "column": "key",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "owner",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "expiration",
+            "type": "int",
+            "nullable": false
+        }
+    ],
+    "classes": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "sort_order",
+            "type": "smallint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "class_subject_assignments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "class_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "subject_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "coordination_records": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "assigned_to",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "kind",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "title",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "notes",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "progress_percent",
+            "type": "smallint",
+            "nullable": true
+        },
+        {
+            "column": "follow_up_on",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "coordinator_assignments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "staff_profile_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "is_active",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "starts_on",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "column": "ends_on",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "active_coordinator_key",
+            "type": "char",
+            "nullable": true
+        }
+    ],
+    "diary_attachments": [
+        {
+            "column": "diary_entry_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "private_file_id",
+            "type": "char",
+            "nullable": false
+        }
+    ],
+    "diary_entries": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "subject_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "teacher_user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "topic",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "homework",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "whole_class",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "client_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "reviewed_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "reviewed_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "diary_revisions": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "diary_entry_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "snapshot",
+            "type": "longtext",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "diary_students": [
+        {
+            "column": "diary_entry_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        }
+    ],
+    "discount_policies": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "maximum_basis_points",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "applies_to",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "is_active",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "document_sequences": [
+        {
+            "column": "key",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "next_number",
+            "type": "bigint",
+            "nullable": false
+        }
+    ],
+    "enrollments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "roll_number",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "starts_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "ends_on",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "active_student_key",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "active_roll_key",
+            "type": "char",
+            "nullable": true
+        }
+    ],
+    "exam_schedules": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "subject_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "title",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "starts_at",
+            "type": "time",
+            "nullable": false
+        },
+        {
+            "column": "ends_at",
+            "type": "time",
+            "nullable": false
+        },
+        {
+            "column": "room",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "expenses": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "expense_category_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "description",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "expense_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "proof_file_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "requested_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "approved_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "paid_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "payment_method_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "paid_on",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "column": "reference",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "expense_categories": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "failed_jobs": [
+        {
+            "column": "id",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "uuid",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "connection",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "queue",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "payload",
+            "type": "longtext",
+            "nullable": false
+        },
+        {
+            "column": "exception",
+            "type": "longtext",
+            "nullable": false
+        },
+        {
+            "column": "failed_at",
+            "type": "timestamp",
+            "nullable": false
+        }
+    ],
+    "fee_categories": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "fee_invoices": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "voucher_number",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "period",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "kind",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "issued_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "due_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "gross_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "discount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "total_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "request_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "admission_student_key",
+            "type": "char",
+            "nullable": true
+        }
+    ],
+    "fee_schedules": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "class_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "kind",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "effective_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "grading_rules": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "minimum_percent",
+            "type": "decimal",
+            "nullable": false
+        },
+        {
+            "column": "grade",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "import_batches": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "kind",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "fingerprint",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "mapping",
+            "type": "longtext",
+            "nullable": true
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "report",
+            "type": "longtext",
+            "nullable": true
+        },
+        {
+            "column": "expires_at",
+            "type": "timestamp",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "source_rows",
+            "type": "longtext",
+            "nullable": true
+        }
+    ],
+    "invoice_adjustments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "fee_invoice_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "reason",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "request_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "invoice_lines": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "fee_invoice_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "description",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "kind",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "jobs": [
+        {
+            "column": "id",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "queue",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "payload",
+            "type": "longtext",
+            "nullable": false
+        },
+        {
+            "column": "attempts",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "reserved_at",
+            "type": "int",
+            "nullable": true
+        },
+        {
+            "column": "available_at",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "int",
+            "nullable": false
+        }
+    ],
+    "job_batches": [
+        {
+            "column": "id",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "total_jobs",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "pending_jobs",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "failed_jobs",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "failed_job_ids",
+            "type": "longtext",
+            "nullable": false
+        },
+        {
+            "column": "options",
+            "type": "mediumtext",
+            "nullable": true
+        },
+        {
+            "column": "cancelled_at",
+            "type": "int",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "finished_at",
+            "type": "int",
+            "nullable": true
+        }
+    ],
+    "journal_entries": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "number",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "posting_key",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "description",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "reference_type",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "reference_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "reversal_of",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "posted_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "journal_lines": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "journal_entry_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "account_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "debit_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "credit_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "currency",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "migrations": [
+        {
+            "column": "id",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "migration",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "batch",
+            "type": "int",
+            "nullable": false
+        }
+    ],
+    "opening_balance_coverage": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "fee_invoice_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "from_period",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "through_period",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "otp_challenges": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "parent_guardian_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "lookup_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "otp_hash",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "expires_at",
+            "type": "timestamp",
+            "nullable": false
+        },
+        {
+            "column": "consumed_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "attempts",
+            "type": "smallint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "parent_guardians": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "full_name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "mobile_verified_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "verified_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "photo_file_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "cnic",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "mobile",
+            "type": "varchar",
+            "nullable": false
+        }
+    ],
+    "parent_student_links": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "parent_guardian_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "relationship",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "is_primary",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "is_active",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "verified_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "verified_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "primary_guardian_key",
+            "type": "char",
+            "nullable": true
+        }
+    ],
+    "payments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "receipt_number",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "payment_method_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "paid_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "reference",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "proof_file_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "request_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "recorded_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "verified_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "verified_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "notes",
+            "type": "varchar",
+            "nullable": true
+        }
+    ],
+    "payment_allocations": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payment_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "fee_invoice_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "payment_methods": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "account_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "requires_verification",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "is_active",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "payment_refunds": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payment_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "number",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "refunded_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "reason",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "request_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "payroll_adjustments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "staff_profile_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "period",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "reason",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "payroll_items": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payroll_period_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "staff_profile_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "base_salary_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "adjustment_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "net_salary_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "payroll_payments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payroll_period_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payment_method_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "recorded_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "request_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "paid_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "reference",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "notes",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "payroll_payment_allocations": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payroll_payment_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payroll_item_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "payroll_periods": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "period",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "total_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "approved_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "paid_on",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "column": "payment_method_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "reference",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "permissions": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "permission_role": [
+        {
+            "column": "permission_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "role_id",
+            "type": "char",
+            "nullable": false
+        }
+    ],
+    "private_files": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "uploaded_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "path",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "mime",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "purpose",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "size",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "sha256",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "parent_guardian_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "owner_user_id",
+            "type": "char",
+            "nullable": true
+        }
+    ],
+    "push_deliveries": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "school_notification_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "push_device_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "attempts",
+            "type": "smallint",
+            "nullable": false
+        },
+        {
+            "column": "next_attempt_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "lease_until",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "failure_code",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "push_devices": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "authentication_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "token_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "token_ciphertext",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "platform",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "revoked_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "refund_allocations": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payment_refund_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payment_allocation_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "amount_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "registration_sequences": [
+        {
+            "column": "year",
+            "type": "smallint",
+            "nullable": false
+        },
+        {
+            "column": "next_number",
+            "type": "int",
+            "nullable": false
+        }
+    ],
+    "roles": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "school_days": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "is_school_day",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "label",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "school_notifications": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "event_key",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "kind",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "target_type",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "target_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "read_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "push_status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "push_attempts",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "push_after",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "school_settings": [
+        {
+            "column": "key",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "value",
+            "type": "longtext",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "sections": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "class_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "staff_compensation": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "staff_profile_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "base_salary_minor",
+            "type": "bigint",
+            "nullable": false
+        },
+        {
+            "column": "effective_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "staff_profiles": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "employee_number",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "joined_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "designation",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "is_active",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "students": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "registration_number",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "admitted_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "full_name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "gender",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "date_of_birth",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "father_name",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "address",
+            "type": "text",
+            "nullable": true
+        },
+        {
+            "column": "previous_school",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "emergency_contact",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "fee_category_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "updated_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "photo_file_id",
+            "type": "char",
+            "nullable": true
+        }
+    ],
+    "student_discounts": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "discount_policy_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "basis_points",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "starts_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "ends_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "eligibility_notes",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "evidence_file_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "requested_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "approved_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "revoked_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "student_fee_assignments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "academic_session_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "fee_category_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "tuition_override_minor",
+            "type": "bigint",
+            "nullable": true
+        },
+        {
+            "column": "effective_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "approved_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "student_transitions": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "type",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "from_enrollment_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "to_enrollment_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "effective_on",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "column": "reason",
+            "type": "text",
+            "nullable": true
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": false
+        }
+    ],
+    "subjects": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "code",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "support_messages": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "support_ticket_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "sender_user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "body",
+            "type": "text",
+            "nullable": false
+        },
+        {
+            "column": "is_internal",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "client_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "payload_hash",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "support_message_attachments": [
+        {
+            "column": "support_message_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "private_file_id",
+            "type": "char",
+            "nullable": false
+        }
+    ],
+    "support_tickets": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "student_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "guardian_user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "number",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "category",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "subject",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "priority",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "assigned_to",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "version",
+            "type": "int",
+            "nullable": false
+        },
+        {
+            "column": "resolved_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "closed_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "support_ticket_events": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "support_ticket_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "from_status",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "to_status",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "created_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "support_ticket_forwards": [
+        {
+            "column": "support_ticket_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "forwarded_by",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ],
+    "teacher_assignments": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "staff_profile_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "section_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "subject_id",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "is_class_teacher",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "is_active",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "starts_on",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "column": "ends_on",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "column": "class_teacher_key",
+            "type": "char",
+            "nullable": true
+        },
+        {
+            "column": "active_subject_key",
+            "type": "char",
+            "nullable": true
+        }
+    ],
+    "transaction_locks": [
+        {
+            "column": "key",
+            "type": "char",
+            "nullable": false
+        }
+    ],
+    "users": [
+        {
+            "column": "id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "name",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "email",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "password",
+            "type": "varchar",
+            "nullable": false
+        },
+        {
+            "column": "is_active",
+            "type": "tinyint",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "mobile",
+            "type": "varchar",
+            "nullable": true
+        },
+        {
+            "column": "address",
+            "type": "text",
+            "nullable": true
+        },
+        {
+            "column": "photo_file_id",
+            "type": "char",
+            "nullable": true
+        }
+    ],
+    "user_role_assignments": [
+        {
+            "column": "user_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "role_id",
+            "type": "char",
+            "nullable": false
+        },
+        {
+            "column": "created_at",
+            "type": "timestamp",
+            "nullable": true
+        },
+        {
+            "column": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+        }
+    ]
+}

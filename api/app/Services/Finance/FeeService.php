@@ -15,7 +15,7 @@ final class FeeService
 
     public function configuredAmount(string $student, string $session, string $class, string $kind, string $start, string $end): ?int
     {
-        $schedule = DB::table('fee_schedules')->where('academic_session_id', $session)->where('class_id', $class)->where('kind', $kind)->where('effective_on', '<=', $end)->orderByDesc('effective_on')->first();
+        $schedule = DB::table('fee_schedules')->where('academic_session_id', $session)->where('class_id', $class)->where('kind', $kind)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
         if (! $schedule) {
             return null;
         }
@@ -28,10 +28,13 @@ final class FeeService
     {
         $start = $period.'-01';
         $end = Carbon::parse($start)->endOfMonth()->toDateString();
-        $enrollment = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->where('e.student_id', $student)->where('e.academic_session_id', $session)->where('e.starts_on', '<=', $end)->where(fn ($q) => $q->whereNull('e.ends_on')->orWhere('e.ends_on', '>=', $start))->orderByDesc('e.starts_on')->first(['s.class_id']);
+        $enrollment = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->where('e.student_id', $student)->where('e.academic_session_id', $session)->where('e.starts_on', '<=', $end)->where(fn ($q) => $q->whereNull('e.ends_on')->orWhere('e.ends_on', '>=', $start))->orderByDesc('e.starts_on')->first(['s.class_id', 'e.starts_on']);
         if (! $enrollment) {
             return null;
         }
+        $sessionRow = DB::table('academic_sessions')->find($session);
+        $identity = DB::table('students')->find($student);
+        $start = max($start, $enrollment->starts_on, $sessionRow->starts_on, $identity->admitted_on);
         $gross = $this->configuredAmount($student, $session, $enrollment->class_id, 'tuition', $start, $end);
         if ($gross === null) {
             return null;
@@ -44,7 +47,7 @@ final class FeeService
     private function discount(string $student, string $session, string $start, int $gross, int $discountBase): int
     {
         $discount = 0;
-        $policies = DB::table('student_discounts as d')->join('discount_policies as p', 'p.id', '=', 'd.discount_policy_id')->where('d.student_id', $student)->where('d.academic_session_id', $session)->where('d.status', 'approved')->whereNull('d.revoked_at')->where('d.starts_on', '<=', $start)->where('d.ends_on', '>=', $start)->where('p.is_active', true)->get(['d.basis_points', 'p.maximum_basis_points', 'p.applies_to']);
+        $policies = DB::table('student_discounts as d')->join('discount_policies as p', 'p.id', '=', 'd.discount_policy_id')->where('d.student_id', $student)->where('d.academic_session_id', $session)->where(fn ($q) => $q->where('d.status', 'approved')->orWhere(fn ($q) => $q->where('d.status', 'revoked')->whereNotNull('d.approved_by')->whereNotNull('d.approved_at')))->where(fn ($q) => $q->whereNull('d.revoked_at')->orWhereDate('d.revoked_at', '>', $start))->where('d.starts_on', '<=', $start)->where('d.ends_on', '>=', $start)->where('p.is_active', true)->get(['d.basis_points', 'p.maximum_basis_points', 'p.applies_to']);
         // Highest applicable monetary discount wins. Stacking is deliberately not enabled.
         foreach ($policies as $policy) {
             if ($policy->basis_points > $policy->maximum_basis_points) {
@@ -76,16 +79,27 @@ final class FeeService
                 Domain::fail('period', 'Fee period is outside the academic session.');
             }
             $enrollment = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->where('e.student_id', $student->id)->where('e.academic_session_id', $session->id)->where('e.starts_on', '<=', $end)->where(fn ($q) => $q->whereNull('e.ends_on')->orWhere('e.ends_on', '>=', $start))->orderByDesc('e.starts_on')->first(['e.*', 's.class_id']);
-            if (! $enrollment) {
+            if (! $enrollment && $v['kind'] !== 'opening_balance') {
                 Domain::fail('student_id', 'The student has no enrollment in this fee period.');
             }
-            if (DB::table('fee_invoices')->where('student_id', $student->id)->where('academic_session_id', $session->id)->where('period', $v['period'])->where('kind', $v['kind'])->exists()) {
+            if ($v['kind'] === 'tuition' && $end < $student->admitted_on) {
+                Domain::fail('period', 'Tuition cannot precede admission.');
+            }
+            if ($v['kind'] === 'tuition' && DB::table('opening_balance_coverage as c')->join('fee_invoices as f', 'f.id', '=', 'c.fee_invoice_id')->where('f.student_id', $student->id)->where('c.from_period', '<=', $v['period'])->where('c.through_period', '>=', $v['period'])->exists()) {
+                Domain::fail('period', 'This month is included in an approved opening balance.');
+            }
+            $duplicate = DB::table('fee_invoices')->where('student_id', $student->id)->where('period', $v['period'])->where('kind', $v['kind']);
+            if ($v['kind'] !== 'tuition') {
+                $duplicate->where('academic_session_id', $session->id);
+            }
+            if ($duplicate->exists()) {
                 abort(409);
             }
             $lines = [];
             $discountBase = 0;
             if (in_array($v['kind'], ['tuition', 'admission', 'promotion'])) {
                 $kind = $v['kind'] === 'tuition' ? 'tuition' : 'admission_promotion';
+                $start = max($start, $enrollment->starts_on, $session->starts_on, $student->admitted_on);
                 $configured = $this->configuredAmount($student->id, $session->id, $enrollment->class_id, $kind, $start, $end);
                 if ($configured === null) {
                     Domain::fail('fee_schedule', 'Configure a fee schedule for this class and session.');

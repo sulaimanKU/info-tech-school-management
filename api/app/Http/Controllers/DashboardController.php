@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\AnnouncementAccess;
+use App\Services\Finance\MonthlyBilling;
 use App\Services\SchoolAccess;
 use App\Services\TicketAccess;
 use App\Support\Domain;
@@ -88,6 +89,6 @@ final class DashboardController extends Controller
         $totals = DB::query()->fromSub($balances, 'balances')->selectRaw('coalesce(sum(balance_minor),0) as outstanding,coalesce(sum(case when due_on < ? then balance_minor else 0 end),0) as overdue,count(distinct case when balance_minor > 0 then student_id end) as debtors', [$today])->first();
         $receipts = DB::table('payment_allocations as a')->join('payments as p', 'p.id', '=', 'a.payment_id')->join('fee_invoices as i', 'i.id', '=', 'a.fee_invoice_id')->where('p.status', 'verified')->whereBetween('p.paid_on', [now()->startOfMonth()->toDateString(), $today])->whereIn('i.student_id', (clone $students)->select('students.id'))->sum('a.amount_minor');
 
-        return ['outstanding_minor' => (int) $totals->outstanding, 'overdue_minor' => (int) $totals->overdue, 'students_with_balance' => (int) $totals->debtors, 'receipts_month_minor' => (int) $receipts, 'period' => now()->format('Y-m')];
+        return app(MonthlyBilling::class)->warnings((clone $students)->pluck('students.id')->all(), now()->format('Y-m')) + ['outstanding_minor' => (int) $totals->outstanding, 'overdue_minor' => (int) $totals->overdue, 'students_with_balance' => (int) $totals->debtors, 'receipts_month_minor' => (int) $receipts, 'period' => now()->format('Y-m')];
     }
 }

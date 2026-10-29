@@ -53,6 +53,9 @@ final class PaymentService
                     Domain::fail('allocations', 'Allocation exceeds the current invoice balance.');
                 }
             }
+            if (count(array_unique($students)) !== 1) {
+                Domain::fail('allocations', 'A fee payment must belong to one student. Record separate receipts for different students.');
+            }
             if ($v['proof_file_id'] ?? null) {
                 $file = DB::table('private_files')->where('id', $v['proof_file_id'])->firstOrFail();
                 abort_unless($file->purpose === 'payment_proof' && in_array($file->student_id, $students, true), 403);
