@@ -15,13 +15,13 @@ final class FeeService
 
     public function configuredAmount(string $student, string $session, string $class, string $kind, string $start, string $end): ?int
     {
-        $schedule = DB::table('fee_schedules')->where('academic_session_id', $session)->where('class_id', $class)->where('kind', $kind)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
-        if (! $schedule) {
-            return null;
-        }
         $assignment = DB::table('student_fee_assignments')->where('student_id', $student)->where('academic_session_id', $session)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
+        if ($kind === 'tuition' && $assignment?->tuition_override_minor !== null) {
+            return (int) $assignment->tuition_override_minor;
+        }
+        $schedule = DB::table('fee_schedules')->where('academic_session_id', $session)->where('class_id', $class)->where('kind', $kind)->where('effective_on', '<=', $start)->orderByDesc('effective_on')->first();
 
-        return $kind === 'tuition' && $assignment?->tuition_override_minor !== null ? (int) $assignment->tuition_override_minor : (int) $schedule->amount_minor;
+        return $schedule ? (int) $schedule->amount_minor : null;
     }
 
     public function tuitionQuote(string $student, string $session, string $period): ?array

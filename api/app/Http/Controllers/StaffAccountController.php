@@ -34,7 +34,7 @@ class StaffAccountController extends Controller
         $u = $r->user()->fresh();
         $profile = DB::table('staff_profiles')->where('user_id', $u->id)->first(['id', 'employee_number', 'designation', 'joined_on', 'is_active']);
 
-        return Domain::response(['account' => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'mobile' => $u->mobile, 'address' => $u->address, 'photo_file_id' => $u->photo_file_id, 'is_active' => $u->is_active, 'roles' => $u->roles()->get(['code', 'name'])], 'profile' => $profile, 'staff_linked' => $profile !== null])->header('Cache-Control', 'private, no-store');
+        return Domain::response(['account' => ['id' => $u->id, 'account_code' => $u->account_code, 'name' => $u->name, 'email' => $u->email, 'mobile' => $u->mobile, 'address' => $u->address, 'photo_file_id' => $u->photo_file_id, 'is_active' => $u->is_active, 'roles' => $u->roles()->get(['code', 'name'])], 'profile' => $profile, 'staff_linked' => $profile !== null])->header('Cache-Control', 'private, no-store');
     }
 
     public function update(Request $r)
@@ -54,7 +54,7 @@ class StaffAccountController extends Controller
     public function password(Request $r)
     {
         $this->input($r, ['current_password', 'password', 'password_confirmation']);
-        $v = $r->validate(['current_password' => 'required|string|max:1024', 'password' => 'required|string|min:12|max:1024|confirmed|different:current_password', 'password_confirmation' => 'required|string|max:1024']);
+        $v = $r->validate(['current_password' => 'required|string|max:1024', 'password' => 'required|string|min:4|max:1024|confirmed|different:current_password', 'password_confirmation' => 'required|string|max:1024']);
         DB::transaction(function () use ($r, $v) {
             $u = User::whereKey($r->user()->id)->lockForUpdate()->firstOrFail();
             if (! Hash::check($v['current_password'], $u->password)) {
@@ -99,7 +99,7 @@ class StaffAccountController extends Controller
             $amounts = $details['items']->firstWhere('id', $item->id);
             $history = DB::table('payroll_payment_allocations as a')->join('payroll_payments as p', 'p.id', '=', 'a.payroll_payment_id')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')->where('a.payroll_item_id', $item->id)->orderByDesc('p.paid_on')->get(['p.paid_on', 'a.amount_minor', 'p.reference', 'p.notes', 'm.name as method']);
 
-            return [...(array) $item, 'paid_minor' => $amounts['paid_minor'], 'balance_minor' => $amounts['balance_minor'], 'payment_status' => $amounts['payment_status'], 'payments' => $history];
+            return [...(array) $item, 'slip_number' => $amounts['slip_number'], 'paid_minor' => $amounts['paid_minor'], 'balance_minor' => $amounts['balance_minor'], 'payment_status' => $amounts['payment_status'], 'payments' => $history];
         }) : collect();
 
         return Domain::response(['profile' => $profile, 'staff_linked' => $profile !== null, 'items' => $items])->header('Cache-Control', 'private, no-store');

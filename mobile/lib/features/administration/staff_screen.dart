@@ -75,7 +75,7 @@ class StaffScreen extends StatelessWidget {
       auth: auth,
       path: 'staff-accounts',
       title: 'staffManagement',
-      recordTitle: (v) => v['name'] as String,
+      recordTitle: (v) => '${v['account_code'] ?? ''} | ${v['name']}',
       recordSubtitle: (v) =>
           '${v['email']} · ${(v['roles'] as List).map((r) => s.text(r['code'] as String)).join(', ')} · ${s.text(v['is_active'] == true ? 'active' : 'inactive')}\n${(v['assignments'] as List? ?? []).where((a) => a['is_active'] == true).map((a) => '${a['class_name']} · ${a['section_name']} · ${a['subject_name'] ?? ''}').join('\n')}',
       onCreate: create,
@@ -143,8 +143,26 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
               initial: role,
               options: staffRoles(context, widget.auth),
             ),
+            const FormFieldSpec(
+              'password',
+              'New password (4+ characters; leave blank to keep)',
+              kind: FieldKind.password,
+              required: false,
+              maxLength: 1024,
+            ),
+            const FormFieldSpec(
+              'password_confirmation',
+              'confirmPassword',
+              kind: FieldKind.password,
+              required: false,
+              maxLength: 1024,
+            ),
           ],
           onSubmit: (v) async {
+            if ((v['password'] as String? ?? '').isEmpty) {
+              v.remove('password');
+              v.remove('password_confirmation');
+            }
             if (v['role'] != role &&
                 !await confirmAction(
                   context,

@@ -86,8 +86,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
           lookups[key] = {
             for (final v in value['items'] as List)
               (v['id'] as String):
-                  (v['name'] ?? '${v['employee_number']} · ${v['designation']}')
-                      .toString(),
+                  '${v['employee_number'] ?? v['account_code'] ?? ''} | ${v['name'] ?? v['designation'] ?? ''}',
           };
         }
       }

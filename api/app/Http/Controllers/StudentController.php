@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\AcademicFilters;
+use App\Services\BusinessCode;
 use App\Services\Finance\AdmissionFinance;
 use App\Services\Finance\FinancialLock;
 use App\Services\ProfilePhotoService;
@@ -68,7 +69,7 @@ class StudentController extends Controller
             $id = $this->service->admit($r->user(), $v);
             app(AdmissionFinance::class)->apply($r->user(), $id, $v['admission_finance'] ?? []);
             if (isset($v['request_id'])) {
-                DB::table('admission_requests')->insert(['id' => $v['request_id'], 'user_id' => $r->user()->id, 'student_id' => $id, 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]);
+                DB::table('admission_requests')->insert(['id' => $v['request_id'], 'user_id' => $r->user()->id, 'student_id' => $id, 'admission_number' => app(BusinessCode::class)->next('ADM'), 'payload_hash' => $hash, 'created_at' => now(), 'updated_at' => now()]);
             }
             if ($photo) {
                 app(ProfilePhotoService::class)->save($r->user(), $photo, $id);
@@ -77,7 +78,7 @@ class StudentController extends Controller
             return $id;
         });
 
-        return Domain::response(['id' => $id, 'registration_number' => DB::table('students')->find($id)->registration_number], 201);
+        return Domain::response(['id' => $id, 'admission_number' => DB::table('admission_requests')->where('student_id', $id)->value('admission_number'), 'registration_number' => DB::table('students')->find($id)->registration_number], 201);
     }
 
     public function update(Request $r, string $student)

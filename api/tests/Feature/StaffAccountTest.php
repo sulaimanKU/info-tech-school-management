@@ -72,7 +72,7 @@ class StaffAccountTest extends MobileTestCase
         foreach ([
             ['password' => 'Fictional-new-password-only', 'password_confirmation' => 'Fictional-new-password-only'],
             ['current_password' => 'wrong', 'password' => 'Fictional-new-password-only', 'password_confirmation' => 'Fictional-new-password-only'],
-            ['current_password' => 'fictional-password-only', 'password' => 'short', 'password_confirmation' => 'short'],
+            ['current_password' => 'fictional-password-only', 'password' => '123', 'password_confirmation' => '123'],
             ['current_password' => 'fictional-password-only', 'password' => 'Fictional-new-password-only', 'password_confirmation' => 'different'],
         ] as $v) {
             $this->postJson('/api/v1/account/password', $v)->assertUnprocessable();

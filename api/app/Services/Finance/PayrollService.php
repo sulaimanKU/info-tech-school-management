@@ -62,16 +62,16 @@ final class PayrollService
         $legacyPaid = $period->status === 'paid' && $payments->isEmpty();
         $paid = $legacyPaid ? (int) $period->total_minor : (int) $payments->sum('amount_minor');
         $allocated = DB::table('payroll_payment_allocations as a')->join('payroll_payments as p', 'p.id', '=', 'a.payroll_payment_id')->where('p.payroll_period_id', $period->id)->groupBy('a.payroll_item_id')->selectRaw('a.payroll_item_id, SUM(a.amount_minor) as amount')->pluck('amount', 'payroll_item_id');
-        $items = DB::table('payroll_items as i')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->where('i.payroll_period_id', $period->id)->get(['i.*', 'u.name', 's.employee_number'])->map(function ($i) use ($allocated, $legacyPaid) {
+        $items = DB::table('payroll_items as i')->join('staff_profiles as s', 's.id', '=', 'i.staff_profile_id')->join('users as u', 'u.id', '=', 's.user_id')->where('i.payroll_period_id', $period->id)->get(['i.*', 'u.name', 'u.account_code', 's.employee_number'])->map(function ($i) use ($allocated, $legacyPaid, $period) {
             $paid = $legacyPaid ? (int) $i->net_salary_minor : (int) $allocated->get($i->id, 0);
 
-            return [...(array) $i, 'paid_minor' => $paid, 'balance_minor' => (int) $i->net_salary_minor - $paid, 'payment_status' => $paid >= $i->net_salary_minor ? 'paid' : ($paid > 0 ? 'partially_paid' : 'unpaid')];
+            return [...(array) $i, 'paid_minor' => $paid, 'balance_minor' => (int) $i->net_salary_minor - $paid, 'slip_number' => 'INF-SG-SL-'.$period->period.'-'.$i->account_code, 'payment_status' => $paid >= $i->net_salary_minor ? 'paid' : ($paid > 0 ? 'partially_paid' : 'unpaid')];
         });
         if ($legacyPaid) {
             $payments->push((object) ['id' => null, 'amount_minor' => (int) $period->total_minor, 'paid_on' => $period->paid_on, 'reference' => $period->reference, 'notes' => null, 'method' => DB::table('payment_methods')->where('id', $period->payment_method_id)->value('name'), 'recorded_by_name' => null, 'legacy' => true]);
         }
 
-        return [...(array) $period, 'paid_minor' => $paid, 'balance_minor' => (int) $period->total_minor - $paid, 'payment_status' => $paid >= $period->total_minor ? 'paid' : ($paid > 0 ? 'partially_paid' : 'unpaid'), 'method' => DB::table('payment_methods')->where('id', $period->payment_method_id)->value('name'), 'payments' => $payments, 'items' => $items];
+        return [...(array) $period, 'payroll_number' => 'INF-SG-PR-'.$period->period, 'paid_minor' => $paid, 'balance_minor' => (int) $period->total_minor - $paid, 'payment_status' => $paid >= $period->total_minor ? 'paid' : ($paid > 0 ? 'partially_paid' : 'unpaid'), 'method' => DB::table('payment_methods')->where('id', $period->payment_method_id)->value('name'), 'payments' => $payments, 'items' => $items];
     }
 
     public function pay(User $user, string $id, array $v): void

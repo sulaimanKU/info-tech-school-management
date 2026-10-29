@@ -82,6 +82,54 @@ class AdmissionFeeLifecycleTest extends MobileTestCase
         $this->getJson('/api/v1/finance/trial-balance')->assertOk()->assertJsonPath('data.balanced', true);
     }
 
+    public function test_preview_counts_show_billed_paid_partial_and_exact_selected_historical_month(): void
+    {
+        $student = $this->march();
+        $this->monthly($student, true)->assertJsonPath('data.eligible_months', 8)->assertJsonPath('data.already_billed', 0)->assertJsonPath('data.ready_to_generate', 8)->assertJsonPath('data.needs_configuration', 0);
+        $this->monthly($student, false, ['through' => '2026-04'])->assertOk()->assertJsonCount(2, 'data.generated_ids');
+        $this->monthly($student, true)->assertJsonPath('data.missing_months', 6)->assertJsonPath('data.already_billed', 2)->assertJsonPath('data.ready_to_generate', 6);
+        $this->monthly($student, true, ['through' => '2026-05', 'current_only' => true])->assertJsonCount(1, 'data.periods')->assertJsonPath('data.periods.0.period', '2026-05')->assertJsonPath('data.missing_months', 1);
+        $items = collect($this->getJson('/api/v1/students/'.$student.'/finance')->json('data.items'))->sortBy('period')->values()->all();
+        $this->pay($items, 150000)->assertCreated();
+        $preview = $this->monthly($student, true)->assertJsonPath('data.already_billed', 2)->assertJsonPath('data.missing_months', 6)->assertJsonPath('data.periods.0.status', 'paid')->assertJsonPath('data.periods.1.status', 'partially_paid')->assertJsonPath('data.periods.1.paid_minor', 50000)->assertJsonPath('data.periods.1.balance_minor', 50000)->json('data');
+        $this->assertNotEmpty($preview['periods'][0]['voucher_number']);
+        $this->assertSame(100000, $preview['periods'][0]['net_minor']);
+        $this->monthly($student)->assertOk()->assertJsonCount(6, 'data.generated_ids');
+        $this->monthly($student, true)->assertJsonPath('data.missing_months', 0)->assertJsonPath('data.already_billed', 8)->assertJsonPath('data.ready_to_generate', 0);
+        $this->monthly($student)->assertOk()->assertJsonCount(0, 'data.generated_ids');
+        $this->assertDatabaseCount('fee_invoices', 8);
+        $this->monthly($student, true, ['through' => '2026-05', 'current_only' => true])->assertJsonCount(1, 'data.periods')->assertJsonPath('data.periods.0.period', '2026-05')->assertJsonPath('data.already_billed', 1)->assertJsonPath('data.missing_months', 0);
+    }
+
+    public function test_missing_configuration_is_explicit_and_generation_is_atomic(): void
+    {
+        $student = $this->march();
+        DB::table('fee_schedules')->where('academic_session_id', $this->session)->where('kind', 'tuition')->delete();
+        $this->monthly($student, true)->assertJsonPath('data.needs_configuration', 8)->assertJsonPath('data.ready_to_generate', 0)->assertJsonPath('data.periods.0.net_minor', null)->assertJsonPath('data.periods.0.status', 'needs_configuration');
+        $this->getJson('/api/v1/students/'.$student.'/finance')->assertJsonPath('data.configuration_required', true)->assertJsonPath('data.configured_fee_minor', null);
+        $this->monthly($student)->assertUnprocessable();
+        $this->assertDatabaseCount('fee_invoices', 0);
+    }
+
+    public function test_explicit_student_tuition_override_is_valid_without_a_class_schedule(): void
+    {
+        $student = $this->march();
+        DB::table('fee_schedules')->where('academic_session_id', $this->session)->where('kind', 'tuition')->delete();
+        $this->postJson('/api/v1/finance/fee-assignments', ['student_id' => $student, 'academic_session_id' => $this->session, 'effective_on' => '2026-03-01', 'tuition_override_minor' => 90000])->assertCreated();
+        $this->monthly($student, true)->assertJsonPath('data.needs_configuration', 0)->assertJsonPath('data.ready_to_generate', 8)->assertJsonPath('data.unbilled_minor', 720000);
+        $this->monthly($student)->assertOk()->assertJsonCount(8, 'data.generated_ids');
+        $this->assertSame(720000, (int) DB::table('fee_invoices')->where('student_id', $student)->sum('total_minor'));
+    }
+
+    public function test_section_filter_only_evaluates_months_in_that_section(): void
+    {
+        $student = $this->march();
+        $this->postJson('/api/v1/students/'.$student.'/transitions', ['type' => 'section_change', 'effective_on' => '2026-07-01', 'section_id' => $this->otherSection, 'roll_number' => 1])->assertOk();
+        $this->monthly($student, true, ['section_id' => $this->section])->assertJsonPath('data.eligible_months', 4)->assertJsonPath('data.periods.3.period', '2026-06');
+        $this->monthly($student, false, ['section_id' => $this->section])->assertOk()->assertJsonCount(4, 'data.generated_ids');
+        $this->monthly($student, true, ['section_id' => $this->otherSection])->assertJsonPath('data.eligible_months', 4)->assertJsonPath('data.periods.0.period', '2026-07')->assertJsonPath('data.missing_months', 4);
+    }
+
     public function test_historical_rates_assignments_and_period_discounts_are_deterministic(): void
     {
         $student = $this->march();

@@ -64,6 +64,14 @@ class CreateSuperAdminCommandTest extends TestCase
             ->assertOk()->assertJsonPath('data.user.roles.0.code', 'super_admin');
     }
 
+    public function test_four_character_password_is_hashed_and_can_log_in(): void
+    {
+        $this->prompted(['password' => '1234', 'confirmation' => '1234'])->assertSuccessful();
+        $user = User::where('email', 'director@example.test')->sole();
+        $this->assertTrue(Hash::check('1234', $user->password));
+        $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'password' => '1234'])->assertOk();
+    }
+
     public function test_duplicate_email_is_rejected_without_changing_the_existing_account(): void
     {
         $existing = User::create(['name' => 'Fictional Existing Teacher', 'email' => 'director@example.test', 'password' => 'Fictional-original-password']);
@@ -96,7 +104,7 @@ class CreateSuperAdminCommandTest extends TestCase
             'invalid email' => [['email' => 'not-an-email']],
             'empty email' => [['email' => '']],
             'empty password' => [['password' => '', 'confirmation' => '']],
-            'short password' => [['password' => 'too-short', 'confirmation' => 'too-short']],
+            'short password' => [['password' => '123', 'confirmation' => '123']],
             'oversized password' => [['password' => str_repeat('a', 1025), 'confirmation' => str_repeat('a', 1025)]],
             'mismatched confirmation' => [['confirmation' => 'Fictional-different-password']],
             'empty confirmation' => [['confirmation' => '']],

@@ -31,7 +31,7 @@ class Strings {
     'accountPasswordMismatch': 'The new passwords do not match.',
     'accountPasswordDifferent':
         'Choose a password different from your current password.',
-    'accountPasswordLength': 'Use at least 12 characters.',
+    'accountPasswordLength': 'Use at least 4 characters.',
     'accountWrongPassword': 'The current password is incorrect.',
     'accountPasswordChanged': 'Password changed. Please sign in again.',
     'accountConfirmPassword': 'Confirm new password',
@@ -52,7 +52,7 @@ class Strings {
     'staffNotLinked': 'Your account is available, but an employment profile is not linked. Ask your school administrator to link your staff record.',
     'accountSessionNote':
         'Sessions expire automatically. Sign out on shared devices.',
-    'accountPasswordPolicy': 'Use 12–1024 characters. Changing your password signs out all sessions; sign in again.',
+    'accountPasswordPolicy': 'Use 4–1024 characters. Changing your password signs out all sessions; sign in again.',
     'accountChangePassword': 'Change password',
     'accountSecurity': 'Account security',
     'accountSalarySlips': 'My salary slips',
@@ -608,7 +608,7 @@ class Strings {
     "designation": "Designation",
     "staffProfile": "Staff profile",
     "classTeacher": "Class teacher",
-    "temporaryPassword": "Initial password (12+ characters)",
+    "temporaryPassword": "Initial password (4+ characters)",
     "role": "Role",
     "addRecord": "Add record",
     "inactive": "Inactive",

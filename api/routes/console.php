@@ -21,8 +21,8 @@ Artisan::command('school:create-dev-staff', function () {
         return 1;
     }
     $email = strtolower($this->ask('Development email (use example.test)'));
-    $password = $this->secret('Password (minimum 12 characters)');
-    if (! filter_var($email, FILTER_VALIDATE_EMAIL) || ! str_ends_with($email, '@example.test') || strlen($password) < 12) {
+    $password = $this->secret('Password (minimum 4 characters)');
+    if (! filter_var($email, FILTER_VALIDATE_EMAIL) || ! str_ends_with($email, '@example.test') || strlen($password) < 4) {
         $this->error('Invalid development email or short password.');
 
         return 1;

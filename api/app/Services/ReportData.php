@@ -157,7 +157,8 @@ final class ReportData
                 abort_unless($amounts['paid_minor'] > 0, 404);
                 $item->paid_minor = $amounts['paid_minor'];
                 $item->balance_minor = $amounts['balance_minor'];
-                $rows = [array_intersect_key((array) $item, array_flip(['name', 'employee_number', 'period', 'paid_on', 'base_salary_minor', 'adjustment_minor', 'net_salary_minor', 'paid_minor', 'balance_minor']))];
+                $item->slip_number = $amounts['slip_number'];
+                $rows = [array_intersect_key((array) $item, array_flip(['slip_number', 'name', 'employee_number', 'period', 'paid_on', 'base_salary_minor', 'adjustment_minor', 'net_salary_minor', 'paid_minor', 'balance_minor']))];
                 break;
             case 'financial':
                 $this->access->require($r->user(), 'accounting.read');

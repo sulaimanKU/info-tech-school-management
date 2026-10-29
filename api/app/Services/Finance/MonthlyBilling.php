@@ -39,11 +39,14 @@ final class MonthlyBilling
         });
     }
 
-    public function plan(string $student, string $through, ?string $session = null, bool $currentOnly = false, ?string $class = null): array
+    public function plan(string $student, string $through, ?string $session = null, bool $currentOnly = false, ?string $class = null, ?string $section = null): array
     {
         $identity = DB::table('students')->find($student);
         abort_unless($identity, 404);
         $cutoff = min($through, now()->format('Y-m'));
+        if ($currentOnly && $through !== $cutoff) {
+            return [];
+        }
         $enrollments = DB::table('enrollments as e')->join('sections as s', 's.id', '=', 'e.section_id')->join('academic_sessions as a', 'a.id', '=', 'e.academic_session_id')
             ->where('e.student_id', $student)->orderByDesc('e.starts_on')->get(['e.*', 's.class_id', 'a.starts_on as session_start', 'a.ends_on as session_end', 'a.name as session_name']);
         if ($enrollments->isEmpty()) {
@@ -62,7 +65,7 @@ final class MonthlyBilling
             // One monthly charge: the latest applicable class/enrollment in a transition month wins.
             $enrollment = $enrollments->first(fn ($e) => max($e->starts_on, $e->session_start, $identity->admitted_on) <= $end && min($e->ends_on ?? $end, $e->session_end) >= $start);
             $invoice = $posted->get($period);
-            if (! $enrollment || ($class && $enrollment->class_id !== $class) || ($identity->status !== 'active' && $enrollment->ends_on === null) || ($session && ($invoice?->academic_session_id ?? $enrollment->academic_session_id) !== $session)) {
+            if (! $enrollment || ($class && $enrollment->class_id !== $class) || ($section && $enrollment->section_id !== $section) || (! $invoice && $identity->status !== 'active' && $enrollment->ends_on === null) || ($session && ($invoice?->academic_session_id ?? $enrollment->academic_session_id) !== $session)) {
                 continue;
             }
             $covered = $coverage->first(fn ($c) => $c->from_period <= $period && $c->through_period >= $period);
@@ -71,7 +74,7 @@ final class MonthlyBilling
 
                 continue;
             }
-            $quote = app(FeeService::class)->tuitionQuote($student, $enrollment->academic_session_id, $period);
+            $quote = $invoice ? null : app(FeeService::class)->tuitionQuote($student, $enrollment->academic_session_id, $period);
             $amount = $invoice ? $balances[$invoice->id] : null;
             $rows[] = ['period' => $period, 'academic_session_id' => $invoice?->academic_session_id ?? $enrollment->academic_session_id, 'session_name' => $invoice ? DB::table('academic_sessions')->where('id', $invoice->academic_session_id)->value('name') : $enrollment->session_name,
                 'invoice_id' => $invoice?->id, 'voucher_number' => $invoice?->voucher_number,
@@ -85,14 +88,14 @@ final class MonthlyBilling
         return $rows;
     }
 
-    public function generate(User $actor, array $students, string $through, ?string $session = null, bool $currentOnly = false, ?string $class = null): array
+    public function generate(User $actor, array $students, string $through, ?string $session = null, bool $currentOnly = false, ?string $class = null, ?string $section = null): array
     {
-        return DB::transaction(function () use ($actor, $students, $through, $session, $currentOnly, $class) {
+        return DB::transaction(function () use ($actor, $students, $through, $session, $currentOnly, $class, $section) {
             sort($students);
             $result = [];
             foreach ($students as $student) {
                 DB::table('students')->where('id', $student)->lockForUpdate()->firstOrFail();
-                $plan = $this->plan($student, $through, $session, $currentOnly, $class);
+                $plan = $this->plan($student, $through, $session, $currentOnly, $class, $section);
                 if (collect($plan)->contains(fn ($r) => $r['invoice_id'] === null) && $this->unreviewedOpenings($student)->isNotEmpty()) {
                     Domain::fail('opening_balance', 'Review opening balances and record their covered months before catch-up billing.');
                 }

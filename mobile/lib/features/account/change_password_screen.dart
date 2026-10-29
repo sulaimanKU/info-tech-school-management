@@ -120,7 +120,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         if (v == null || v.isEmpty) {
                           return s.text('fieldRequired');
                         }
-                        if (i == 1 && v.length < 12) {
+                        if (i == 1 && v.length < 4) {
                           return s.text('accountPasswordLength');
                         }
                         if (i == 1 && v == current.text) {

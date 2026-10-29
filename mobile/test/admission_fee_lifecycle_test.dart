@@ -71,7 +71,7 @@ void main() {
       expect(requests.single['preview'], true);
       expect(find.textContaining('Missing months: 8'), findsOneWidget);
       await tester.tap(
-        find.widgetWithText(FilledButton, 'Generate missing fees'),
+        find.widgetWithText(FilledButton, 'Generate 8 missing fees'),
       );
       await tester.pumpAndSettle();
       expect(requests.length, 2);

@@ -102,13 +102,17 @@ class _StudentFeeScreenState extends State<StudentFeeScreen> {
                     'Admission: ${student['admitted_on'] ?? '-'} | Enrollment: ${student['starts_on'] ?? '-'}',
                   ),
                   Text('Session: ${student['session_name'] ?? '-'}'),
-                  value('Configured monthly tuition', 'configured_fee_minor'),
+                  if (d['configuration_required'] == true)
+                    const Text('Fee configuration required for this period')
+                  else
+                    value('Configured monthly tuition', 'configured_fee_minor'),
                   value(
                     'Admission / one-time / opening charges',
                     'admission_charges_minor',
                   ),
                   value('Missing unbilled tuition', 'unbilled_minor'),
-                  value('Configured concession', 'configured_discount_minor'),
+                  if (d['configuration_required'] != true)
+                    value('Configured concession', 'configured_discount_minor'),
                   value('Posted fees (before concessions)', 'gross_minor'),
                   value('Posted concessions', 'discount_minor'),
                   value('Total chargeable vouchers', 'total_minor'),
@@ -160,7 +164,11 @@ class _StudentFeeScreenState extends State<StudentFeeScreen> {
                         );
                       }),
                 icon: const Icon(Icons.calendar_month),
-                label: const Text('Generate missing fees'),
+                label: Text(
+                  (d['missing_months'] as num? ?? 0) > 0
+                      ? 'Generate missing fees'
+                      : 'Review monthly fees',
+                ),
               ),
             TextButton.icon(
               onPressed: () => openSchoolReport(

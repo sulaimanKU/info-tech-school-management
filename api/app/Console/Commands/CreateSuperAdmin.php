@@ -28,7 +28,7 @@ class CreateSuperAdmin extends Command
 
         $name = trim((string) $this->ask('Full name'));
         $email = strtolower(trim((string) $this->ask('Email')));
-        $this->info('Use a password of 12 to 1024 characters, matching the existing staff password policy.');
+        $this->info('Use a password of 4 to 1024 characters, matching the existing staff password policy.');
 
         try {
             // Never fall back to visible input when the terminal cannot hide passwords.
@@ -48,7 +48,7 @@ class CreateSuperAdmin extends Command
         ], [
             'name' => 'required|string|max:200',
             'email' => 'required|email|max:254|unique:users,email',
-            'password' => 'required|string|min:12|max:1024|confirmed',
+            'password' => 'required|string|min:4|max:1024|confirmed',
             'password_confirmation' => 'required|string|max:1024',
         ]);
 

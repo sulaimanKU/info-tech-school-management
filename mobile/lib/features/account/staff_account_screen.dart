@@ -241,6 +241,8 @@ class _StaffAccountScreenState extends State<StaffAccountScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       field('fullName', a['name']),
+                      if (a['account_code'] != null)
+                        field('Account code', a['account_code']),
                       field('email', a['email']),
                       field('mobile', a['mobile']),
                       field('address', a['address']),
@@ -404,7 +406,7 @@ class StaffSalaryScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            row['period'].toString(),
+                            (row['slip_number'] ?? row['period']).toString(),
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           AppBadge(

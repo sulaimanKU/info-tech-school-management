@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\BusinessCode;
 use App\Services\GuardianIdentity;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,13 @@ class User extends Authenticatable
     protected $fillable = ['name', 'email', 'password', 'is_active'];
 
     protected $hidden = ['password'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            $user->account_code = app(BusinessCode::class)->next('ACC');
+        });
+    }
 
     protected function casts(): array
     {
@@ -53,6 +61,6 @@ class User extends Authenticatable
         $guardian = Schema::hasTable('parent_guardians') ? DB::table('parent_guardians')->where('user_id', $this->id)->first() : null;
         $guardianProfile = $guardian ? ['photo_file_id' => $guardian->photo_file_id, 'id' => $guardian->id, 'full_name' => $guardian->full_name, 'cnic_masked' => (new GuardianIdentity)->mask($guardian->cnic), 'mobile_masked' => '********'.substr($guardian->mobile, -4)] : null;
 
-        return ['guardian' => $guardianProfile, 'id' => $this->id, 'name' => $this->name, 'email' => $this->roles()->where('code', 'parent_guardian')->exists() && ! $this->roles()->where('code', '!=', 'parent_guardian')->exists() ? null : $this->email, 'permissions' => $this->isSuperAdmin() ? DB::table('permissions')->pluck('code') : DB::table('permissions as p')->join('permission_role as pr', 'pr.permission_id', '=', 'p.id')->join('user_role_assignments as ur', 'ur.role_id', '=', 'pr.role_id')->where('ur.user_id', $this->id)->distinct()->pluck('p.code'), 'roles' => $this->roles()->get(['roles.code', 'roles.name'])];
+        return ['guardian' => $guardianProfile, 'account_code' => $this->account_code, 'id' => $this->id, 'name' => $this->name, 'email' => $this->roles()->where('code', 'parent_guardian')->exists() && ! $this->roles()->where('code', '!=', 'parent_guardian')->exists() ? null : $this->email, 'permissions' => $this->isSuperAdmin() ? DB::table('permissions')->pluck('code') : DB::table('permissions as p')->join('permission_role as pr', 'pr.permission_id', '=', 'p.id')->join('user_role_assignments as ur', 'ur.role_id', '=', 'pr.role_id')->where('ur.user_id', $this->id)->distinct()->pluck('p.code'), 'roles' => $this->roles()->get(['roles.code', 'roles.name'])];
     }
 }

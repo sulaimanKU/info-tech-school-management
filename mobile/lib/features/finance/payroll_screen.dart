@@ -48,6 +48,7 @@ class PayrollScreen extends StatelessWidget {
     auth: auth,
     path: 'finance/payroll',
     title: 'payroll',
+    recordTitle: (v) => (v['payroll_number'] ?? v['period']).toString(),
     summary: (response) => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -64,13 +65,12 @@ class PayrollScreen extends StatelessWidget {
           ),
         for (final salary in response['compensation'] as List? ?? [])
           ListTile(
-            title: Text('${salary['name']} ? ${salary['employee_number']}'),
+            title: Text('${salary['employee_number']} | ${salary['name']}'),
             subtitle: Text('Effective: ${salary['effective_on']}'),
             trailing: Text(Money.format(salary['base_salary_minor'])),
           ),
       ],
     ),
-    recordTitle: (r) => r['period'] as String,
     recordSubtitle: (r) =>
         'Net: ${Money.format(r['total_minor'])} ? Paid: ${Money.format(r['paid_minor'] ?? 0)} ? Remaining: ${Money.format(r['balance_minor'] ?? r['total_minor'])} ? ${r['payment_status'] ?? r['status']}',
     onCreate: auth.can('payroll.write') ? create : null,
@@ -145,7 +145,7 @@ class _PayrollDetailScreenState extends State<PayrollDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        data!['period'] as String,
+                        (data!['payroll_number'] ?? data!['period']) as String,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       Text(

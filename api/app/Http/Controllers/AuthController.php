@@ -25,13 +25,14 @@ class AuthController extends Controller
 
         return DB::transaction(function () use ($user) {
             $locked = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
-            abort_unless($locked->is_active, 401);
+            // A reset may commit after the initial password check but before this lock.
+            abort_unless(hash_equals($user->password, $locked->password) && $locked->is_active && $locked->roles()->where('code', '!=', 'parent_guardian')->exists(), 401);
             $token = bin2hex(random_bytes(32));
             $expires = now()->addHours(12);
             DB::table('authentication_sessions')->insert(['id' => (string) Str::uuid(), 'user_id' => $user->id, 'token_hash' => hash('sha256', $token), 'method' => 'staff_password', 'expires_at' => $expires, 'created_at' => now(), 'updated_at' => now()]);
             Audit::record('login_succeeded', $user->id);
 
-            return response()->json(['data' => ['token' => $token, 'token_type' => 'Bearer', 'expires_at' => $expires->toIso8601String(), 'user' => $user->profile()], 'error' => null]);
+            return response()->json(['data' => ['token' => $token, 'token_type' => 'Bearer', 'expires_at' => $expires->toIso8601String(), 'user' => $locked->profile()], 'error' => null]);
         });
     }
 

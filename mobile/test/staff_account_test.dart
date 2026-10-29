@@ -205,7 +205,7 @@ void main() {
       );
       await tester.enterText(
         find.byKey(const Key('accountNewPassword')),
-        'short',
+        '123',
       );
       await tester.enterText(
         find.byKey(const Key('accountConfirmPassword')),
@@ -255,8 +255,8 @@ void main() {
       await tester.pumpAndSettle();
       for (final entry in [
         ('accountCurrentPassword', 'Fictional-old-password'),
-        ('accountNewPassword', 'Fictional-new-password-only'),
-        ('accountConfirmPassword', 'Fictional-new-password-only'),
+        ('accountNewPassword', '1234'),
+        ('accountConfirmPassword', '1234'),
       ]) {
         await tester.enterText(find.byKey(Key(entry.$1)), entry.$2);
       }

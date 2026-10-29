@@ -29,7 +29,7 @@ class StaffDirectoryController extends Controller
             }
         }
 
-        return ['id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'is_active' => $u->is_active, 'roles' => $u->roles()->get(['code', 'name']), 'profile' => $p, 'assignments' => $assignments];
+        return ['id' => $u->id, 'account_code' => $u->account_code, 'name' => $u->name, 'email' => $u->email, 'is_active' => $u->is_active, 'roles' => $u->roles()->get(['code', 'name']), 'profile' => $p, 'assignments' => $assignments];
     }
 
     public function index(Request $r, SchoolAccess $access)
@@ -38,7 +38,7 @@ class StaffDirectoryController extends Controller
         $v = $r->validate(['search' => 'nullable|string|max:100', 'role' => 'nullable|string|exists:roles,code', 'status' => 'nullable|in:active,inactive', 'page' => 'nullable|integer|min:1']);
         $q = $this->query();
         if (! empty($v['search'])) {
-            $q->where(fn ($q) => $q->where('name', 'like', '%'.$v['search'].'%')->orWhere('email', 'like', '%'.$v['search'].'%'));
+            $q->where(fn ($q) => $q->where('name', 'like', '%'.$v['search'].'%')->orWhere('email', 'like', '%'.$v['search'].'%')->orWhere('account_code', 'like', '%'.$v['search'].'%'));
         }
         if (! empty($v['role'])) {
             $q->whereHas('roles', fn ($q) => $q->where('code', $v['role']));
@@ -90,7 +90,7 @@ class StaffDirectoryController extends Controller
     {
         $a->require($r->user(), 'staff.manage');
         $r->merge($r->has('email') ? ['email' => strtolower(trim((string) $r->input('email')))] : []);
-        $v = $r->validate(['name' => 'sometimes|required|string|max:200', 'email' => 'sometimes|required|email|max:254|unique:users,email,'.$user, 'role' => 'sometimes|required|in:super_admin,school_administrator,coordinator,accountant_clerk,teacher']);
+        $v = $r->validate(['password' => 'sometimes|required|string|min:4|max:1024|confirmed', 'password_confirmation' => 'required_with:password|string|max:1024', 'name' => 'sometimes|required|string|max:200', 'email' => 'sometimes|required|email|max:254|unique:users,email,'.$user, 'role' => 'sometimes|required|in:super_admin,school_administrator,coordinator,accountant_clerk,teacher']);
         DB::transaction(function () use ($r, $user, $v) {
             $this->lockSecurity();
             $u = $this->target($r, $user);
@@ -98,7 +98,11 @@ class StaffDirectoryController extends Controller
                 abort_unless($r->user()->isSuperAdmin(), 403);
             }
             $this->lastAdmin($u, $u->is_active, $v['role'] ?? null);
-            $u->fill(array_intersect_key($v, array_flip(['name', 'email'])))->save();
+            $u->fill(array_intersect_key($v, array_flip(['name', 'email', 'password'])))->save();
+            if (isset($v['password'])) {
+                $this->revoke($u);
+                Audit::record('staff_password_reset', $r->user()->id, 'users', $u->id);
+            }
             if (isset($v['role'])) {
                 $before = $u->roles()->pluck('code')->all();
                 $u->roles()->sync([Role::where('code', $v['role'])->value('id')]);

@@ -1,3 +1,5 @@
+import 'monthly_fee_preview.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../core/money.dart';
@@ -432,61 +434,9 @@ Future<bool?> generateMonthlyFees(
           if (!context.mounted) return;
           final confirmed = await showDialog<bool>(
             context: context,
-            builder: (c) => AlertDialog(
-              title: const Text('Review missing tuition'),
-              content: SizedBox(
-                width: 500,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if ((preview['opening_balances_needing_review']
-                                  as List? ??
-                              [])
-                          .isNotEmpty)
-                        const Text(
-                          'Opening balances need approved month coverage before generation. Review each opening voucher first.',
-                        ),
-                      Text(
-                        'Students: ${preview['student_count']}\nMissing months: ${preview['missing_months']}\nUnbilled configured tuition: ${Money.format(preview['unbilled_minor'])}',
-                      ),
-                      for (final row
-                          in (preview['periods'] as List)
-                              .where((r) => r['invoice_id'] == null)
-                              .take(50))
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            '${row['registration_number']} | ${row['period']}',
-                          ),
-                          subtitle: Text(
-                            row['status'] == 'needs_configuration'
-                                ? 'Historical fee configuration required'
-                                : 'Not billed | ${Money.format(row['net_minor'])}',
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(c, false),
-                  child: const Text('Cancel'),
-                ),
-                FilledButton(
-                  onPressed:
-                      (preview['opening_balances_needing_review'] as List? ??
-                              [])
-                          .isNotEmpty
-                      ? null
-                      : () => Navigator.pop(c, true),
-                  child: const Text('Generate missing fees'),
-                ),
-              ],
-            ),
+            builder: (_) => MonthlyFeePreview(preview: preview),
           );
+          if (confirmed != true && preview['missing_months'] == 0) return;
           if (confirmed != true) throw const ApiFailure('cancelled');
           await auth.call(
             'finance/monthly-fees',

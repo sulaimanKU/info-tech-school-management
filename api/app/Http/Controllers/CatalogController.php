@@ -58,6 +58,10 @@ class CatalogController extends Controller
             }
         }
 
+        if ($table === 'staff_profiles') {
+            $q->join('users as staff_user', 'staff_user.id', '=', 'staff_profiles.user_id')->select('staff_profiles.*', 'staff_user.name', 'staff_user.account_code');
+        }
+
         return Domain::response(['items' => $q->limit(1000)->get()]);
     }
 
@@ -202,7 +206,7 @@ class CatalogController extends Controller
     {
         $this->access->require($r->user(), 'staff.manage');
         $r->merge(['email' => strtolower(trim((string) $r->input('email')))]);
-        $v = $r->validate(['name' => 'required|string|max:200', 'email' => 'required|email|max:254|unique:users,email', 'password' => 'required|string|min:12|max:1024', 'role' => 'required|in:super_admin,school_administrator,coordinator,accountant_clerk,teacher', 'is_active' => 'sometimes|boolean', 'password_confirmation' => 'sometimes|required|same:password']);
+        $v = $r->validate(['name' => 'required|string|max:200', 'email' => 'required|email|max:254|unique:users,email', 'password' => 'required|string|min:4|max:1024', 'role' => 'required|in:super_admin,school_administrator,coordinator,accountant_clerk,teacher', 'is_active' => 'sometimes|boolean', 'password_confirmation' => 'sometimes|required|same:password']);
         if (in_array($v['role'], ['super_admin', 'school_administrator']) && ! $r->user()->roles()->where('code', 'super_admin')->exists()) {
             abort(403);
         }
