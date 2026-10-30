@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
- <item name="android:windowSplashScreenBackground">#FFFFFF</item>
- <item name="android:windowSplashScreenAnimatedIcon">@drawable/school_splash</item>
- <item name="android:windowSplashScreenIconBackgroundColor">#FFFFFF</item>
- <item name="android:windowLightStatusBar">false</item>
- <item name="android:statusBarColor">#142B49</item>
-</style></resources>
+<resources>
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">#F1F5FC</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/treadexellence_mark</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#F1F5FC</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">#F1F5FC</item>
+    </style>
+</resources>

@@ -115,30 +115,18 @@ class CatalogController extends Controller
         if ($catalog === 'staff') {
             abort_unless(User::findOrFail($v['user_id'])->isStaff(), 422);
         }
-        if ($catalog === 'teacher-assignments') {
-            $p = DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->where('is_active', true)->firstOrFail();
-            abort_unless(User::findOrFail($p->user_id)->roles()->where('code', 'teacher')->exists(), 422);
-            if ($v['subject_id'] ?? null) {
-                $s = DB::table('sections')->where('id', $v['section_id'])->firstOrFail();
-                if (! DB::table('class_subject_assignments')->where('class_id', $s->class_id)->where('academic_session_id', $s->academic_session_id)->where('subject_id', $v['subject_id'])->exists()) {
-                    Domain::fail('subject_id', 'Assign the subject to this class/session first.');
-                }
-            } elseif (! $v['is_class_teacher']) {
-                Domain::fail('subject_id', 'Select a subject or designate a class teacher.');
-            }
-        }
         $id = DB::transaction(function () use ($r, $catalog, $v) {
             if ($catalog === 'teacher-assignments') {
                 app(TeachingAssignments::class)->authorizeSection($r->user(), $v['section_id']);
             }
             if (in_array($catalog, ['teacher-assignments', 'coordinator-assignments'])) {
-                $this->assignment($catalog, $v);
+                app(TeachingAssignments::class)->validateAssignment($catalog, $v);
             }
             $id = Domain::insert(self::TABLES[$catalog], $v);
             Audit::record('catalog_created', $r->user()->id, self::TABLES[$catalog], $id);
 
             return $id;
-        });
+        }, 3);
 
         return Domain::response(['id' => $id], 201);
     }
@@ -167,7 +155,7 @@ class CatalogController extends Controller
                 if ($catalog === 'teacher-assignments') {
                     app(TeachingAssignments::class)->authorizeSection($r->user(), $v['section_id']);
                 }
-                $this->assignment($catalog, $v, $id);
+                app(TeachingAssignments::class)->validateAssignment($catalog, $v, $id);
             }
             $v = array_intersect_key($v, $input);
             if ($catalog === 'sessions' && ((isset($v['starts_on']) && $v['starts_on'] !== $old->starts_on) || (isset($v['ends_on']) && $v['ends_on'] !== $old->ends_on)) && DB::table('enrollments')->where('academic_session_id', $id)->exists()) {
@@ -181,7 +169,7 @@ class CatalogController extends Controller
             }
             DB::table($table)->where('id', $id)->update([...$v, 'updated_at' => now()]);
             Audit::record('catalog_updated', $r->user()->id, $table, $id, ['changed_fields' => array_keys($v)]);
-        });
+        }, 3);
 
         return Domain::response(['saved' => true]);
     }
@@ -202,44 +190,9 @@ class CatalogController extends Controller
             }
             $q->update(['is_active' => false, 'updated_at' => now()]);
             Audit::record('catalog_deactivated', $r->user()->id, self::TABLES[$catalog], $id);
-        });
+        }, 3);
 
         return Domain::response(['deactivated' => true]);
-    }
-
-    private function assignment(string $catalog, array $v, ?string $id = null): void
-    {
-        $profile = DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->firstOrFail();
-        $u = User::findOrFail($profile->user_id);
-        if ($v['is_active'] ?? true) {
-            abort_unless($profile->is_active && $u->is_active && $u->roles()->where('code', $catalog === 'teacher-assignments' ? 'teacher' : 'coordinator')->exists(), 422);
-        }
-        $section = DB::table('sections')->where('id', $v['section_id'])->lockForUpdate()->firstOrFail();
-        if ($catalog === 'teacher-assignments') {
-            if (empty($v['subject_id']) && empty($v['is_class_teacher'])) {
-                Domain::fail('subject_id', 'Select a subject or a class teacher assignment.');
-            }
-            if (! empty($v['subject_id']) && ! DB::table('class_subject_assignments')->where('class_id', $section->class_id)->where('academic_session_id', $section->academic_session_id)->where('subject_id', $v['subject_id'])->exists()) {
-                Domain::fail('subject_id', 'Subject must belong to the selected class/session.');
-            }
-        }
-        $session = DB::table('academic_sessions')->find($section->academic_session_id);
-        $from = $v['starts_on'] ?? $session->starts_on;
-        $through = $v['ends_on'] ?? $session->ends_on;
-        if ($from < $session->starts_on || $through > $session->ends_on || $from > $through) {
-            Domain::fail('starts_on', 'Assignment dates must fall inside the section academic session.');
-        }
-        if (($v['is_active'] ?? true)) {
-            $q = DB::table(self::TABLES[$catalog])->where('is_active', true)->where('section_id', $section->id)->where(fn ($q) => $q->whereNull('starts_on')->orWhere('starts_on', '<=', $through))->where(fn ($q) => $q->whereNull('ends_on')->orWhere('ends_on', '>=', $from))->when($id, fn ($q) => $q->where('id', '!=', $id));
-            if ($catalog === 'coordinator-assignments') {
-                $q->where('staff_profile_id', $profile->id);
-            } else {
-                $q->where(fn ($q) => $q->where(fn ($q) => $q->where('staff_profile_id', $profile->id)->where('subject_id', $v['subject_id'] ?? null))->when($v['is_class_teacher'], fn ($q) => $q->orWhere('is_class_teacher', true)));
-            }
-            if ($q->exists()) {
-                Domain::fail('assignment', 'An active matching assignment already exists.');
-            }
-        }
     }
 
     public function createStaff(Request $r)

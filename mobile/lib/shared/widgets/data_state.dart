@@ -6,10 +6,19 @@ import '../../l10n/strings.dart';
 import 'surface_card.dart';
 
 class DataState extends StatelessWidget {
-  const DataState({super.key, this.error, this.onRetry, this.empty = false});
+  const DataState({
+    super.key,
+    this.error,
+    this.onRetry,
+    this.empty = false,
+    this.emptyMessage,
+    this.emptyIcon = Icons.inbox_outlined,
+  });
   final String? error;
   final VoidCallback? onRetry;
   final bool empty;
+  final String? emptyMessage;
+  final IconData emptyIcon;
   @override
   Widget build(BuildContext context) {
     final s = Strings.of(context);
@@ -35,7 +44,11 @@ class DataState extends StatelessWidget {
                         switch (error) {
                           'network' => Icons.wifi_off_rounded,
                           'forbidden' => Icons.lock_outline_rounded,
-                          null => Icons.inbox_outlined,
+                          'notFound' => Icons.search_off_rounded,
+                          'conflict' => Icons.sync_problem_rounded,
+                          'validation' => Icons.fact_check_outlined,
+                          'unauthorized' => Icons.login_rounded,
+                          null => emptyIcon,
                           _ => Icons.cloud_off_outlined,
                         },
                         size: 36,
@@ -51,12 +64,14 @@ class DataState extends StatelessWidget {
                     const SizedBox(height: AppSpace.sm),
                     if (error != null)
                       StatusBanner(
-                        message: s.text(error!),
+                        message: s.text(
+                          Strings.en.containsKey(error) ? error! : 'server',
+                        ),
                         kind: StatusKind.error,
                       )
                     else
                       Text(
-                        s.text('noRecords'),
+                        s.text(emptyMessage ?? 'noRecords'),
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium
                             ?.copyWith(color: palette.supporting),

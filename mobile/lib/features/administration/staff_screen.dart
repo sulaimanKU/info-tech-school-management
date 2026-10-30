@@ -8,8 +8,10 @@ import '../../shared/widgets/records_screen.dart';
 import '../../shared/widgets/data_state.dart';
 import '../../shared/widgets/surface_card.dart';
 import '../../shared/widgets/polished_components.dart';
+import '../../shared/widgets/authorized_photo.dart';
 import '../auth/auth_controller.dart';
 import 'staff_assignment_screen.dart';
+import 'teacher_assignment_batch_screen.dart';
 
 Map<String, String> staffRoles(BuildContext context, AuthController auth) => {
   for (final role in [
@@ -137,6 +139,21 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
             FormFieldSpec('name', 'fullName', initial: data!['name']),
             FormFieldSpec('email', 'email', initial: data!['email']),
             FormFieldSpec(
+              'mobile',
+              'mobile',
+              initial: data!['mobile'],
+              required: false,
+              maxLength: 30,
+            ),
+            FormFieldSpec(
+              'address',
+              'address',
+              initial: data!['address'],
+              required: false,
+              kind: FieldKind.multiline,
+              maxLength: 1000,
+            ),
+            FormFieldSpec(
               'role',
               'role',
               kind: FieldKind.choice,
@@ -209,20 +226,47 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
   }
 
   Future<void> profile() async {
+    final existing = data!['profile'] as Map?;
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
         builder: (_) => DomainForm(
           title: 'staffProfile',
-          fields: const [
-            FormFieldSpec('employee_number', 'employeeNumber'),
-            FormFieldSpec('designation', 'designation'),
-            FormFieldSpec('joined_on', 'joiningDate', kind: FieldKind.date),
+          fields: [
+            FormFieldSpec(
+              'employee_number',
+              'employeeNumber',
+              initial: existing?['employee_number'],
+            ),
+            FormFieldSpec(
+              'designation',
+              'designation',
+              initial: existing?['designation'],
+            ),
+            FormFieldSpec(
+              'joined_on',
+              'joiningDate',
+              kind: FieldKind.date,
+              initial: existing?['joined_on'],
+            ),
+            if (existing != null)
+              FormFieldSpec(
+                'is_active',
+                'active',
+                kind: FieldKind.boolean,
+                initial: existing['is_active'] == true,
+              ),
           ],
-          onSubmit: (v) => widget.auth.call(
-            'catalog/staff',
-            body: {...v, 'user_id': widget.id},
-          ),
+          onSubmit: (v) => existing == null
+              ? widget.auth.call(
+                  'catalog/staff',
+                  body: {...v, 'user_id': widget.id},
+                )
+              : widget.auth.call(
+                  'staff-accounts/${widget.id}',
+                  method: 'PATCH',
+                  body: {'employment': v},
+                ),
         ),
       ),
     );
@@ -231,6 +275,24 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
 
   Future<void> assignment({Map<String, dynamic>? existing}) async {
     final role = (data!['roles'] as List).first['code'] as String;
+    if (existing == null && role == 'teacher') {
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => TeacherAssignmentBatchScreen(
+            auth: widget.auth,
+            teacher: {
+              'id': data!['profile']['id'],
+              'name': data!['name'],
+              'employee_number': data!['profile']['employee_number'],
+              'account_code': data!['account_code'],
+            },
+          ),
+        ),
+      );
+      if (mounted) load();
+      return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
@@ -263,6 +325,15 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        AuthorizedPhoto(
+                          auth: widget.auth,
+                          fileId: widget.id == widget.auth.user?['id']
+                              ? data!['photo_file_id'] as String?
+                              : null,
+                          name: data!['name'] as String,
+                          size: 72,
+                        ),
+                        const SizedBox(height: AppSpace.md),
                         Text(
                           data!['name'] as String,
                           style: Theme.of(context).textTheme.headlineSmall,
@@ -271,6 +342,8 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                           data!['email'] as String,
                           textDirection: TextDirection.ltr,
                         ),
+                        if (data!['account_code'] != null)
+                          SelectableText(data!['account_code'] as String),
                         const SizedBox(height: AppSpace.md),
                         Wrap(
                           spacing: AppSpace.sm,
@@ -300,6 +373,33 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpace.lg),
+                  SectionHeader(title: s.text('contactSection')),
+                  SurfaceCard(
+                    child: Column(
+                      children: [
+                        ValueRow(
+                          label: s.text('mobile'),
+                          value:
+                              data!['mobile']?.toString() ??
+                              s.text('notRecorded'),
+                        ),
+                        ValueRow(
+                          label: s.text('address'),
+                          value:
+                              data!['address']?.toString() ??
+                              s.text('notRecorded'),
+                        ),
+                        if (data!['profile'] != null)
+                          ValueRow(
+                            label: s.text('joiningDate'),
+                            value:
+                                data!['profile']['joined_on']?.toString() ??
+                                s.text('notRecorded'),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpace.lg),
                   if (error != null)
                     StatusBanner(
                       message: s.text(error!),
@@ -314,6 +414,18 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                           onPressed: editAccount,
                           icon: const Icon(Icons.edit_outlined),
                           label: Text(s.text('editStaff')),
+                        ),
+                        OutlinedButton.icon(
+                          key: const Key('edit-staff-employment'),
+                          onPressed: profile,
+                          icon: const Icon(Icons.badge_outlined),
+                          label: Text(
+                            s.text(
+                              data!['profile'] == null
+                                  ? 'staffProfile'
+                                  : 'editEmployment',
+                            ),
+                          ),
                         ),
                         if (widget.id != widget.auth.user?['id'])
                           OutlinedButton.icon(

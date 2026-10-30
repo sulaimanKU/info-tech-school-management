@@ -12,16 +12,19 @@ class SummaryCard extends StatelessWidget {
     required this.icon,
     this.contextLabel,
     this.tone = StatusTone.info,
+    this.category,
     this.onTap,
   });
   final String label, value;
   final String? contextLabel;
   final IconData icon;
   final StatusTone tone;
+  final String? category;
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) {
     final p = AppPalette.of(context);
+    final accent = category == null ? p.tone(tone) : p.module(category!);
     return Semantics(
       container: true,
       button: onTap != null,
@@ -29,7 +32,7 @@ class SummaryCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.card),
         child: SurfaceCard(
-          accent: p.tone(tone),
+          accent: accent,
           padding: const EdgeInsets.all(AppSpace.lg),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 122),
@@ -41,10 +44,10 @@ class SummaryCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppSpace.sm),
                       decoration: BoxDecoration(
-                        color: p.tone(tone).withValues(alpha: .09),
+                        color: accent.withValues(alpha: .11),
                         borderRadius: BorderRadius.circular(AppRadius.badge),
                       ),
-                      child: Icon(icon, color: p.tone(tone), size: 21),
+                      child: Icon(icon, color: accent, size: 21),
                     ),
                     const Spacer(),
                     if (onTap != null)

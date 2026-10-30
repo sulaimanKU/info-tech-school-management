@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\SchoolAccess;
+use App\Services\StaffProfileData;
 use App\Support\Audit;
 use App\Support\Domain;
 use Illuminate\Http\Request;
@@ -20,16 +21,8 @@ class StaffDirectoryController extends Controller
     private function safe(User $u): array
     {
         $p = DB::table('staff_profiles')->where('user_id', $u->id)->first();
-        $assignments = [];
-        if ($p) {
-            foreach (['teacher_assignments', 'coordinator_assignments'] as $table) {
-                foreach (DB::table($table.' as a')->join('sections as s', 's.id', '=', 'a.section_id')->join('classes as c', 'c.id', '=', 's.class_id')->join('academic_sessions as y', 'y.id', '=', 's.academic_session_id')->where('a.staff_profile_id', $p->id)->get(['a.*', 's.name as section_name', 's.class_id', 's.academic_session_id', 'c.name as class_name', 'y.name as session_name']) as $row) {
-                    $assignments[] = [...(array) $row, 'kind' => $table === 'teacher_assignments' ? 'teacher' : 'coordinator', 'subject_name' => isset($row->subject_id) ? DB::table('subjects')->where('id', $row->subject_id)->value('name') : null];
-                }
-            }
-        }
 
-        return ['id' => $u->id, 'account_code' => $u->account_code, 'name' => $u->name, 'email' => $u->email, 'is_active' => $u->is_active, 'roles' => $u->roles()->get(['code', 'name']), 'profile' => $p, 'assignments' => $assignments];
+        return ['id' => $u->id, 'account_code' => $u->account_code, 'name' => $u->name, 'email' => $u->email, 'mobile' => $u->mobile, 'address' => $u->address, 'photo_file_id' => $u->photo_file_id, 'is_active' => $u->is_active, 'roles' => $u->roles()->get(['code', 'name']), 'profile' => $p, 'assignments' => app(StaffProfileData::class)->assignments($p)];
     }
 
     public function index(Request $r, SchoolAccess $access)
@@ -48,14 +41,14 @@ class StaffDirectoryController extends Controller
         }
         $page = $q->orderBy('name')->paginate(30)->through(fn ($u) => $this->safe($u));
 
-        return Domain::response([...$page->toArray(), 'items' => $page->items()]);
+        return Domain::response([...$page->toArray(), 'items' => $page->items()])->header('Cache-Control', 'private, no-store');
     }
 
     public function show(Request $r, SchoolAccess $a, string $user)
     {
         $a->require($r->user(), 'staff.manage');
 
-        return Domain::response($this->safe($this->query()->findOrFail($user)));
+        return Domain::response($this->safe($this->query()->findOrFail($user)))->header('Cache-Control', 'private, no-store');
     }
 
     private function lockSecurity(): void
@@ -90,7 +83,7 @@ class StaffDirectoryController extends Controller
     {
         $a->require($r->user(), 'staff.manage');
         $r->merge($r->has('email') ? ['email' => strtolower(trim((string) $r->input('email')))] : []);
-        $v = $r->validate(['password' => 'sometimes|required|string|min:4|max:1024|confirmed', 'password_confirmation' => 'required_with:password|string|max:1024', 'name' => 'sometimes|required|string|max:200', 'email' => 'sometimes|required|email|max:254|unique:users,email,'.$user, 'role' => 'sometimes|required|in:super_admin,school_administrator,coordinator,accountant_clerk,teacher']);
+        $v = $r->validate(['password' => 'sometimes|required|string|min:4|max:1024|confirmed', 'password_confirmation' => 'required_with:password|string|max:1024', 'name' => 'sometimes|required|string|max:200', 'email' => 'sometimes|required|email|max:254|unique:users,email,'.$user, 'role' => 'sometimes|required|in:super_admin,school_administrator,coordinator,accountant_clerk,teacher', 'mobile' => ['sometimes', 'nullable', 'string', 'max:30', 'regex:/^\+?(?:[ ()-]*[0-9]){7,15}[ ()-]*$/'], 'address' => 'sometimes|nullable|string|max:1000', 'employment' => 'sometimes|required|array:employee_number,designation,joined_on,is_active']);
         DB::transaction(function () use ($r, $user, $v) {
             $this->lockSecurity();
             $u = $this->target($r, $user);
@@ -98,7 +91,21 @@ class StaffDirectoryController extends Controller
                 abort_unless($r->user()->isSuperAdmin(), 403);
             }
             $this->lastAdmin($u, $u->is_active, $v['role'] ?? null);
+            if (isset($v['employment'])) {
+                $p = DB::table('staff_profiles')->where('user_id', $u->id)->lockForUpdate()->first();
+                if (! $p) {
+                    Domain::fail('employment', 'Link a staff employment profile before editing employment details.');
+                }
+                $employment = validator($v['employment'], ['employee_number' => 'sometimes|required|string|max:40|unique:staff_profiles,employee_number,'.$p->id, 'designation' => 'sometimes|required|string|max:100', 'joined_on' => 'sometimes|required|date', 'is_active' => 'sometimes|required|boolean'])->validate();
+                if (isset($employment['joined_on']) && $employment['joined_on'] !== $p->joined_on && DB::table('payroll_items')->where('staff_profile_id', $p->id)->exists()) {
+                    Domain::fail('employment.joined_on', 'Joining date is locked after payroll generation.');
+                }
+                DB::table('staff_profiles')->where('id', $p->id)->update([...$employment, 'updated_at' => now()]);
+            }
             $u->fill(array_intersect_key($v, array_flip(['name', 'email', 'password'])))->save();
+            if (array_key_exists('mobile', $v) || array_key_exists('address', $v)) {
+                DB::table('users')->where('id', $u->id)->update(array_intersect_key($v, array_flip(['mobile', 'address'])));
+            }
             if (isset($v['password'])) {
                 $this->revoke($u);
                 Audit::record('staff_password_reset', $r->user()->id, 'users', $u->id);

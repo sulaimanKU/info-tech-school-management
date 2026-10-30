@@ -8,6 +8,24 @@ class Strings {
   String text(String key) =>
       (locale.languageCode == 'ur' ? ur : en)[key] ?? en[key] ?? key;
   static const en = {
+    'noHomeworkPosted': 'No homework has been posted yet.',
+    'noStudentsSection': 'No students are currently enrolled in this section.',
+    'noAssignmentRecords': 'No teaching assignments match these filters.',
+    'noAssignmentSections': 'No academic sections are available in your authorized scope. Ask the school administrator to configure your sections.',
+    'addAssignment': 'Add assignment',
+    'saveAssignments': 'Save assignments',
+    'removeAssignment': 'Remove assignment',
+    'removeAssignmentHelp': 'This deactivates only this assignment. The teacher account, students and historical academic records are kept.',
+    'multipleAssignmentHelp': 'Choose one session, then add each class, section and subject. All assignments save together for this teacher.',
+    'completeAssignments': 'Choose a session and complete every class, section and subject, or select Class teacher.',
+    'duplicateAssignment': 'This section and subject are already in the assignment list. Remove the duplicate before saving.',
+    'changeAssignmentSession': 'Change academic session?',
+    'clearAssignmentDrafts':
+        'Changing the session clears these unsaved assignments.',
+    'staffAccountCode': 'Account code',
+    'staffTeachingEmpty':
+        'No teaching assignments have been assigned for this academic session.',
+    'editEmployment': 'Edit employment details',
     'billedThisMonth': 'Net vouchers issued this month',
     'payrollBalance': 'Approved payroll outstanding',
     'admissionsThisMonth': 'Admissions this month',
@@ -813,6 +831,24 @@ class Strings {
     'parent_guardian': 'Parent / Guardian',
   };
   static const ur = {
+    'noHomeworkPosted': 'ابھی کوئی ہوم ورک شائع نہیں ہوا۔',
+    'noStudentsSection': 'اس سیکشن میں فی الحال کوئی طالب علم داخل نہیں۔',
+    'noAssignmentRecords': 'ان فلٹرز کے مطابق کوئی تدریسی ذمہ داری نہیں ملی۔',
+    'noAssignmentSections': 'آپ کے مجاز دائرے میں کوئی تعلیمی سیکشن دستیاب نہیں۔ اسکول ایڈمنسٹریٹر سے اپنے سیکشن ترتیب دینے کو کہیں۔',
+    'addAssignment': 'ذمہ داری شامل کریں',
+    'saveAssignments': 'ذمہ داریاں محفوظ کریں',
+    'removeAssignment': 'ذمہ داری ختم کریں',
+    'removeAssignmentHelp': 'صرف یہ ذمہ داری غیر فعال ہوگی۔ استاد کا اکاؤنٹ، طلبہ اور سابقہ تعلیمی ریکارڈ برقرار رہیں گے۔',
+    'multipleAssignmentHelp': 'ایک سیشن منتخب کریں، پھر ہر جماعت، سیکشن اور مضمون شامل کریں۔ اس استاد کی تمام ذمہ داریاں ایک ساتھ محفوظ ہوں گی۔',
+    'completeAssignments': 'سیشن منتخب کریں اور ہر جماعت، سیکشن اور مضمون مکمل کریں، یا جماعت کے استاد کا انتخاب کریں۔',
+    'duplicateAssignment': 'یہ سیکشن اور مضمون فہرست میں پہلے سے موجود ہے۔ محفوظ کرنے سے پہلے دہرائی گئی ذمہ داری ہٹائیں۔',
+    'changeAssignmentSession': 'تعلیمی سیشن تبدیل کریں؟',
+    'clearAssignmentDrafts':
+        'سیشن تبدیل کرنے سے یہ غیر محفوظ ذمہ داریاں ہٹ جائیں گی۔',
+    'staffAccountCode': 'اکاؤنٹ کوڈ',
+    'staffTeachingEmpty':
+        'اس تعلیمی سیشن کے لیے کوئی تدریسی ذمہ داری تفویض نہیں کی گئی۔',
+    'editEmployment': 'ملازمت کی تفصیلات میں ترمیم',
     'billedThisMonth': 'اس ماہ جاری کردہ خالص واؤچرز',
     'payrollBalance': 'منظور شدہ تنخواہوں کی بقایا رقم',
     'admissionsThisMonth': 'اس ماہ کے داخلے',

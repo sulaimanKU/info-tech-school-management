@@ -140,6 +140,7 @@ class DashboardOverviewState extends State<DashboardOverview> {
           contextLabel: '${s.text('teachers')}: ${staff['teachers']}',
           icon: Icons.groups_outlined,
           tone: StatusTone.neutral,
+          category: 'staffModule',
           onTap: () => open(StaffScreen(auth: widget.auth)),
         ),
       if (finance != null)

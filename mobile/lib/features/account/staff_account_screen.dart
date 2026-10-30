@@ -8,6 +8,7 @@ import '../../l10n/strings.dart';
 import '../../shared/widgets/authorized_photo.dart';
 import '../../shared/widgets/data_state.dart';
 import '../../shared/widgets/surface_card.dart';
+import '../../shared/widgets/staff_assignment_summary.dart';
 import '../../shared/widgets/polished_components.dart';
 import '../auth/auth_controller.dart';
 import '../files/private_file_screen.dart';
@@ -200,6 +201,10 @@ class _StaffAccountScreenState extends State<StaffAccountScreen> {
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
+                      if (a['account_code'] != null) ...[
+                        const SizedBox(height: AppSpace.sm),
+                        SelectableText(a['account_code'] as String),
+                      ],
                       const SizedBox(height: AppSpace.sm),
                       Wrap(
                         alignment: WrapAlignment.center,
@@ -242,7 +247,7 @@ class _StaffAccountScreenState extends State<StaffAccountScreen> {
                     children: [
                       field('fullName', a['name']),
                       if (a['account_code'] != null)
-                        field('Account code', a['account_code']),
+                        field('staffAccountCode', a['account_code']),
                       field('email', a['email']),
                       field('mobile', a['mobile']),
                       field('address', a['address']),
@@ -305,6 +310,15 @@ class _StaffAccountScreenState extends State<StaffAccountScreen> {
                     ),
                   ),
                 const SizedBox(height: AppSpace.xl),
+                if (roles.any(
+                  (r) => ['teacher', 'coordinator'].contains(r['code']),
+                )) ...[
+                  SectionHeader(title: s.text('teachingAssignments')),
+                  StaffAssignmentSummary(
+                    assignments: data['assignments'] as List? ?? [],
+                  ),
+                  const SizedBox(height: AppSpace.xl),
+                ],
                 SectionHeader(title: s.text('accountSalary')),
                 SurfaceCard(
                   padding: EdgeInsets.zero,

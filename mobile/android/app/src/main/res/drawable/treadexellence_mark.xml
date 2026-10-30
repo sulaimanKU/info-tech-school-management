@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Temporary typographic TE mark; replace with approved brand artwork. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="112dp" android:height="112dp"
+    android:viewportWidth="112" android:viewportHeight="112">
+    <path android:fillColor="#244DB1" android:pathData="M30,26L82,26Q86,26 86,30L86,82Q86,86 82,86L30,86Q26,86 26,82L26,30Q26,26 30,26Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M34,39L54,39L54,44L47,44L47,73L41,73L41,44L34,44Z" />
+    <path android:fillColor="#A7E8DC" android:pathData="M59,39L78,39L78,44L65,44L65,53L76,53L76,58L65,58L65,68L78,68L78,73L59,73Z" />
+</vector>

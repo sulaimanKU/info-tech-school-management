@@ -11,11 +11,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final auth = AuthController(ApiClient(), SecureSessionStore());
   final preferences = AppPreferences(const SecureLocalStore());
-  try {
-    await preferences.load();
-  } catch (_) {
-    /* Login remains available if preference storage cannot be read. */
-  }
-  runApp(SchoolApp(auth: auth, preferences: preferences));
-  auth.initialize();
+  // Draw immediately; resolve preferences and secure session behind branded UI.
+  runApp(SchoolApp(auth: auth, preferences: preferences, initialize: true));
 }

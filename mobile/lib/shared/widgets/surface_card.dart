@@ -45,7 +45,19 @@ class SurfaceCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.card),
               side: BorderSide(color: accent!.withValues(alpha: .22)),
             ),
-      child: Padding(padding: padding, child: child),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: accent == null
+              ? null
+              : BorderDirectional(
+                  start: BorderSide(
+                    color: accent!.withValues(alpha: .7),
+                    width: 3,
+                  ),
+                ),
+        ),
+        child: Padding(padding: padding, child: child),
+      ),
     ),
   );
 }

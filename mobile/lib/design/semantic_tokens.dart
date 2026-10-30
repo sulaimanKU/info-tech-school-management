@@ -30,6 +30,7 @@ class AppPalette {
   Color get warning => dark ? const Color(0xFFF0CF8A) : const Color(0xFF805509);
   Color get error => theme.colorScheme.error;
   Color get information => dark ? const Color(0xFFAECEFA) : AppColors.blue;
+  Color get insight => dark ? const Color(0xFF8FD8EB) : const Color(0xFF17677D);
   Color get disabled => theme.colorScheme.onSurface.withValues(alpha: .38);
   Color get selected => primary.withValues(alpha: dark ? .18 : .08);
   Color get navigation => surface;
@@ -42,7 +43,8 @@ class AppPalette {
     StatusTone.error => error,
   };
   Color module(String key) => switch (key) {
-    'academics' || 'reports' || 'teacherDiary' => education,
+    'academics' || 'myClasses' || 'teacherDiary' => education,
+    'reports' => insight,
     'finance' => warning,
     'attendance' => success,
     'messages' || 'announcement' || 'contactCoordinator' => secondary,
@@ -65,7 +67,7 @@ abstract final class AppStatus {
     'validated' ||
     'no_balance' ||
     'active' => StatusTone.success,
-    'unpaid' ||
+    'partial' ||
     'partially_paid' ||
     'pending' ||
     'requested' ||
@@ -76,6 +78,7 @@ abstract final class AppStatus {
     'high' ||
     'needsReview' => StatusTone.warning,
     'rejected' ||
+    'unpaid' ||
     'failed' ||
     'syncConflict' ||
     'absent' ||
@@ -83,6 +86,8 @@ abstract final class AppStatus {
     'escalated' ||
     'invalid' => StatusTone.error,
     'submitted' ||
+    'excused' ||
+    'leave' ||
     'refunded' ||
     'in_progress' ||
     'acknowledged' => StatusTone.info,

@@ -94,6 +94,47 @@ class _StaffAssignmentScreenState extends State<StaffAssignmentScreen> {
     }
   }
 
+  Future<void> remove() async {
+    final s = Strings.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(s.text('removeAssignment')),
+        content: Text(s.text('removeAssignmentHelp')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(s.text('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(s.text('confirm')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted || busy) return;
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      final kind = widget.coordinator
+          ? 'coordinator-assignments'
+          : 'teacher-assignments';
+      await widget.auth.call(
+        'catalog/$kind/${widget.existing!['id']}/deactivate',
+        method: 'POST',
+        body: {},
+      );
+      if (mounted) Navigator.pop(context, true);
+    } on ApiFailure catch (e) {
+      if (mounted) setState(() => error = e.code);
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = Strings.of(context);
@@ -179,6 +220,12 @@ class _StaffAssignmentScreenState extends State<StaffAssignmentScreen> {
                     onPressed: busy ? null : save,
                     child: Text(s.text('save')),
                   ),
+                  if (widget.existing != null && active)
+                    TextButton.icon(
+                      onPressed: busy ? null : remove,
+                      icon: const Icon(Icons.remove_circle_outline),
+                      label: Text(s.text('removeAssignment')),
+                    ),
                 ],
               ),
             ),

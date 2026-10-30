@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../design/app_theme.dart';
+import '../design/semantic_tokens.dart';
 import '../features/communication/push_service.dart';
 import 'app_preferences.dart';
 import '../features/auth/auth_controller.dart';
@@ -14,11 +15,18 @@ import '../l10n/strings.dart';
 import '../shared/widgets/app_toolbar.dart';
 import '../shared/widgets/school_brand.dart';
 import '../shared/widgets/surface_card.dart';
+import '../shared/widgets/branded_startup.dart';
 
 class SchoolApp extends StatefulWidget {
-  const SchoolApp({super.key, required this.auth, this.preferences});
+  const SchoolApp({
+    super.key,
+    required this.auth,
+    this.preferences,
+    this.initialize = false,
+  });
   final AuthController auth;
   final AppPreferences? preferences;
+  final bool initialize;
   @override
   State<SchoolApp> createState() => _SchoolAppState();
 }
@@ -35,6 +43,7 @@ class _SchoolAppState extends State<SchoolApp> with WidgetsBindingObserver {
   AuthStatus? previousStatus;
   Locale? locale;
   ThemeMode mode = ThemeMode.system;
+  bool booting = false;
   @override
   void initState() {
     super.initState();
@@ -51,6 +60,30 @@ class _SchoolAppState extends State<SchoolApp> with WidgetsBindingObserver {
     widget.auth.addListener(authChanged);
     locale = widget.preferences?.locale;
     mode = widget.preferences?.mode ?? ThemeMode.system;
+    if (widget.initialize) {
+      booting = true;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => initializeApplication(),
+      );
+    }
+  }
+
+  Future<void> initializeApplication() async {
+    Future<void> preferences() async {
+      try {
+        await widget.preferences?.load();
+      } catch (_) {
+        // A preference read error must not prevent secure session resolution.
+      }
+    }
+
+    await Future.wait([widget.auth.initialize(), preferences()]);
+    if (!mounted) return;
+    setState(() {
+      locale = widget.preferences?.locale;
+      mode = widget.preferences?.mode ?? ThemeMode.system;
+      booting = false;
+    });
   }
 
   void authChanged() {
@@ -111,105 +144,99 @@ class _SchoolAppState extends State<SchoolApp> with WidgetsBindingObserver {
       builder: (context, _) {
         final auth = widget.auth;
         final s = Strings.of(context);
-        return Scaffold(
-          appBar: AppBar(
-            titleSpacing: AppSpace.lg,
-            title: const SchoolBrand(),
-            bottom: const PreferredSize(
-              preferredSize: Size.fromHeight(1),
-              child: Divider(height: 1),
+        Widget transition(Widget child) => AnimatedSwitcher(
+          duration: AppMotion.duration(context),
+          child: child,
+        );
+        if (booting || auth.status == AuthStatus.initializing) {
+          return transition(const BrandedStartup());
+        }
+        return transition(
+          Scaffold(
+            key: ValueKey(auth.status),
+            appBar: AppBar(
+              titleSpacing: AppSpace.lg,
+              title: const SchoolBrand(),
+              bottom: const PreferredSize(
+                preferredSize: Size.fromHeight(1),
+                child: Divider(height: 1),
+              ),
+              actions: [
+                AppToolbar(
+                  themeMode: mode,
+                  onLanguage: () {
+                    setState(
+                      () => locale =
+                          Localizations.localeOf(context).languageCode == 'ur'
+                          ? const Locale('en')
+                          : const Locale('ur'),
+                    );
+                    persistPreferences(context);
+                  },
+                  onTheme: (value) {
+                    setState(() => mode = value);
+                    persistPreferences(context);
+                  },
+                ),
+                if (auth.status == AuthStatus.signedIn)
+                  IconButton(
+                    tooltip: s.text('notifications'),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => NotificationScreen(auth: auth),
+                      ),
+                    ),
+                    icon: const Icon(Icons.notifications_outlined),
+                  ),
+                if (auth.status == AuthStatus.signedIn)
+                  IconButton(
+                    key: const Key('account-menu'),
+                    tooltip: s.text('account'),
+                    onPressed: () =>
+                        showAccountSheet(context, auth, push: push),
+                    icon: const Icon(Icons.account_circle_outlined),
+                  ),
+                const SizedBox(width: AppSpace.sm),
+              ],
             ),
-            actions: [
-              AppToolbar(
-                themeMode: mode,
-                onLanguage: () {
-                  setState(
-                    () => locale =
-                        Localizations.localeOf(context).languageCode == 'ur'
-                        ? const Locale('en')
-                        : const Locale('ur'),
-                  );
-                  persistPreferences(context);
-                },
-                onTheme: (value) {
-                  setState(() => mode = value);
-                  persistPreferences(context);
-                },
-              ),
-              if (auth.status == AuthStatus.signedIn)
-                IconButton(
-                  tooltip: s.text('notifications'),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => NotificationScreen(auth: auth),
-                    ),
-                  ),
-                  icon: const Icon(Icons.notifications_outlined),
-                ),
-              if (auth.status == AuthStatus.signedIn)
-                IconButton(
-                  key: const Key('account-menu'),
-                  tooltip: s.text('account'),
-                  onPressed: () => showAccountSheet(context, auth, push: push),
-                  icon: const Icon(Icons.account_circle_outlined),
-                ),
-              const SizedBox(width: AppSpace.sm),
-            ],
-          ),
-          body: SafeArea(
-            child: switch (auth.status) {
-              AuthStatus.initializing => Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpace.xl),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SchoolLogo(size: 96),
-                      const SizedBox(height: AppSpace.xl),
-                      Text(
-                        s.text('loadingWorkspace'),
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: AppSpace.xl),
-                      const CircularProgressIndicator(),
-                    ],
-                  ),
-                ),
-              ),
-              AuthStatus.signedOut => LoginScreen(auth: auth),
-              AuthStatus.signedIn =>
-                auth.isParent
-                    ? ParentHomeScreen(auth: auth)
-                    : HomeScreen(auth: auth),
-              AuthStatus.reconnect => Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpace.xl),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 460),
-                    child: SurfaceCard(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SchoolLogo(size: 80),
-                          const SizedBox(height: AppSpace.xl),
-                          StatusBanner(
-                            message: s.text(auth.error ?? 'network'),
-                            kind: StatusKind.error,
-                          ),
-                          const SizedBox(height: AppSpace.xl),
-                          FilledButton.icon(
-                            onPressed: auth.initialize,
-                            icon: const Icon(Icons.refresh_rounded),
-                            label: Text(s.text('retry')),
-                          ),
-                        ],
+            body: SafeArea(
+              child: switch (auth.status) {
+                AuthStatus.initializing => const BrandedStartup(),
+                AuthStatus.signedOut => LoginScreen(auth: auth),
+                AuthStatus.signedIn =>
+                  auth.isParent
+                      ? ParentHomeScreen(auth: auth)
+                      : HomeScreen(auth: auth),
+                AuthStatus.reconnect => Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppSpace.xl),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: SurfaceCard(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SchoolLogo(size: 80),
+                            const SizedBox(height: AppSpace.xl),
+                            StatusBanner(
+                              message: s.text(auth.error ?? 'network'),
+                              kind: StatusKind.error,
+                            ),
+                            const SizedBox(height: AppSpace.xl),
+                            FilledButton.icon(
+                              onPressed: auth.initialize,
+                              icon: const Icon(Icons.refresh_rounded),
+                              label: Text(s.text('retry')),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            },
+              },
+            ),
           ),
         );
       },

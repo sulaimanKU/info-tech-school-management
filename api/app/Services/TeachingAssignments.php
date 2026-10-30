@@ -28,6 +28,44 @@ final class TeachingAssignments
             ->whereIn('ta.section_id', app(SchoolAccess::class)->sections($user)->select('sections.id'));
     }
 
+    public function validateAssignment(string $catalog, array $v, ?string $id = null): void
+    {
+        $profile = DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->lockForUpdate()->firstOrFail();
+        $u = User::findOrFail($profile->user_id);
+        if (($catalog === 'teacher-assignments' && $id === null) || ($v['is_active'] ?? true)) {
+            abort_unless($profile->is_active && $u->is_active && $u->roles()->where('code', $catalog === 'teacher-assignments' ? 'teacher' : 'coordinator')->exists(), 422);
+        }
+        $section = DB::table('sections')->where('id', $v['section_id'])->lockForUpdate()->firstOrFail();
+        if ($catalog === 'teacher-assignments') {
+            if (empty($v['subject_id']) && empty($v['is_class_teacher'])) {
+                Domain::fail('subject_id', 'Select a subject or a class teacher assignment.');
+            }
+            if (! empty($v['subject_id']) && ! DB::table('class_subject_assignments')->where('class_id', $section->class_id)->where('academic_session_id', $section->academic_session_id)->where('subject_id', $v['subject_id'])->exists()) {
+                Domain::fail('subject_id', 'Subject must belong to the selected class/session.');
+            }
+        }
+        $session = DB::table('academic_sessions')->find($section->academic_session_id);
+        $from = $v['starts_on'] ?? $session->starts_on;
+        $through = $v['ends_on'] ?? $session->ends_on;
+        if ($from < $session->starts_on || $through > $session->ends_on || $from > $through) {
+            Domain::fail('starts_on', 'Assignment dates must fall inside the section academic session.');
+        }
+        if (($v['is_active'] ?? true)) {
+            // Enabled-row uniqueness is deliberately independent of dates in both
+            // MariaDB's generated indexes and PostgreSQL's partial indexes.
+            // Retain an old row by deactivating it before reusing its combination.
+            $q = DB::table($catalog === 'teacher-assignments' ? 'teacher_assignments' : 'coordinator_assignments')->where('is_active', true)->where('section_id', $section->id)->when($id, fn ($q) => $q->where('id', '!=', $id));
+            if ($catalog === 'coordinator-assignments') {
+                $q->where('staff_profile_id', $profile->id);
+            } else {
+                $q->where(fn ($q) => $q->where(fn ($q) => $q->where('staff_profile_id', $profile->id)->where('subject_id', $v['subject_id'] ?? null))->when($v['is_class_teacher'], fn ($q) => $q->orWhere('is_class_teacher', true)));
+            }
+            if ($q->lockForUpdate()->first(['id'])) {
+                Domain::fail('assignment', 'An active matching assignment already exists.');
+            }
+        }
+    }
+
     public function requireAssignedTeacher(string $user, string $section, string $subject, string $date): void
     {
         $eligible = DB::table('teacher_assignments as a')->join('staff_profiles as p', 'p.id', '=', 'a.staff_profile_id')

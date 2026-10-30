@@ -75,6 +75,12 @@ class _RecordsScreenState extends State<RecordsScreen> {
     load();
   }
 
+  @override
+  void didUpdateWidget(covariant RecordsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.path != oldWidget.path) load();
+  }
+
   Future<void> load({bool more = false}) async {
     if (loadingMore && more) return;
     final version = ++generation;
@@ -223,7 +229,21 @@ class _RecordsScreenState extends State<RecordsScreen> {
                             ),
                           ),
                           const SizedBox(height: AppSpace.lg),
-                          if (rows.isEmpty) DataState(empty: true),
+                          if (rows.isEmpty)
+                            DataState(
+                              empty: true,
+                              emptyMessage: switch (Uri.parse(widget.path)
+                                  .path) {
+                                'diary' => 'noHomeworkPosted',
+                                'teaching-assignments' => 'noAssignmentRecords',
+                                final p
+                                    when p.startsWith(
+                                      'my-teaching/sections/',
+                                    ) =>
+                                  'noStudentsSection',
+                                _ => null,
+                              },
+                            ),
                         ],
                       );
                     }

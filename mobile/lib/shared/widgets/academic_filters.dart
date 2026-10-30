@@ -129,11 +129,13 @@ class AcademicSelection extends StatefulWidget {
     required this.onChanged,
     this.subject = false,
     this.preferCurrentSession = false,
+    this.showSession = true,
+    this.enabled = true,
   });
   final AuthController auth;
   final Map<String, String> initial;
   final ValueChanged<Map<String, String>> onChanged;
-  final bool subject, preferCurrentSession;
+  final bool subject, preferCurrentSession, showSession, enabled;
   @override
   State<AcademicSelection> createState() => _AcademicSelectionState();
 }
@@ -222,7 +224,8 @@ class _AcademicSelectionState extends State<AcademicSelection> {
         ),
       ],
       for (final field in [
-        ('academic_session_id', 'academicSession', 'sessions'),
+        if (widget.showSession)
+          ('academic_session_id', 'academicSession', 'sessions'),
         ('class_id', 'class', 'classes'),
         ('section_id', 'section', 'sections'),
         if (widget.subject) ('subject_id', 'subject', 'subjects'),
@@ -232,7 +235,7 @@ class _AcademicSelectionState extends State<AcademicSelection> {
           child: ScopedChoice(
             key: ValueKey('filter-${field.$1}'),
             label: field.$2,
-            enabled: data != null,
+            enabled: widget.enabled && data != null,
             options: {
               for (final row in data?[field.$3] as List? ?? [])
                 row['id'] as String: row['name'] as String,

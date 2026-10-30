@@ -46,7 +46,10 @@ class _StaffProfileEditorState extends State<StaffProfileEditor> {
 
   Future<void> save() async {
     if (busy || !form.currentState!.validate()) return;
-    setState(() => busy = true);
+    setState(() {
+      busy = true;
+      error = null;
+    });
     try {
       await widget.auth.call(
         'account/profile',
@@ -65,7 +68,17 @@ class _StaffProfileEditorState extends State<StaffProfileEditor> {
       );
       if (mounted) Navigator.pop(context, true);
     } on ApiFailure catch (e) {
-      if (mounted) setState(() => error = e.code);
+      if (mounted) {
+        setState(
+          () => error =
+              e.fields.values
+                  .whereType<List>()
+                  .firstOrNull
+                  ?.firstOrNull
+                  ?.toString() ??
+              e.code,
+        );
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }

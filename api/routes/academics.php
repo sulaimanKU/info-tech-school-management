@@ -16,6 +16,7 @@ Route::prefix('v1')->middleware(AuthenticateSession::class)->group(function () {
     Route::get('my-teaching/sections/{section}/students', [TeacherWorkspaceController::class, 'students'])->whereUuid('section');
     Route::get('academic-roster', [TeacherWorkspaceController::class, 'roster']);
     Route::get('teaching-assignments', [TeachingAssignmentController::class, 'index']);
+    Route::post('teaching-assignments', [TeachingAssignmentController::class, 'store']);
     Route::get('teaching-assignments/teachers', [TeachingAssignmentController::class, 'teachers']);
     Route::get('academic-settings', [AcademicSettingsController::class, 'show']);
     Route::put('academic-settings', [AcademicSettingsController::class, 'save']);

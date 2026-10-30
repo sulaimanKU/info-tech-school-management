@@ -159,6 +159,26 @@ abstract final class AppTheme {
         padding: const EdgeInsets.all(AppSpace.sm),
         selectedColor: scheme.primaryContainer,
       ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
+      ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(scheme.surface),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.input),
+              side: BorderSide(color: scheme.outlineVariant),
+            ),
+          ),
+        ),
+      ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(

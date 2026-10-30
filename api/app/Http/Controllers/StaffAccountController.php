@@ -7,6 +7,7 @@ use App\Services\Finance\PayrollService;
 use App\Services\ProfilePhotoService;
 use App\Services\ReportData;
 use App\Services\ReportRenderer;
+use App\Services\StaffProfileData;
 use App\Support\Audit;
 use App\Support\Domain;
 use Illuminate\Http\Request;
@@ -34,7 +35,7 @@ class StaffAccountController extends Controller
         $u = $r->user()->fresh();
         $profile = DB::table('staff_profiles')->where('user_id', $u->id)->first(['id', 'employee_number', 'designation', 'joined_on', 'is_active']);
 
-        return Domain::response(['account' => ['id' => $u->id, 'account_code' => $u->account_code, 'name' => $u->name, 'email' => $u->email, 'mobile' => $u->mobile, 'address' => $u->address, 'photo_file_id' => $u->photo_file_id, 'is_active' => $u->is_active, 'roles' => $u->roles()->get(['code', 'name'])], 'profile' => $profile, 'staff_linked' => $profile !== null])->header('Cache-Control', 'private, no-store');
+        return Domain::response(['account' => ['id' => $u->id, 'account_code' => $u->account_code, 'name' => $u->name, 'email' => $u->email, 'mobile' => $u->mobile, 'address' => $u->address, 'photo_file_id' => $u->photo_file_id, 'is_active' => $u->is_active, 'roles' => $u->roles()->get(['code', 'name'])], 'profile' => $profile, 'staff_linked' => $profile !== null, 'assignments' => app(StaffProfileData::class)->assignments($profile)])->header('Cache-Control', 'private, no-store');
     }
 
     public function update(Request $r)
