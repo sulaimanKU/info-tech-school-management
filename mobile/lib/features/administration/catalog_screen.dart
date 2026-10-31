@@ -7,7 +7,6 @@ import '../../shared/forms/domain_form.dart';
 import '../../shared/widgets/data_state.dart';
 import '../../shared/widgets/surface_card.dart';
 import '../auth/auth_controller.dart';
-import '../students/student_form.dart';
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key, required this.auth});
@@ -154,31 +153,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
           const FormFieldSpec('joined_on', 'joiningDate', kind: FieldKind.date),
           const FormFieldSpec('designation', 'designation'),
         ]);
-      case 'teacher-assignments':
-        final sections = await sectionOptions(widget.auth);
-        if (!mounted) return;
-        fields.addAll([
-          choice('staff_profile_id', 'staffProfile', 'staff'),
-          FormFieldSpec(
-            'section_id',
-            'classSection',
-            kind: FieldKind.choice,
-            options: sections,
-          ),
-          FormFieldSpec(
-            'subject_id',
-            'subject',
-            kind: FieldKind.choice,
-            options: lookups['subjects'] ?? {},
-            required: false,
-          ),
-          const FormFieldSpec(
-            'is_class_teacher',
-            'classTeacher',
-            kind: FieldKind.boolean,
-            initial: false,
-          ),
-        ]);
       case 'fee-categories':
         fields.add(const FormFieldSpec('name', 'name'));
       case 'staff-accounts':
@@ -213,7 +187,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => DomainForm(
-          academicAuth: selected == 'teacher-assignments' ? widget.auth : null,
           title: 'addRecord',
           fields: [
             for (final f in fields)
@@ -261,8 +234,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'subjects',
       'class-subjects',
       'fee-categories',
-      if (widget.auth.can('staff.manage'))
-        ...'staff,staff-accounts,teacher-assignments'.split(','),
+      if (widget.auth.can('staff.manage')) ...'staff,staff-accounts'.split(','),
     ];
     return Scaffold(
       appBar: AppBar(title: Text(s.text('schoolSetup'))),
@@ -346,10 +318,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                                               : Icons.lock_open,
                                         ),
                                       )
-                                    : [
-                                            'staff',
-                                            'teacher-assignments',
-                                          ].contains(selected) &&
+                                    : selected == 'staff' &&
                                           v['is_active'] == true
                                     ? IconButton(
                                         tooltip: s.text('deactivate'),

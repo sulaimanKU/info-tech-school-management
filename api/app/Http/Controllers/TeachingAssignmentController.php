@@ -15,9 +15,9 @@ class TeachingAssignmentController extends Controller
     public function index(Request $r, TeachingAssignments $assignments)
     {
         $assignments->requireManager($r->user());
-        $v = app(AcademicFilters::class)->values($r, ['staff_profile_id' => 'nullable|uuid|exists:staff_profiles,id', 'is_active' => 'nullable|boolean', 'on_date' => 'nullable|date', 'status' => 'nullable|in:active,inactive']);
+        $v = app(AcademicFilters::class)->values($r, ['staff_profile_id' => 'nullable|uuid|exists:staff_profiles,id', 'teacher_user_id' => 'nullable|uuid|exists:users,id', 'is_active' => 'nullable|boolean', 'on_date' => 'nullable|date', 'status' => 'nullable|in:active,inactive']);
         $q = $assignments->query($r->user());
-        foreach (['staff_profile_id' => 'ta.staff_profile_id', 'class_id' => 'sec.class_id', 'academic_session_id' => 'sec.academic_session_id', 'section_id' => 'ta.section_id', 'subject_id' => 'ta.subject_id', 'is_active' => 'ta.is_active'] as $key => $column) {
+        foreach (['staff_profile_id' => 'ta.staff_profile_id', 'teacher_user_id' => 'u.id', 'class_id' => 'sec.class_id', 'academic_session_id' => 'sec.academic_session_id', 'section_id' => 'ta.section_id', 'subject_id' => 'ta.subject_id', 'is_active' => 'ta.is_active'] as $key => $column) {
             if (isset($v[$key])) {
                 $q->where($column, $v[$key]);
             }
@@ -39,7 +39,12 @@ class TeachingAssignmentController extends Controller
     {
         $assignments->requireManager($r->user());
         $v = $r->validate([
-            'staff_profile_id' => 'required|uuid|exists:staff_profiles,id',
+            'staff_profile_id' => 'required_without:teacher_user_id|nullable|uuid|exists:staff_profiles,id',
+            'teacher_user_id' => 'required_without:staff_profile_id|nullable|uuid|exists:users,id',
+            'employment' => 'sometimes|required|array:joined_on,employee_number,designation',
+            'employment.joined_on' => 'required_with:employment|date_format:Y-m-d',
+            'employment.employee_number' => 'nullable|string|max:40',
+            'employment.designation' => 'nullable|string|max:100',
             'academic_session_id' => 'required|uuid|exists:academic_sessions,id',
             'assignments' => 'required|array|list|min:1|max:50',
             'assignments.*' => 'required|array:section_id,subject_id,is_class_teacher,starts_on,ends_on',
@@ -49,12 +54,14 @@ class TeachingAssignmentController extends Controller
             'assignments.*.starts_on' => 'nullable|date_format:Y-m-d',
             'assignments.*.ends_on' => 'nullable|date_format:Y-m-d|after_or_equal:assignments.*.starts_on',
         ]);
-        $ids = DB::transaction(function () use ($r, $assignments, $v) {
+        $result = DB::transaction(function () use ($r, $assignments, $v) {
             // The same profile/section locks and validation protect single and bulk writes.
-            DB::table('staff_profiles')->where('id', $v['staff_profile_id'])->lockForUpdate()->firstOrFail();
             $sections = collect($v['assignments'])->pluck('section_id')->unique()->sort()->values();
             foreach ($sections as $section) {
                 $assignments->authorizeSection($r->user(), $section);
+            }
+            $profile = $assignments->resolveTeacherProfile($r->user(), $v);
+            foreach ($sections as $section) {
                 $row = DB::table('sections')->where('id', $section)->lockForUpdate()->firstOrFail();
                 if ($row->academic_session_id !== $v['academic_session_id']) {
                     Domain::fail('academic_session_id', 'Every assignment must belong to the selected academic session.');
@@ -62,7 +69,7 @@ class TeachingAssignmentController extends Controller
             }
             $ids = [];
             foreach ($v['assignments'] as $index => $row) {
-                $row = ['staff_profile_id' => $v['staff_profile_id'], 'is_active' => true, ...$row];
+                $row = ['staff_profile_id' => $profile->id, 'is_active' => true, ...$row];
                 try {
                     $assignments->validateAssignment('teacher-assignments', $row);
                 } catch (ValidationException $e) {
@@ -73,22 +80,24 @@ class TeachingAssignmentController extends Controller
                 $ids[] = $id;
             }
 
-            return $ids;
+            return ['ids' => $ids, 'count' => count($ids), 'staff_profile_id' => $profile->id, 'teacher_user_id' => $profile->user_id];
         }, 3);
 
-        return Domain::response(['ids' => $ids, 'count' => count($ids)], 201);
+        return Domain::response($result, 201);
     }
 
     public function teachers(Request $r, TeachingAssignments $assignments)
     {
         $assignments->requireManager($r->user());
         $v = $r->validate(['search' => 'nullable|string|max:100', 'page' => 'nullable|integer|min:1']);
-        $q = DB::table('staff_profiles as p')->join('users as u', 'u.id', '=', 'p.user_id')->where('p.is_active', true)->where('u.is_active', true)
-            ->whereExists(fn ($q) => $q->selectRaw('1')->from('user_role_assignments as ur')->join('roles as r', 'r.id', '=', 'ur.role_id')->whereColumn('ur.user_id', 'u.id')->where('r.code', 'teacher'));
+        $q = $assignments->selectableTeachers();
         if (! empty($v['search'])) {
             $q->where(fn ($q) => $q->where('u.name', 'like', '%'.$v['search'].'%')->orWhere('p.employee_number', 'like', '%'.$v['search'].'%')->orWhere('u.account_code', 'like', '%'.$v['search'].'%'));
         }
 
-        return Domain::response($q->orderBy('u.name')->paginate(30, ['p.id', 'p.user_id', 'p.employee_number', 'u.account_code', 'u.name']));
+        return Domain::response($q->orderBy('u.name')->orderBy('u.id')->paginate(30, ['p.id', 'u.id as user_id', 'p.id as staff_profile_id', 'p.employee_number', 'u.account_code', 'u.name', 'u.is_active'])->through(fn ($teacher) => [
+            ...(array) $teacher, 'role' => 'teacher', 'staff_linked' => $teacher->staff_profile_id !== null,
+            'profile_link_required' => $teacher->staff_profile_id === null,
+        ]));
     }
 }

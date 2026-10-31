@@ -23,6 +23,8 @@ class RecordsScreen extends StatefulWidget {
     this.onOpen,
     this.summary,
     this.recordLeading,
+    this.reloadToken,
+    this.emptyBuilder,
   });
   final AuthController auth;
   final String path, title;
@@ -32,6 +34,8 @@ class RecordsScreen extends StatefulWidget {
   final Future<void> Function(BuildContext, Map<String, dynamic>)? onOpen;
   final Widget Function(Map<String, dynamic>)? summary;
   final Widget Function(Map<String, dynamic>)? recordLeading;
+  final Object? reloadToken;
+  final Widget Function(BuildContext, bool searched)? emptyBuilder;
   @override
   State<RecordsScreen> createState() => _RecordsScreenState();
 }
@@ -78,7 +82,10 @@ class _RecordsScreenState extends State<RecordsScreen> {
   @override
   void didUpdateWidget(covariant RecordsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.path != oldWidget.path) load();
+    if (widget.path != oldWidget.path ||
+        widget.reloadToken != oldWidget.reloadToken) {
+      load();
+    }
   }
 
   Future<void> load({bool more = false}) async {
@@ -229,7 +236,12 @@ class _RecordsScreenState extends State<RecordsScreen> {
                             ),
                           ),
                           const SizedBox(height: AppSpace.lg),
-                          if (rows.isEmpty)
+                          if (rows.isEmpty && widget.emptyBuilder != null)
+                            widget.emptyBuilder!(
+                              context,
+                              query.isNotEmpty || filters.isNotEmpty,
+                            ),
+                          if (rows.isEmpty && widget.emptyBuilder == null)
                             DataState(
                               empty: true,
                               emptyMessage: switch (Uri.parse(widget.path)

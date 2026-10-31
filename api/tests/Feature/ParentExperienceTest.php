@@ -35,7 +35,7 @@ class ParentExperienceTest extends MobileTestCase
 
     private function invoice(string $student, int $amount = 1000): string
     {
-        return Domain::insert('fee_invoices', ['student_id' => $student, 'academic_session_id' => $this->session, 'voucher_number' => 'FICTIONAL-'.Str::uuid(), 'period' => now()->subMonths(DB::table('fee_invoices')->where('student_id', $student)->count())->format('Y-m'), 'kind' => 'additional', 'issued_on' => now()->toDateString(), 'due_on' => now()->addDays(5)->toDateString(), 'gross_minor' => $amount, 'discount_minor' => 0, 'total_minor' => $amount, 'request_id' => (string) Str::uuid(), 'payload_hash' => str_repeat('a', 64), 'created_by' => $this->admin->id]);
+        return Domain::insert('fee_invoices', ['student_id' => $student, 'academic_session_id' => $this->session, 'voucher_number' => 'FICTIONAL-'.Str::uuid(), 'period' => now()->startOfMonth()->subMonths(DB::table('fee_invoices')->where('student_id', $student)->count())->format('Y-m'), 'kind' => 'additional', 'issued_on' => now()->toDateString(), 'due_on' => now()->addDays(5)->toDateString(), 'gross_minor' => $amount, 'discount_minor' => 0, 'total_minor' => $amount, 'request_id' => (string) Str::uuid(), 'payload_hash' => str_repeat('a', 64), 'created_by' => $this->admin->id]);
     }
 
     public function test_parent_overviews_switch_children_without_cross_family_data(): void
@@ -167,6 +167,6 @@ class ParentExperienceTest extends MobileTestCase
         $this->asUser($other)->get('/api/v1/reports/voucher?invoice_id='.$invoice, ['Accept' => 'application/json'])->assertNotFound();
         $this->get('/api/v1/reports/receipt?payment_id='.$payment.'&student_id='.$a, ['Accept' => 'application/json'])->assertNotFound();
         $row = DB::table('fee_invoices')->find($invoice);
-        $this->assertSame(app(InvoiceBalance::class)->calculate($row),app(InvoiceBalance::class)->many(collect([$row]))[$invoice]);
+        $this->assertSame(app(InvoiceBalance::class)->calculate($row), app(InvoiceBalance::class)->many(collect([$row]))[$invoice]);
     }
 }

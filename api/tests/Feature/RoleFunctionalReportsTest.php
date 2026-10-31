@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Services\AcademicCalendar;
 use App\Support\Domain;
 use Database\Seeders\FinanceConfigurationSeeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\MobileTestCase;
@@ -100,6 +101,8 @@ class RoleFunctionalReportsTest extends MobileTestCase
 
     public function test_weekday_edits_preserve_prior_attendance_calendar_and_future_policy_changes(): void
     {
+        // Keep October 31 in the future; this test compares preserved past days.
+        $this->travelTo(Carbon::parse('2026-10-29 09:00:00'));
         $student = $this->student();
         $this->asUser($this->admin)->postJson('/api/v1/attendance/register', ['section_id' => $this->section, 'date' => '2026-10-03', 'status' => 'submitted', 'version' => 0, 'request_id' => (string) Str::uuid(), 'records' => [['student_id' => $student, 'status' => 'present']]])->assertOk();
         $before = $this->getJson('/api/v1/students/'.$student.'/attendance?month=2026-10')->json('data.school_days');

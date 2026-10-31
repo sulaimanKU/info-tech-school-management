@@ -14,12 +14,15 @@ class ScopedChoice extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.enabled = true,
+    this.allowAny = true,
+    this.prompt,
   });
   final String label;
   final Map<String, String> options;
   final String? value;
   final ValueChanged<String?> onChanged;
-  final bool enabled;
+  final bool enabled, allowAny;
+  final String? prompt;
   @override
   Widget build(BuildContext context) {
     final s = Strings.of(context);
@@ -29,9 +32,10 @@ class ScopedChoice extends StatelessWidget {
         initialValue: options.containsKey(value) ? value : null,
         isExpanded: true,
         decoration: InputDecoration(labelText: s.text(label)),
-        hint: Text(s.text('anyValue')),
+        hint: Text(s.text(prompt ?? 'anyValue')),
         items: [
-          DropdownMenuItem(value: '', child: Text(s.text('anyValue'))),
+          if (allowAny)
+            DropdownMenuItem(value: '', child: Text(s.text('anyValue'))),
           for (final e in options.entries)
             DropdownMenuItem(
               value: e.key,
@@ -47,7 +51,11 @@ class ScopedChoice extends StatelessWidget {
           : () async {
               final selected = await showDialog<String>(
                 context: context,
-                builder: (c) => _ChoiceDialog(label: label, options: options),
+                builder: (c) => _ChoiceDialog(
+                  label: label,
+                  options: options,
+                  allowAny: allowAny,
+                ),
               );
               if (selected != null) {
                 onChanged(selected.isEmpty ? null : selected);
@@ -58,16 +66,21 @@ class ScopedChoice extends StatelessWidget {
           labelText: s.text(label),
           suffixIcon: const Icon(Icons.search),
         ),
-        child: Text(options[value] ?? s.text('anyValue')),
+        child: Text(options[value] ?? s.text(prompt ?? 'anyValue')),
       ),
     );
   }
 }
 
 class _ChoiceDialog extends StatefulWidget {
-  const _ChoiceDialog({required this.label, required this.options});
+  const _ChoiceDialog({
+    required this.label,
+    required this.options,
+    required this.allowAny,
+  });
   final String label;
   final Map<String, String> options;
+  final bool allowAny;
   @override
   State<_ChoiceDialog> createState() => _ChoiceDialogState();
 }
@@ -107,10 +120,11 @@ class _ChoiceDialogState extends State<_ChoiceDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, ''),
-          child: Text(s.text('anyValue')),
-        ),
+        if (widget.allowAny)
+          TextButton(
+            onPressed: () => Navigator.pop(context, ''),
+            child: Text(s.text('anyValue')),
+          ),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(s.text('cancel')),
@@ -131,11 +145,12 @@ class AcademicSelection extends StatefulWidget {
     this.preferCurrentSession = false,
     this.showSession = true,
     this.enabled = true,
+    this.creation = false,
   });
   final AuthController auth;
   final Map<String, String> initial;
   final ValueChanged<Map<String, String>> onChanged;
-  final bool subject, preferCurrentSession, showSession, enabled;
+  final bool subject, preferCurrentSession, showSession, enabled, creation;
   @override
   State<AcademicSelection> createState() => _AcademicSelectionState();
 }
@@ -235,7 +250,25 @@ class _AcademicSelectionState extends State<AcademicSelection> {
           child: ScopedChoice(
             key: ValueKey('filter-${field.$1}'),
             label: field.$2,
-            enabled: widget.enabled && data != null,
+            enabled:
+                widget.enabled &&
+                data != null &&
+                (!widget.creation ||
+                    switch (field.$1) {
+                      'class_id' => values.containsKey('academic_session_id'),
+                      'section_id' => values.containsKey('class_id'),
+                      'subject_id' => values.containsKey('section_id'),
+                      _ => true,
+                    }),
+            allowAny: !widget.creation,
+            prompt: widget.creation
+                ? switch (field.$1) {
+                    'academic_session_id' => 'selectAcademicSession',
+                    'class_id' => 'selectClass',
+                    'section_id' => 'selectSection',
+                    _ => 'selectSubject',
+                  }
+                : null,
             options: {
               for (final row in data?[field.$3] as List? ?? [])
                 row['id'] as String: row['name'] as String,

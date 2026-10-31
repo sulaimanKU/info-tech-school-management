@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\Audit;
 use App\Support\Domain;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +18,63 @@ final class TeachingAssignments
     {
         $this->requireManager($user);
         app(SchoolAccess::class)->section($user, $section);
+    }
+
+    /** Accounts are eligible without optional employment/contact data.
+     * An explicitly disabled employment profile still withdraws eligibility.
+     */
+    public function selectableTeachers()
+    {
+        return DB::table('users as u')->leftJoin('staff_profiles as p', 'p.user_id', '=', 'u.id')
+            ->where('u.is_active', true)
+            ->where(fn ($q) => $q->whereNull('p.id')->orWhere('p.is_active', true))
+            ->whereExists(fn ($q) => $q->selectRaw('1')->from('user_role_assignments as ur')->join('roles as r', 'r.id', '=', 'ur.role_id')->whereColumn('ur.user_id', 'u.id')->where('r.code', 'teacher'));
+    }
+
+    /** Called inside the assignment transaction; GET requests never create employment. */
+    public function resolveTeacherProfile(User $actor, array $input): object
+    {
+        $requested = isset($input['staff_profile_id']) ? DB::table('staff_profiles')->find($input['staff_profile_id']) : null;
+        $teacher = User::whereKey($input['teacher_user_id'] ?? $requested?->user_id)->lockForUpdate()->firstOrFail();
+        if (! $teacher->is_active || ! $teacher->roles()->where('code', 'teacher')->exists()) {
+            Domain::fail('teacher_user_id', 'Select an active account with the Teacher role.');
+        }
+        $profile = DB::table('staff_profiles')->where('user_id', $teacher->id)->lockForUpdate()->first();
+        if ($requested && $requested->user_id !== $teacher->id) {
+            Domain::fail('teacher_user_id', 'The selected teacher and employment link do not match.');
+        }
+        if ($profile) {
+            if (! $profile->is_active) {
+                Domain::fail('teacher_user_id', 'This teacher employment record is inactive. Ask an authorized administrator to review it.');
+            }
+            if (isset($input['employment'])) {
+                Domain::fail('employment', 'Employment is already linked. Refresh the teacher selection; use Staff Profile to edit employment details.');
+            }
+
+            return $profile;
+        }
+        if (! $actor->hasPermission('staff.manage')) {
+            Domain::fail('employment', 'An administrator with staff management permission must link this teacher employment record before assignments can be saved.');
+        }
+        if ($teacher->roles()->whereIn('code', ['super_admin', 'school_administrator'])->exists()) {
+            abort_unless($actor->isSuperAdmin(), 403);
+        }
+        $employment = validator($input['employment'] ?? [], [
+            'joined_on' => 'required|date_format:Y-m-d',
+            'employee_number' => 'nullable|string|max:40', 'designation' => 'nullable|string|max:100',
+        ])->validate();
+        $employment = validator([
+            'employee_number' => $employment['employee_number'] ?? $teacher->account_code,
+            'designation' => $employment['designation'] ?? 'Teacher',
+            'joined_on' => $employment['joined_on'],
+        ], [
+            'employee_number' => 'required|string|max:40|unique:staff_profiles,employee_number',
+            'designation' => 'required|string|max:100', 'joined_on' => 'required|date_format:Y-m-d',
+        ])->validate();
+        $id = Domain::insert('staff_profiles', ['user_id' => $teacher->id, ...$employment, 'is_active' => true]);
+        Audit::record('staff_employment_linked', $actor->id, 'staff_profiles', $id, ['changed_fields' => ['employee_number', 'designation', 'joined_on']]);
+
+        return DB::table('staff_profiles')->find($id);
     }
 
     public function query(User $user)
@@ -60,8 +118,11 @@ final class TeachingAssignments
             } else {
                 $q->where(fn ($q) => $q->where(fn ($q) => $q->where('staff_profile_id', $profile->id)->where('subject_id', $v['subject_id'] ?? null))->when($v['is_class_teacher'], fn ($q) => $q->orWhere('is_class_teacher', true)));
             }
-            if ($q->lockForUpdate()->first(['id'])) {
-                Domain::fail('assignment', 'An active matching assignment already exists.');
+            $conflict = $q->lockForUpdate()->first(['id', ...($catalog === 'teacher-assignments' ? ['is_class_teacher'] : [])]);
+            if ($conflict) {
+                Domain::fail('assignment', $catalog === 'teacher-assignments' && ($v['is_class_teacher'] ?? false) && $conflict->is_class_teacher
+                    ? 'This section already has an active class teacher. Edit or deactivate that assignment first.'
+                    : 'An active matching assignment already exists.');
             }
         }
     }

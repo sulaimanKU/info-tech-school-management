@@ -1,0 +1,170 @@
+00:00 +0: loading E:/info-tech-school-management/mobile/test/admission_fee_lifecycle_test.dart
+00:00 +0: E:/info-tech-school-management/mobile/test/admission_fee_lifecycle_test.dart: monthly fee action previews before posting and confirms explicit generation
+00:01 +1: E:/info-tech-school-management/mobile/test/admission_fee_lifecycle_test.dart: monthly fee action previews before posting and confirms explicit generation
+00:01 +2: E:/info-tech-school-management/mobile/test/admission_fee_lifecycle_test.dart: monthly fee action previews before posting and confirms explicit generation
+00:01 +3: E:/info-tech-school-management/mobile/test/admission_fee_lifecycle_test.dart: monthly fee action previews before posting and confirms explicit generation
+00:01 +4: E:/info-tech-school-management/mobile/test/admission_fee_lifecycle_test.dart: monthly fee action previews before posting and confirms explicit generation
+00:01 +5: E:/info-tech-school-management/mobile/test/admission_fee_lifecycle_test.dart: monthly fee action previews before posting and confirms explicit generation
+00:01 +6: E:/info-tech-school-management/mobile/test/admission_fee_lifecycle_test.dart: monthly fee action previews before posting and confirms explicit generation
+00:01 +7: E:/info-tech-school-management/mobile/test/finance_configuration_permissions_test.dart: fee configuration actions respect [finance.read, finance.configure]
+00:01 +8: E:/info-tech-school-management/mobile/test/finance_configuration_permissions_test.dart: fee configuration actions respect [finance.read, finance.configure]
+00:01 +9: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +10: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +11: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +12: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +13: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +14: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +15: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +16: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +17: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +18: E:/info-tech-school-management/mobile/test/finance_mobile_test.dart: money form submits exact integer minor units, not floating point
+00:01 +19: E:/info-tech-school-management/mobile/test/form_polish_test.dart: server field validation appears by the input and clears when corrected
+00:02 +20: E:/info-tech-school-management/mobile/test/form_polish_test.dart: server field validation appears by the input and clears when corrected
+00:02 +21: E:/info-tech-school-management/mobile/test/full_role_functional_test.dart: teacher classes open scoped students with readable codes and academic actions
+00:02 +22: E:/info-tech-school-management/mobile/test/full_role_functional_test.dart: teacher classes open scoped students with readable codes and academic actions
+00:02 +23: E:/info-tech-school-management/mobile/test/full_role_functional_test.dart: teacher classes open scoped students with readable codes and academic actions
+00:02 +24: E:/info-tech-school-management/mobile/test/full_role_functional_test.dart: teacher classes open scoped students with readable codes and academic actions
+00:02 +25: E:/info-tech-school-management/mobile/test/full_role_functional_test.dart: teacher classes open scoped students with readable codes and academic actions
+00:02 +26: E:/info-tech-school-management/mobile/test/full_role_functional_test.dart: teacher classes open scoped students with readable codes and academic actions
+00:02 +27: E:/info-tech-school-management/mobile/test/full_role_functional_test.dart: teacher classes open scoped students with readable codes and academic actions
+00:02 +28: E:/info-tech-school-management/mobile/test/full_role_functional_test.dart: teacher classes open scoped students with readable codes and academic actions
+00:02 +29: E:/info-tech-school-management/mobile/test/final_ui_polish_test.dart: attendance confirmation can cancel without writing
+00:02 +30: E:/info-tech-school-management/mobile/test/final_ui_polish_test.dart: attendance confirmation can cancel without writing
+00:02 +31: E:/info-tech-school-management/mobile/test/final_ui_polish_test.dart: attendance confirmation can cancel without writing
+00:03 +32: E:/info-tech-school-management/mobile/test/final_ui_polish_test.dart: attendance confirmation can cancel without writing
+00:03 +33: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +34: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +35: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +36: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +37: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +38: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +39: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +40: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +41: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +42: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +43: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +44: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +45: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +46: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +47: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:03 +48: E:/info-tech-school-management/mobile/test/manual_finance_workflow_test.dart: manual partial payment submits amount notes and allocation then refreshes balance
+00:04 +49: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +50: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +51: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +52: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +53: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +54: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +55: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +56: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +57: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +58: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +59: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +60: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +61: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +62: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +63: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +64: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +65: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:04 +66: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +67: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +68: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +69: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +70: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +71: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +72: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +73: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +74: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +75: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +76: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +77: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +78: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +79: E:/info-tech-school-management/mobile/test/mobile_foundation_test.dart: parent can request and verify OTP through a separate flow
+00:05 +80: E:/info-tech-school-management/mobile/test/rbac_filters_test.dart: direct unauthorized staff and guardian routes stop before fetching
+00:05 +81: E:/info-tech-school-management/mobile/test/staff_account_test.dart: own profile supports super_admin with no employment link
+00:05 +82: E:/info-tech-school-management/mobile/test/staff_account_test.dart: own profile supports super_admin with no employment link
+00:05 +83: E:/info-tech-school-management/mobile/test/staff_account_test.dart: own profile supports super_admin with no employment link
+00:06 +84: E:/info-tech-school-management/mobile/test/staff_account_test.dart: own profile supports super_admin with no employment link
+00:06 +85: E:/info-tech-school-management/mobile/test/staff_account_test.dart: own profile supports super_admin with no employment link
+00:06 +86: E:/info-tech-school-management/mobile/test/staff_account_test.dart: own profile supports super_admin with no employment link
+00:06 +87: E:/info-tech-school-management/mobile/test/staff_account_test.dart: own profile supports super_admin with no employment link
+00:06 +88: E:/info-tech-school-management/mobile/test/staff_profile_polish_test.dart: staff profile shows contact and every readable assignment in light mode
+00:06 +89: E:/info-tech-school-management/mobile/test/staff_profile_polish_test.dart: staff profile shows contact and every readable assignment in light mode
+00:06 +90: E:/info-tech-school-management/mobile/test/staff_profile_polish_test.dart: staff profile shows contact and every readable assignment in light mode
+00:06 +91: E:/info-tech-school-management/mobile/test/staff_profile_polish_test.dart: staff profile shows contact and every readable assignment in light mode
+00:06 +92: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:06 +93: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:06 +94: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:06 +95: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:06 +96: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:06 +97: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:06 +98: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:06 +99: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:06 +100: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:07 +101: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:07 +102: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:07 +103: E:/info-tech-school-management/mobile/test/startup_visual_polish_test.dart: unauthenticated startup exits as soon as secure storage resolves
+00:07 +104: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: removing an existing assignment confirms then deactivates only its row
+00:07 +105: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: removing an existing assignment confirms then deactivates only its row
+00:07 +106: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: removing an existing assignment confirms then deactivates only its row
+00:07 +107: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: removing an existing assignment confirms then deactivates only its row
+00:07 +108: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: removing an existing assignment confirms then deactivates only its row
+00:08 +109: E:/info-tech-school-management/mobile/test/teacher_selection_fix_test.dart: selector renders and selects account-only teacher by user identity
+00:08 +110: E:/info-tech-school-management/mobile/test/teacher_selection_fix_test.dart: selector renders and selects account-only teacher by user identity
+00:08 +111: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +112: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +113: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +114: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +115: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +116: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +117: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +118: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +119: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +120: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +121: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +122: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +123: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +124: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +125: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +126: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +127: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +128: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +129: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +130: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:08 +131: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:09 +132: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:09 +133: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:09 +134: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:09 +135: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:09 +136: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:09 +137: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:09 +138: E:/info-tech-school-management/mobile/test/parent_experience_test.dart: all child modules issue new scoped requests after child switch
+00:09 +139: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:09 +140: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +141: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +142: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +143: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +144: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +145: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +146: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +147: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +148: E:/info-tech-school-management/mobile/test/widget_test.dart: valid login form reaches role home and signs out
+00:10 +149: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: duplicate drafts never post and removal changes only draft rows
+00:10 +150: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: duplicate drafts never post and removal changes only draft rows
+00:10 +151: E:/info-tech-school-management/mobile/test/ui_redesign_test.dart: login and dashboard adapt at 390.0 with Urdu and keyboard
+00:10 +152: E:/info-tech-school-management/mobile/test/ui_redesign_test.dart: login and dashboard adapt at 390.0 with Urdu and keyboard
+00:10 +153: E:/info-tech-school-management/mobile/test/ui_redesign_test.dart: login and dashboard adapt at 390.0 with Urdu and keyboard
+00:10 +154: E:/info-tech-school-management/mobile/test/ui_redesign_test.dart: login and dashboard adapt at 390.0 with Urdu and keyboard
+00:10 +155: E:/info-tech-school-management/mobile/test/ui_redesign_test.dart: login and dashboard adapt at 390.0 with Urdu and keyboard
+00:10 +156: E:/info-tech-school-management/mobile/test/widget_test.dart: signed out shell supports Urdu RTL and dark theme
+00:10 +157: E:/info-tech-school-management/mobile/test/widget_test.dart: signed out shell supports Urdu RTL and dark theme
+00:10 +158: E:/info-tech-school-management/mobile/test/widget_test.dart: signed out shell supports Urdu RTL and dark theme
+00:10 +159: E:/info-tech-school-management/mobile/test/widget_test.dart: signed out shell supports Urdu RTL and dark theme
+00:11 +160: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: teacher filter is submitted as profile scope with existing academic filters
+00:11 +161: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: teacher filter is submitted as profile scope with existing academic filters
+00:11 +162: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: teacher filter is submitted as profile scope with existing academic filters
+00:11 +163: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: teacher filter is submitted as profile scope with existing academic filters
+00:11 +164: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: teacher filter is submitted as profile scope with existing academic filters
+00:11 +165: E:/info-tech-school-management/mobile/test/teacher_assignment_batch_test.dart: teacher filter is submitted as profile scope with existing academic filters
+00:11 +166: E:/info-tech-school-management/mobile/test/ui_redesign_test.dart: system appearance follows platform brightness and can be overridden
+00:11 +167: E:/info-tech-school-management/mobile/test/ui_redesign_test.dart: every English string has a nonempty Urdu translation
+00:11 +168: All tests passed!

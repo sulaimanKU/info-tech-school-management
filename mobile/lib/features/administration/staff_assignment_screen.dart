@@ -155,6 +155,8 @@ class _StaffAssignmentScreenState extends State<StaffAssignmentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   AcademicSelection(
+                    creation: true,
+                    enabled: !busy,
                     preferCurrentSession: true,
                     auth: widget.auth,
                     initial: selection,
@@ -207,7 +209,7 @@ class _StaffAssignmentScreenState extends State<StaffAssignmentScreen> {
                             },
                       icon: const Icon(Icons.date_range),
                       label: Text(
-                        '${s.text(from ? 'startDate' : 'endDate')}: ${(from ? start : end) ?? s.text('anyValue')}',
+                        '${s.text(from ? 'startDate' : 'endDate')}: ${(from ? start : end) ?? s.text('sessionDateDefault')}',
                       ),
                     ),
                   if (error != null)

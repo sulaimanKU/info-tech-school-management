@@ -14,9 +14,11 @@ class TeacherAssignmentBatchScreen extends StatefulWidget {
     super.key,
     required this.auth,
     required this.teacher,
+    this.onSaved,
   });
   final AuthController auth;
   final Map<String, dynamic> teacher;
+  final ValueChanged<Map<String, dynamic>>? onSaved;
   @override
   State<TeacherAssignmentBatchScreen> createState() =>
       _TeacherAssignmentBatchScreenState();
@@ -38,6 +40,11 @@ class _TeacherAssignmentBatchScreenState
   bool loading = true, busy = false;
   int nextId = 0;
   int sessionRevision = 0;
+  String? joinedOn;
+  final employeeNumber = TextEditingController();
+  final designation = TextEditingController(text: 'Teacher');
+  bool get needsEmployment => widget.teacher['profile_link_required'] == true;
+  bool get canLinkEmployment => widget.auth.can('staff.manage');
 
   bool get allowed =>
       widget.auth.can('school.manage') || widget.auth.can('assignments.manage');
@@ -45,7 +52,15 @@ class _TeacherAssignmentBatchScreenState
   @override
   void initState() {
     super.initState();
+    employeeNumber.text = widget.teacher['account_code'] as String? ?? '';
     if (allowed) load();
+  }
+
+  @override
+  void dispose() {
+    employeeNumber.dispose();
+    designation.dispose();
+    super.dispose();
   }
 
   Future<void> load() async {
@@ -109,6 +124,18 @@ class _TeacherAssignmentBatchScreenState
     if (busy) {
       return;
     }
+    if (needsEmployment &&
+        (!canLinkEmployment ||
+            joinedOn == null ||
+            employeeNumber.text.trim().isEmpty ||
+            designation.text.trim().isEmpty)) {
+      setState(
+        () => error = canLinkEmployment
+            ? 'confirmTeacherEmployment'
+            : 'teacherNeedsAdministrator',
+      );
+      return;
+    }
     final seen = <String>{};
     if (session == null ||
         drafts.isEmpty ||
@@ -134,10 +161,20 @@ class _TeacherAssignmentBatchScreenState
       error = null;
     });
     try {
-      await widget.auth.call(
+      final result = await widget.auth.call(
         'teaching-assignments',
         body: {
-          'staff_profile_id': widget.teacher['id'],
+          if (widget.teacher['user_id'] != null)
+            'teacher_user_id': widget.teacher['user_id']
+          else
+            'staff_profile_id':
+                widget.teacher['staff_profile_id'] ?? widget.teacher['id'],
+          if (needsEmployment)
+            'employment': {
+              'joined_on': joinedOn,
+              'employee_number': employeeNumber.text.trim(),
+              'designation': designation.text.trim(),
+            },
           'academic_session_id': session,
           'assignments': [
             for (final d in drafts)
@@ -149,7 +186,18 @@ class _TeacherAssignmentBatchScreenState
           ],
         },
       );
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        widget.onSaved?.call({
+          ...widget.teacher,
+          if (result['staff_profile_id'] != null) ...{
+            'id': result['staff_profile_id'],
+            'staff_profile_id': result['staff_profile_id'],
+            'profile_link_required': false,
+          },
+          if (needsEmployment) 'employee_number': employeeNumber.text.trim(),
+        });
+        Navigator.pop(context, true);
+      }
     } on ApiFailure catch (e) {
       if (mounted) {
         setState(
@@ -193,6 +241,65 @@ class _TeacherAssignmentBatchScreenState
                     ),
                   ),
                   Text(s.text('multipleAssignmentHelp')),
+                  if (needsEmployment) ...[
+                    const SizedBox(height: AppSpace.lg),
+                    StatusBanner(
+                      message: s.text(
+                        canLinkEmployment
+                            ? 'teacherEmploymentLinkHelp'
+                            : 'teacherNeedsAdministrator',
+                      ),
+                    ),
+                    if (canLinkEmployment) ...[
+                      const SizedBox(height: AppSpace.md),
+                      TextField(
+                        key: const Key('teacher-employee-number'),
+                        controller: employeeNumber,
+                        enabled: !busy,
+                        maxLength: 40,
+                        decoration: InputDecoration(
+                          labelText: s.text('employeeNumber'),
+                        ),
+                      ),
+                      TextField(
+                        key: const Key('teacher-designation'),
+                        controller: designation,
+                        enabled: !busy,
+                        maxLength: 100,
+                        decoration: InputDecoration(
+                          labelText: s.text('designation'),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        key: const Key('teacher-joining-date'),
+                        onPressed: busy
+                            ? null
+                            : () async {
+                                final date = await showDatePicker(
+                                  context: context,
+                                  initialDate:
+                                      DateTime.tryParse(joinedOn ?? '') ??
+                                      DateTime.now(),
+                                  firstDate: DateTime(1900),
+                                  lastDate: DateTime(2200),
+                                );
+                                if (date != null && mounted) {
+                                  setState(
+                                    () => joinedOn = date
+                                        .toIso8601String()
+                                        .substring(0, 10),
+                                  );
+                                }
+                              },
+                        icon: const Icon(Icons.calendar_today_outlined),
+                        label: Text(
+                          joinedOn == null
+                              ? s.text('selectJoiningDate')
+                              : '${s.text('joiningDate')}: $joinedOn',
+                        ),
+                      ),
+                    ],
+                  ],
                   const SizedBox(height: AppSpace.lg),
                   if (sessions.isEmpty && error == null)
                     StatusBanner(message: s.text('noAssignmentSections')),
@@ -202,6 +309,8 @@ class _TeacherAssignmentBatchScreenState
                     options: sessions,
                     value: session,
                     enabled: !busy,
+                    allowAny: false,
+                    prompt: 'selectAcademicSession',
                     onChanged: changeSession,
                   ),
                   const SizedBox(height: AppSpace.lg),
@@ -238,6 +347,7 @@ class _TeacherAssignmentBatchScreenState
                               auth: widget.auth,
                               initial: d.values,
                               subject: true,
+                              creation: true,
                               showSession: false,
                               enabled: !busy,
                               onChanged: (v) => setState(() {
@@ -268,7 +378,7 @@ class _TeacherAssignmentBatchScreenState
                               ),
                             ),
                       icon: const Icon(Icons.add),
-                      label: Text(s.text('addAssignment')),
+                      label: Text(s.text('addAnotherAssignment')),
                     ),
                   if (error != null)
                     Padding(
@@ -285,7 +395,12 @@ class _TeacherAssignmentBatchScreenState
                   const SizedBox(height: AppSpace.lg),
                   FilledButton.icon(
                     key: const Key('save-assignments'),
-                    onPressed: busy || drafts.isEmpty ? null : save,
+                    onPressed:
+                        busy ||
+                            drafts.isEmpty ||
+                            (needsEmployment && !canLinkEmployment)
+                        ? null
+                        : save,
                     icon: busy
                         ? const SizedBox.square(
                             dimension: 18,

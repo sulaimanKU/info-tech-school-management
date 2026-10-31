@@ -1,0 +1,68 @@
+Running Gradle task 'assembleDebug'...                          
+
+E:\info-tech-school-management\mobile\android>if "Windows_NT" == "Windows_NT" setlocal
+
+E:\info-tech-school-management\mobile\android>set DEFAULT_JVM_OPTS= 
+
+E:\info-tech-school-management\mobile\android>set DIRNAME=E:\info-tech-school-management\mobile\android\ 
+
+E:\info-tech-school-management\mobile\android>if "E:\info-tech-school-management\mobile\android\" == "" set DIRNAME=. 
+
+E:\info-tech-school-management\mobile\android>set APP_BASE_NAME=gradlew 
+
+E:\info-tech-school-management\mobile\android>set APP_HOME=E:\info-tech-school-management\mobile\android\ 
+
+E:\info-tech-school-management\mobile\android>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+E:\info-tech-school-management\mobile\android>set JAVA_HOME=C:\Program Files\Android\Android Studio\jbr 
+
+E:\info-tech-school-management\mobile\android>set JAVA_EXE=C:\Program Files\Android\Android Studio\jbr/bin/java.exe 
+
+E:\info-tech-school-management\mobile\android>if exist "C:\Program Files\Android\Android Studio\jbr/bin/java.exe" goto init 
+
+E:\info-tech-school-management\mobile\android>if not "Windows_NT" == "Windows_NT" goto win9xME_args 
+
+E:\info-tech-school-management\mobile\android>if "@eval[2+2]" == "4" goto 4NT_args 
+
+E:\info-tech-school-management\mobile\android>set CMD_LINE_ARGS= 
+
+E:\info-tech-school-management\mobile\android>set _SKIP=2 
+
+E:\info-tech-school-management\mobile\android>if "x-q" == "x" goto execute 
+
+E:\info-tech-school-management\mobile\android>set CMD_LINE_ARGS=-q -Ptarget-platform=android-x64 -Ptarget=lib\main.dart -Pbase-application-name=android.app.Application -Pdart-defines=QVBJX0JBU0VfVVJMPWh0dHBzOi8vYXBpLnRyZWFkLmNvbS5way9hcGkvdjE=,RkxVVFRFUl9CVUlMRF9OQU1FPTEuMC4w,RkxVVFRFUl9CVUlMRF9OVU1CRVI9MQ==,RkxVVFRFUl9WRVJTSU9OPTMuNDcuNw==,RkxVVFRFUl9DSEFOTkVMPXN0YWJsZQ==,RkxVVFRFUl9HSVRfVVJMPWh0dHBzOi8vZ2l0aHViLmNvbS9mbHV0dGVyL2ZsdXR0ZXIuZ2l0,RkxVVFRFUl9GUkFNRVdPUktfUkVWSVNJT049YWJhZjljNTIzNw==,RkxVVFRFUl9FTkdJTkVfUkVWSVNJT049ZGViMjg3NDgxZQ==,RkxVVFRFUl9EQVJUX1ZFUlNJT049My4xMy41 -Pdart-obfuscation=false -Ptrack-widget-creation=true -Ptree-shake-icons=false -Pflutter.androidSdkRoot=C:\Android\Sdk -Pflutter.installedNdkVersions=28.2.13676358,30.0.16248370 -Pflutter.sdkManagerPath=C:\Android\Sdk\cmdline-tools\latest\bin\sdkmanager.bat assembleDebug 
+
+E:\info-tech-school-management\mobile\android>goto execute 
+
+E:\info-tech-school-management\mobile\android>set CLASSPATH=E:\info-tech-school-management\mobile\android\\gradle\wrapper\gradle-wrapper.jar 
+
+E:\info-tech-school-management\mobile\android>"C:\Program Files\Android\Android Studio\jbr/bin/java.exe"    "-Dorg.gradle.appname=gradlew" -classpath "E:\info-tech-school-management\mobile\android\\gradle\wrapper\gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain -q -Ptarget-platform=android-x64 -Ptarget=lib\main.dart -Pbase-application-name=android.app.Application -Pdart-defines=QVBJX0JBU0VfVVJMPWh0dHBzOi8vYXBpLnRyZWFkLmNvbS5way9hcGkvdjE=,RkxVVFRFUl9CVUlMRF9OQU1FPTEuMC4w,RkxVVFRFUl9CVUlMRF9OVU1CRVI9MQ==,RkxVVFRFUl9WRVJTSU9OPTMuNDcuNw==,RkxVVFRFUl9DSEFOTkVMPXN0YWJsZQ==,RkxVVFRFUl9HSVRfVVJMPWh0dHBzOi8vZ2l0aHViLmNvbS9mbHV0dGVyL2ZsdXR0ZXIuZ2l0,RkxVVFRFUl9GUkFNRVdPUktfUkVWSVNJT049YWJhZjljNTIzNw==,RkxVVFRFUl9FTkdJTkVfUkVWSVNJT049ZGViMjg3NDgxZQ==,RkxVVFRFUl9EQVJUX1ZFUlNJT049My4xMy41 -Pdart-obfuscation=false -Ptrack-widget-creation=true -Ptree-shake-icons=false -Pflutter.androidSdkRoot=C:\Android\Sdk -Pflutter.installedNdkVersions=28.2.13676358,30.0.16248370 -Pflutter.sdkManagerPath=C:\Android\Sdk\cmdline-tools\latest\bin\sdkmanager.bat assembleDebug 
+flutter.bat : WARNING: A restricted method in java.lang.System has been called
+At line:2 char:143
++ ... creen.dart; & C:\src\flutter\bin\flutter.bat build apk --debug --no-p ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING: A rest...has been called:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARNING: java.lang.System::load has been called by net.rubygrapefruit.platform.internal.NativeLibraryLoader in an 
+unnamed module (file:/C:/Users/E-MARKING%2019/.gradle/wrapper/dists/gradle-9.3.1-all/9ot9r568e8zfvvd4mn8rbu1j0/gradle-9
+.3.1/lib/native-platform-0.22-milestone-29.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): firebase_core
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-develop
+ers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: 
+https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+
+E:\info-tech-school-management\mobile\android>if "0" == "0" goto mainEnd 
+
+E:\info-tech-school-management\mobile\android>if "Windows_NT" == "Windows_NT" endlocal
+Running Gradle task 'assembleDebug'...                             39.7s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
