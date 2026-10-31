@@ -25,6 +25,8 @@ class RecordsScreen extends StatefulWidget {
     this.recordLeading,
     this.reloadToken,
     this.emptyBuilder,
+    this.groupKey,
+    this.groupHeader,
   });
   final AuthController auth;
   final String path, title;
@@ -36,6 +38,8 @@ class RecordsScreen extends StatefulWidget {
   final Widget Function(Map<String, dynamic>)? recordLeading;
   final Object? reloadToken;
   final Widget Function(BuildContext, bool searched)? emptyBuilder;
+  final String Function(Map<String, dynamic>)? groupKey;
+  final Widget Function(Map<String, dynamic>)? groupHeader;
   @override
   State<RecordsScreen> createState() => _RecordsScreenState();
 }
@@ -260,9 +264,30 @@ class _RecordsScreenState extends State<RecordsScreen> {
                       );
                     }
                     if (index <= rows.length) {
-                      return record(
-                        (rows[index - 1] as Map).cast<String, dynamic>(),
-                        s,
+                      final item = (rows[index - 1] as Map)
+                          .cast<String, dynamic>();
+                      final firstInGroup =
+                          widget.groupKey != null &&
+                          (index == 1 ||
+                              widget.groupKey!(item) !=
+                                  widget.groupKey!(
+                                    (rows[index - 2] as Map)
+                                        .cast<String, dynamic>(),
+                                  ));
+                      if (!firstInGroup || widget.groupHeader == null) {
+                        return record(item, s);
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpace.md,
+                            ),
+                            child: widget.groupHeader!(item),
+                          ),
+                          record(item, s),
+                        ],
                       );
                     }
                     if (response?['current_page'] != null &&

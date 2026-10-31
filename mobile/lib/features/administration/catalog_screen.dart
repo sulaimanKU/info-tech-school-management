@@ -5,6 +5,7 @@ import '../../design/app_theme.dart';
 import '../../l10n/strings.dart';
 import '../../shared/forms/domain_form.dart';
 import '../../shared/widgets/data_state.dart';
+import '../../shared/widgets/academic_filters.dart';
 import '../../shared/widgets/surface_card.dart';
 import '../auth/auth_controller.dart';
 
@@ -76,7 +77,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
         final value = await widget.auth.call('catalog/$key');
         lookups[key] = {
           for (final v in value['items'] as List)
-            (v['id'] as String): (v['name'] ?? v['code']).toString(),
+            (v['id'] as String): key == 'subjects'
+                ? subjectLabel(v as Map)
+                : (v['name'] ?? v['code']).toString(),
         };
       }
       if (widget.auth.can('staff.manage')) {
@@ -220,10 +223,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
     if (result == true) load();
   }
 
-  String title(Map<String, dynamic> v) =>
-      v['name']?.toString() ??
-      v['employee_number']?.toString() ??
-      '${lookups['sections']?[v['section_id']] ?? lookups['classes']?[v['class_id']] ?? ''} · ${lookups['subjects']?[v['subject_id']] ?? ''}';
+  String title(Map<String, dynamic> v) => selected == 'subjects'
+      ? subjectLabel(v)
+      : v['name']?.toString() ??
+            v['employee_number']?.toString() ??
+            '${lookups['sections']?[v['section_id']] ?? lookups['classes']?[v['class_id']] ?? ''} · ${lookups['subjects']?[v['subject_id']] ?? ''}';
   @override
   Widget build(BuildContext context) {
     final s = Strings.of(context);

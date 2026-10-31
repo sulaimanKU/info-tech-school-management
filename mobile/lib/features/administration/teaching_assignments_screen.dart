@@ -6,6 +6,7 @@ import '../../core/api_client.dart';
 import '../../design/app_theme.dart';
 import '../../l10n/strings.dart';
 import '../../shared/widgets/data_state.dart';
+import '../../shared/widgets/academic_filters.dart';
 import '../../shared/widgets/records_screen.dart';
 import '../../shared/widgets/surface_card.dart';
 import '../auth/auth_controller.dart';
@@ -68,12 +69,29 @@ class _TeachingAssignmentsScreenState extends State<TeachingAssignmentsScreen> {
         },
       ).toString(),
       title: 'teachingAssignments',
-      recordTitle: (r) => [
-        r['employee_number'] ?? r['account_code'],
-        r['teacher_name'],
-      ].whereType<String>().join(' | '),
-      recordSubtitle: (r) =>
-          '${r['session_name']} | ${r['class_name']} ${r['section_name']} | ${r['subject_name'] ?? Strings.of(context).text('classTeacher')}\n${Strings.of(context).text(r['is_active'] == true ? 'active' : 'inactive')}',
+      groupKey: (r) =>
+          '${r['section_id']}|${r['teacher_user_id'] ?? r['staff_profile_id']}',
+      groupHeader: (r) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${r['class_name']} — ${r['section_name']}',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          Text(
+            '${r['session_name']} | ${[r['employee_number'] ?? r['account_code'], r['teacher_name']].whereType<String>().join(' | ')}',
+          ),
+        ],
+      ),
+      recordTitle: (r) => r['subject_id'] == null
+          ? Strings.of(context).text('classTeacherFormMaster')
+          : subjectLabel(r),
+      recordSubtitle: (r) => [
+        if (r['subject_id'] != null && r['is_class_teacher'] == true)
+          Strings.of(context).text('classTeacherFormMaster'),
+        Strings.of(context)
+            .text(r['is_active'] == true ? 'active' : 'inactive'),
+      ].join('\n'),
       onCreate: create,
       emptyBuilder: (c, searched) => DataState(
         empty: true,

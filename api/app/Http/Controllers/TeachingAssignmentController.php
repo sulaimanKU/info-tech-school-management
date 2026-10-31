@@ -32,7 +32,7 @@ class TeachingAssignmentController extends Controller
             $q->where(fn ($q) => $q->where('u.name', 'like', '%'.$v['search'].'%')->orWhere('u.account_code', 'like', '%'.$v['search'].'%')->orWhere('p.employee_number', 'like', '%'.$v['search'].'%'));
         }
 
-        return Domain::response($q->orderBy('c.sort_order')->orderBy('sec.name')->orderBy('u.name')->paginate(30, ['ta.*', 'u.id as teacher_user_id', 'u.name as teacher_name', 'u.account_code', 'p.employee_number', 'c.name as class_name', 'sec.class_id', 'sec.academic_session_id', 'sec.name as section_name', 'y.name as session_name', 'sub.name as subject_name']));
+        return Domain::response($q->orderBy('c.sort_order')->orderBy('sec.name')->orderBy('u.name')->orderBy('ta.section_id')->orderBy('u.id')->orderBy('ta.is_class_teacher')->orderBy('sub.code')->orderBy('ta.id')->paginate(30, ['ta.*', 'u.id as teacher_user_id', 'u.name as teacher_name', 'u.account_code', 'p.employee_number', 'c.name as class_name', 'sec.class_id', 'sec.academic_session_id', 'sec.name as section_name', 'y.name as session_name', 'sub.name as subject_name', 'sub.code as subject_code']));
     }
 
     public function store(Request $r, TeachingAssignments $assignments)

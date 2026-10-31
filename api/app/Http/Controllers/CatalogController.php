@@ -83,7 +83,7 @@ class CatalogController extends Controller
             $subjects->whereIn('subjects.id', DB::table('class_subject_assignments')->when($v['class_id'] ?? null, fn ($q, $id) => $q->where('class_id', $id))->when($v['academic_session_id'] ?? null, fn ($q, $id) => $q->where('academic_session_id', $id))->select('subject_id'));
         }
 
-        return Domain::response(['current_academic_session_id' => app(SchoolSettings::class)->currentSession(), 'sessions' => $sessions->orderByDesc('starts_on')->get(['id', 'name']), 'classes' => $classes->orderBy('sort_order')->get(['id', 'name']), 'sections' => $sections->orderBy('name')->get(['id', 'name', 'class_id', 'academic_session_id']), 'subjects' => ($r->user()->hasPermission('academics.read') || $r->user()->hasPermission('academics.write') || $r->user()->hasPermission('academics.review')) ? $subjects->orderBy('name')->get(['id', 'name']) : []]);
+        return Domain::response(['current_academic_session_id' => app(SchoolSettings::class)->currentSession(), 'sessions' => $sessions->orderByDesc('starts_on')->get(['id', 'name']), 'classes' => $classes->orderBy('sort_order')->get(['id', 'name']), 'sections' => $sections->orderBy('name')->get(['id', 'name', 'class_id', 'academic_session_id']), 'subjects' => ($r->user()->hasPermission('academics.read') || $r->user()->hasPermission('academics.write') || $r->user()->hasPermission('academics.review')) ? $subjects->orderBy('name')->orderBy('code')->get(['id', 'name', 'code']) : []]);
     }
 
     private function rules(string $catalog): array

@@ -8,6 +8,9 @@ class Strings {
   String text(String key) =>
       (locale.languageCode == 'ur' ? ur : en)[key] ?? en[key] ?? key;
   static const en = {
+    'classTeacherFormMaster': 'Class Teacher / Form Master',
+    'formMasterSectionHelp': 'Select the class and section for this designation. It is saved once per section, separately from subject assignments.',
+    'assignmentBatchLimit': 'A batch can contain at most 50 subject assignments and Form Master designations in total.',
     'changeTeacher': 'Change teacher',
     'existingAssignments': 'Existing assignments',
     'addAnotherAssignment': 'Add another assignment',
@@ -34,7 +37,7 @@ class Strings {
     'removeAssignment': 'Remove assignment',
     'removeAssignmentHelp': 'This deactivates only this assignment. The teacher account, students and historical academic records are kept.',
     'multipleAssignmentHelp': 'Choose one session, then add each class, section and subject. All assignments save together for this teacher.',
-    'completeAssignments': 'Choose a session and complete every class, section and subject, or select Class teacher.',
+    'completeAssignments': 'Choose a session and complete the class, section and subject in every assignment row.',
     'duplicateAssignment': 'This section and subject are already in the assignment list. Remove the duplicate before saving.',
     'changeAssignmentSession': 'Change academic session?',
     'clearAssignmentDrafts':
@@ -848,6 +851,9 @@ class Strings {
     'parent_guardian': 'Parent / Guardian',
   };
   static const ur = {
+    'classTeacherFormMaster': 'کلاس ٹیچر / فارم ماسٹر',
+    'formMasterSectionHelp': 'اس ذمہ داری کے لیے جماعت اور سیکشن منتخب کریں۔ یہ مضامین کی ذمہ داریوں سے الگ ہر سیکشن کے لیے صرف ایک بار محفوظ ہوگی۔',
+    'assignmentBatchLimit': 'ایک بار میں مضامین کی ذمہ داریاں اور فارم ماسٹر کی نامزدگیاں ملا کر زیادہ سے زیادہ ۵۰ ریکارڈ محفوظ کیے جا سکتے ہیں۔',
     'changeTeacher': 'استاد تبدیل کریں',
     'existingAssignments': 'موجودہ ذمہ داریاں',
     'addAnotherAssignment': 'ایک اور ذمہ داری شامل کریں',
@@ -874,7 +880,7 @@ class Strings {
     'removeAssignment': 'ذمہ داری ختم کریں',
     'removeAssignmentHelp': 'صرف یہ ذمہ داری غیر فعال ہوگی۔ استاد کا اکاؤنٹ، طلبہ اور سابقہ تعلیمی ریکارڈ برقرار رہیں گے۔',
     'multipleAssignmentHelp': 'ایک سیشن منتخب کریں، پھر ہر جماعت، سیکشن اور مضمون شامل کریں۔ اس استاد کی تمام ذمہ داریاں ایک ساتھ محفوظ ہوں گی۔',
-    'completeAssignments': 'سیشن منتخب کریں اور ہر جماعت، سیکشن اور مضمون مکمل کریں، یا جماعت کے استاد کا انتخاب کریں۔',
+    'completeAssignments': 'سیشن منتخب کریں اور ہر ذمہ داری کی سطر میں جماعت، سیکشن اور مضمون مکمل کریں۔',
     'duplicateAssignment': 'یہ سیکشن اور مضمون فہرست میں پہلے سے موجود ہے۔ محفوظ کرنے سے پہلے دہرائی گئی ذمہ داری ہٹائیں۔',
     'changeAssignmentSession': 'تعلیمی سیشن تبدیل کریں؟',
     'clearAssignmentDrafts':

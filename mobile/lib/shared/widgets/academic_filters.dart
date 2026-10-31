@@ -6,6 +6,12 @@ import '../../features/auth/auth_controller.dart';
 import '../../l10n/strings.dart';
 import 'surface_card.dart';
 
+String subjectLabel(Map<dynamic, dynamic> row) {
+  final code = (row['code'] ?? row['subject_code'])?.toString().trim() ?? '';
+  final name = (row['name'] ?? row['subject_name'])?.toString() ?? '';
+  return code.isEmpty ? name : '$code — $name';
+}
+
 class ScopedChoice extends StatelessWidget {
   const ScopedChoice({
     super.key,
@@ -146,10 +152,12 @@ class AcademicSelection extends StatefulWidget {
     this.showSession = true,
     this.enabled = true,
     this.creation = false,
+    this.onLabelsChanged,
   });
   final AuthController auth;
   final Map<String, String> initial;
   final ValueChanged<Map<String, String>> onChanged;
+  final ValueChanged<Map<String, String>>? onLabelsChanged;
   final bool subject, preferCurrentSession, showSession, enabled, creation;
   @override
   State<AcademicSelection> createState() => _AcademicSelectionState();
@@ -194,6 +202,21 @@ class _AcademicSelectionState extends State<AcademicSelection> {
         setState(() {
           data = result;
           error = null;
+        });
+        widget.onLabelsChanged?.call({
+          for (final field in [
+            ('academic_session_id', 'sessions'),
+            ('class_id', 'classes'),
+            ('section_id', 'sections'),
+          ])
+            if ((result[field.$2] as List).any(
+              (r) => r['id'] == values[field.$1],
+            ))
+              field.$1:
+                  (result[field.$2] as List).firstWhere(
+                        (r) => r['id'] == values[field.$1],
+                      )['name']
+                      as String,
         });
       }
     } on ApiFailure catch (e) {
@@ -271,7 +294,9 @@ class _AcademicSelectionState extends State<AcademicSelection> {
                 : null,
             options: {
               for (final row in data?[field.$3] as List? ?? [])
-                row['id'] as String: row['name'] as String,
+                row['id'] as String: field.$1 == 'subject_id'
+                    ? subjectLabel(row as Map)
+                    : row['name'] as String,
             },
             value: values[field.$1],
             onChanged: (v) => changed(field.$1, v),

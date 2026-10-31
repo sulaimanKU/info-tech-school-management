@@ -165,7 +165,7 @@ class _StaffAssignmentScreenState extends State<StaffAssignmentScreen> {
                   ),
                   if (!widget.coordinator)
                     SwitchListTile(
-                      title: Text(s.text('classTeacher')),
+                      title: Text(s.text('classTeacherFormMaster')),
                       value: classTeacher,
                       onChanged: busy
                           ? null

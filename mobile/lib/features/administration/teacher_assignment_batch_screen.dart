@@ -29,12 +29,20 @@ class _AssignmentDraft {
     : values = {'academic_session_id': session};
   final int id;
   Map<String, String> values;
-  bool classTeacher = false;
+  Map<String, String> labels = {};
 }
 
 class _TeacherAssignmentBatchScreenState
     extends State<TeacherAssignmentBatchScreen> {
   final drafts = <_AssignmentDraft>[];
+  final formMasters = <String>{};
+  Map<String, _AssignmentDraft> get sections => {
+    for (final d in drafts)
+      if (d.values['class_id'] != null && d.values['section_id'] != null)
+        d.values['section_id']!: d,
+  };
+
+  void pruneFormMasters() => formMasters.retainAll(sections.keys);
   Map<String, String> sessions = {};
   String? session, error;
   bool loading = true, busy = false;
@@ -115,6 +123,7 @@ class _TeacherAssignmentBatchScreenState
     setState(() {
       session = value;
       drafts.clear();
+      formMasters.clear();
       error = null;
       if (value != null) drafts.add(_AssignmentDraft(nextId++, value));
     });
@@ -143,7 +152,7 @@ class _TeacherAssignmentBatchScreenState
           (d) =>
               d.values['class_id'] == null ||
               d.values['section_id'] == null ||
-              (d.values['subject_id'] == null && !d.classTeacher),
+              d.values['subject_id'] == null,
         )) {
       setState(() => error = 'completeAssignments');
       return;
@@ -155,6 +164,21 @@ class _TeacherAssignmentBatchScreenState
         setState(() => error = 'duplicateAssignment');
         return;
       }
+    }
+    final rows = [
+      for (final d in drafts)
+        if (d.values['subject_id'] != null)
+          {
+            'section_id': d.values['section_id'],
+            'subject_id': d.values['subject_id'],
+            'is_class_teacher': false,
+          },
+      for (final section in formMasters)
+        {'section_id': section, 'subject_id': null, 'is_class_teacher': true},
+    ];
+    if (rows.length > 50) {
+      setState(() => error = 'assignmentBatchLimit');
+      return;
     }
     setState(() {
       busy = true;
@@ -176,14 +200,7 @@ class _TeacherAssignmentBatchScreenState
               'designation': designation.text.trim(),
             },
           'academic_session_id': session,
-          'assignments': [
-            for (final d in drafts)
-              {
-                'section_id': d.values['section_id'],
-                'subject_id': d.values['subject_id'],
-                'is_class_teacher': d.classTeacher,
-              },
-          ],
+          'assignments': rows,
         },
       );
       if (mounted) {
@@ -337,7 +354,10 @@ class _TeacherAssignmentBatchScreenState
                                   tooltip: s.text('removeAssignment'),
                                   onPressed: busy
                                       ? null
-                                      : () => setState(() => drafts.remove(d)),
+                                      : () => setState(() {
+                                          drafts.remove(d);
+                                          pruneFormMasters();
+                                        }),
                                   icon: const Icon(Icons.remove_circle_outline),
                                 ),
                               ],
@@ -352,16 +372,13 @@ class _TeacherAssignmentBatchScreenState
                               enabled: !busy,
                               onChanged: (v) => setState(() {
                                 d.values = v;
+                                d.labels = {};
+                                pruneFormMasters();
                                 error = null;
                               }),
-                            ),
-                            SwitchListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(s.text('classTeacher')),
-                              value: d.classTeacher,
-                              onChanged: busy
-                                  ? null
-                                  : (v) => setState(() => d.classTeacher = v),
+                              onLabelsChanged: (labels) {
+                                if (mounted) setState(() => d.labels = labels);
+                              },
                             ),
                           ],
                         ),
@@ -380,6 +397,40 @@ class _TeacherAssignmentBatchScreenState
                       icon: const Icon(Icons.add),
                       label: Text(s.text('addAnotherAssignment')),
                     ),
+                  if (sections.isNotEmpty) ...[
+                    const SizedBox(height: AppSpace.lg),
+                    Text(
+                      s.text('classTeacherFormMaster'),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(s.text('formMasterSectionHelp')),
+                    for (final entry in sections.entries)
+                      CheckboxListTile(
+                        key: ValueKey('form-master-${entry.key}'),
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          [
+                                entry.value.labels['class_id'],
+                                entry.value.labels['section_id'],
+                              ].whereType<String>().join(' — ').isEmpty
+                              ? s.text('classSection')
+                              : [
+                                  entry.value.labels['class_id'],
+                                  entry.value.labels['section_id'],
+                                ].whereType<String>().join(' — '),
+                        ),
+                        value: formMasters.contains(entry.key),
+                        onChanged: busy
+                            ? null
+                            : (value) => setState(() {
+                                if (value == true) {
+                                  formMasters.add(entry.key);
+                                } else {
+                                  formMasters.remove(entry.key);
+                                }
+                              }),
+                      ),
+                  ],
                   if (error != null)
                     Padding(
                       padding: const EdgeInsets.symmetric(

@@ -484,7 +484,7 @@ void main() {
       addTearDown(auth.dispose);
       await tester.pumpWidget(host(TeachingAssignmentsScreen(auth: auth)));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('STF-0001 | Fictional Teacher'));
+      await tester.tap(find.text('Fictional Mathematics'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.byType(SwitchListTile).last);
       await tester.pumpAndSettle();
